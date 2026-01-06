@@ -1,0 +1,68 @@
+<div class="reportes-container">
+    <div class="card main-report-card">
+        <div class="card-header spread">
+            <div class="header-left">
+                <i class="fa-solid fa-chart-pie"></i>
+                <h2>Resumen General e Informes</h2>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" (click)="downloadReport()">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    Descargar Reporte Completo
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid" *ngIf="stats$ | async as stats">
+            <div class="stat-card total">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Integrantes</span>
+                    <span class="stat-value">{{ stats.total }}</span>
+                </div>
+            </div>
+
+            <div class="stat-card damas">
+                <div class="stat-icon"><i class="fa-solid fa-venus"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Damas</span>
+                    <span class="stat-value">{{ stats.damas }}</span>
+                </div>
+            </div>
+
+            <div class="stat-card caballeros">
+                <div class="stat-icon"><i class="fa-solid fa-mars"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Caballeros</span>
+                    <span class="stat-value">{{ stats.caballeros }}</span>
+                </div>
+            </div>
+
+            <div class="stat-card jovenes">
+                <div class="stat-icon"><i class="fa-solid fa-child-reaching"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Jóvenes</span>
+                    <span class="stat-value">{{ stats.jovenes }}</span>
+                </div>
+            </div>
+
+            <div class="stat-card ninos">
+                <div class="stat-icon"><i class="fa-solid fa-child"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Niños</span>
+                    <span class="stat-value">{{ stats.ninos }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-details mt-4">
+            <h3>Próximos Informes Automáticos</h3>
+            <p class="text-muted">Los reportes semanales se generan todos los domingos a las 8:00 PM.</p>
+
+            <div class="empty-state mt-4">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <p>No hay reportes previos generados aún.</p>
+            </div>
+        </div>
+    </div>
+</div>

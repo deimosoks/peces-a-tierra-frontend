@@ -1,0 +1,122 @@
+<div class="integrantes-container">
+    <div class="grid">
+        <!-- Form Section -->
+        <section class="form-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <h2>{{ isEditing ? 'Editar Persona' : 'Añadir Nueva Persona' }}</h2>
+                </div>
+
+                <form [formGroup]="integranteForm" (ngSubmit)="onSubmit()" class="integrante-form">
+                    <div class="form-group">
+                        <label for="cedula">Cédula</label>
+                        <input id="cedula" type="text" formControlName="cedula" placeholder="V-12345678">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Foto</label>
+                        <div class="file-upload">
+                            <i class="fa-solid fa-circle-user avatar-placeholder"></i>
+                            <button type="button" class="btn btn-outline">Choose File</button>
+                            <span>No file chosen</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nombre">Nombre Completo</label>
+                        <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Juan Pérez">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefono">Teléfono</label>
+                            <input id="telefono" type="text" formControlName="telefono" placeholder="0414-1234567">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaNacimiento">Fecha de Nacimiento</label>
+                            <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion">Dirección</label>
+                        <textarea id="direccion" formControlName="direccion"
+                            placeholder="Calle, sector, ciudad"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoria">Categoría</label>
+                        <select id="categoria" formControlName="categoria">
+                            <option value="" disabled selected>Seleccione una categoría</option>
+                            <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" [disabled]="integranteForm.invalid">
+                        <i class="fa-solid fa-save"></i>
+                        {{ isEditing ? 'Actualizar Persona' : 'Registrar Persona' }}
+                    </button>
+
+                    <button *ngIf="isEditing" type="button" class="btn btn-muted btn-block" (click)="resetForm()">
+                        Cancelar
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Table Section -->
+        <section class="table-section">
+            <div class="card">
+                <div class="card-header spread">
+                    <div class="header-left">
+                        <i class="fa-solid fa-users"></i>
+                        <h2>Listado de Personas Registradas</h2>
+                    </div>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Buscar...">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>NOMBRE</th>
+                                <th>CÉDULA</th>
+                                <th>TELÉFONO</th>
+                                <th>CATEGORÍA</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of integrantes$ | async">
+                                <td>
+                                    <div class="user-cell">
+                                        <img [src]="'https://ui-avatars.com/api/?name=' + item.nombre + '&background=random'"
+                                            alt="Avatar">
+                                        <span>{{ item.nombre }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ item.cedula }}</td>
+                                <td>{{ item.telefono }}</td>
+                                <td>
+                                    <span class="badge" [ngClass]="getBadgeClass(item.categoria)">{{ item.categoria
+                                        }}</span>
+                                </td>
+                                <td class="actions">
+                                    <button class="action-btn view" title="Ver"><i class="fa-solid fa-eye"></i></button>
+                                    <button class="action-btn edit" title="Editar" (click)="editIntegrante(item)"><i
+                                            class="fa-solid fa-pencil"></i></button>
+                                    <button class="action-btn delete" title="Eliminar"
+                                        (click)="deleteIntegrante(item.id!)"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="asistencia-container">
+    <div class="card">
+        <div class="card-header spread">
+            <div class="header-left">
+                <i class="fa-solid fa-calendar-check"></i>
+                <h2>Registro de Asistencia</h2>
+            </div>
+            <div class="header-right">
+                <div class="date-picker">
+                    <label for="fecha">Fecha:</label>
+                    <input id="fecha" type="date" [(ngModel)]="fecha" (change)="loadAttendance()">
+                </div>
+            </div>
+        </div>
+
+        <div class="asistencia-stats" *ngIf="records.length > 0">
+            <div class="stat-item">
+                <span class="stat-label">Total Integrantes:</span>
+                <span class="stat-value font-bold">{{ records.length }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Presentes:</span>
+                <span class="stat-value text-success font-bold">{{ getTotalPresente() }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Ausentes:</span>
+                <span class="stat-value text-danger font-bold">{{ records.length - getTotalPresente() }}</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>INTEGRANTE</th>
+                        <th>CATEGORÍA</th>
+                        <th class="text-center">ASISTENCIA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let record of records">
+                        <td>
+                            <div class="user-cell">
+                                <img [src]="'https://ui-avatars.com/api/?name=' + record.integranteNombre + '&background=random'"
+                                    alt="Avatar">
+                                <span>{{ record.integranteNombre }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" [ngClass]="getBadgeClass(record.categoria)">{{ record.categoria
+                                }}</span>
+                        </td>
+                        <td class="text-center">
+                            <label class="switch">
+                                <input type="checkbox" [(ngModel)]="record.presente">
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer">
+            <button class="btn btn-primary" (click)="save()">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                Guardar Asistencia de Hoy
+            </button>
+        </div>
+    </div>
+</div>
