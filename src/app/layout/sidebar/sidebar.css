@@ -12,12 +12,25 @@
 }
 
 .sidebar-header {
-    padding: 2rem 1.5rem;
+    padding: 1rem 0.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     border-bottom: 1px solid var(--border-color);
+}
+
+.logo {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
 }
 
 .brand {
@@ -29,45 +42,48 @@
 
 .brand-line1 {
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--primary);
 }
 
 .brand-line2 {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 600;
     color: var(--text-muted);
-    letter-spacing: 0.05em;
+    line-height: 1.2;
+    margin-top: 2px;
 }
 
 .sidebar-nav {
     flex: 1;
-    padding: 1.5rem 0;
+    padding: 1rem 0;
     overflow-y: auto;
 }
 
 .nav-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .section-title {
     padding: 0 1.5rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.6rem;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1.5rem;
+    gap: 0.6rem;
+    padding: 0.6rem 1.25rem;
     color: var(--text-main);
+    font-size: 0.85rem;
     font-weight: 500;
     transition: all var(--transition-speed);
-    border-left: 4px solid transparent;
+    text-decoration: none;
 }
 
 .nav-item i {
@@ -75,10 +91,11 @@
     text-align: center;
     font-size: 1.1rem;
     color: var(--text-muted);
+    transition: color var(--transition-speed);
 }
 
 .nav-item:hover {
-    background-color: var(--bg-main);
+    background-color: #f1f5f9;
     color: var(--primary);
 }
 
@@ -87,9 +104,10 @@
 }
 
 .nav-item.active {
-    background-color: #e0e7ff;
+    background-color: #eff6ff;
     color: var(--primary);
-    border-left-color: var(--primary);
+    border-right: 3px solid var(--primary);
+    font-weight: 600;
 }
 
 .nav-item.active i {
@@ -102,18 +120,20 @@
 }
 
 .sidebar-footer {
-    padding: 1.5rem;
+    padding: 1rem;
     border-top: 1px solid var(--border-color);
-    background-color: #f8fafc;
 }
 
 .logout-btn {
     width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
     justify-content: flex-start;
-    color: var(--text-main);
 }
 
 .logout-btn:hover {
+    background-color: #fef2f2;
     color: #ef4444;
 }
 

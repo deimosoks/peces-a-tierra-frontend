@@ -2,67 +2,220 @@
     <div class="card main-report-card">
         <div class="card-header spread">
             <div class="header-left">
-                <i class="fa-solid fa-chart-pie"></i>
-                <h2>Resumen General e Informes</h2>
+                <i class="fa-solid fa-chart-line"></i>
+                <h2>Análisis de Asistencia y Reportes</h2>
             </div>
-            <div class="header-right">
-                <button class="btn btn-primary" (click)="downloadReport()">
-                    <i class="fa-solid fa-file-pdf"></i>
-                    Descargar Reporte Completo
+            <div class="header-right buttons">
+                <button class="btn btn-secondary" (click)="openFilterModal()">
+                    <i class="fa-solid fa-filter"></i>
+                    Filtros Avanzados
+                </button>
+                <button class="btn btn-primary" (click)="downloadReport()" [disabled]="reportData.length === 0">
+                    <i class="fa-solid fa-file-export"></i>
+                    Exportar Datos
                 </button>
             </div>
         </div>
 
-        <div class="stats-grid" *ngIf="stats$ | async as stats">
-            <div class="stat-card total">
-                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                <div class="stat-info">
-                    <span class="stat-label">Total Integrantes</span>
-                    <span class="stat-value">{{ stats.total }}</span>
+        <div class="card-body-scroll">
+            <!-- KPI Grid -->
+            <div class="stats-grid" *ngIf="reportData.length > 0">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Asistencia Total</span>
+                        <h2 class="stat-value">{{stats.totalAttendance}}</h2>
+                        <span class="stat-trend positive">
+                            En el periodo
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon peak">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Pico Máximo</span>
+                        <h2 class="stat-value">{{stats.peakAttendance}}</h2>
+                        <span class="stat-trend">Un solo servicio</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon avg">
+                        <i class="fa-solid fa-chart-simple"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Promedio</span>
+                        <h2 class="stat-value">{{stats.avgAttendance}}</h2>
+                        <span class="stat-trend text-muted">Por servicio</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon cat">
+                        <i class="fa-solid fa-medal"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Top Categoría</span>
+                        <h2 class="stat-value">{{stats.topCategory.name}}</h2>
+                        <span class="stat-trend">{{stats.topCategory.value}} integrantes</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="stat-card damas">
-                <div class="stat-icon"><i class="fa-solid fa-venus"></i></div>
-                <div class="stat-info">
-                    <span class="stat-label">Damas</span>
-                    <span class="stat-value">{{ stats.damas }}</span>
+            <div class="chart-section mt-4" *ngIf="renderChart && reportData.length > 0">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Visualización de Servicios</span>
+                    </div>
+                    <div class="chart-pagination" *ngIf="totalPages > 1">
+                        <button class="btn-icon" (click)="prevPage()" [disabled]="currentPage === 0">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span class="page-info">
+                            Servicios {{currentPage * pageSize + 1}} - {{Math.min((currentPage + 1) * pageSize,
+                            allXLabels.length)}}
+                            de {{allXLabels.length}}
+                        </span>
+                        <button class="btn-icon" (click)="nextPage()"
+                            [disabled]="(currentPage + 1) * pageSize >= allXLabels.length">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="chart" class="chart-container">
+                    <apx-chart #chart [series]="chartOptions.series" [chart]="chartOptions.chart"
+                        [xaxis]="chartOptions.xaxis" [dataLabels]="chartOptions.dataLabels" [grid]="chartOptions.grid"
+                        [stroke]="chartOptions.stroke" [tooltip]="chartOptions.tooltip" [yaxis]="chartOptions.yaxis"
+                        [plotOptions]="chartOptions.plotOptions" [fill]="chartOptions.fill"
+                        [colors]="chartOptions.colors" [legend]="chartOptions.legend"></apx-chart>
                 </div>
             </div>
 
-            <div class="stat-card caballeros">
-                <div class="stat-icon"><i class="fa-solid fa-mars"></i></div>
-                <div class="stat-info">
-                    <span class="stat-label">Caballeros</span>
-                    <span class="stat-value">{{ stats.caballeros }}</span>
+            <!-- Loading and Empty States should be outside or handled properly -->
+            <div class="chart-section mt-4" *ngIf="isLoading">
+                <div id="chart" class="chart-container">
+                    <div class="chart-loading">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                        <p>Procesando datos...</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="stat-card jovenes">
-                <div class="stat-icon"><i class="fa-solid fa-child-reaching"></i></div>
-                <div class="stat-info">
-                    <span class="stat-label">Jóvenes</span>
-                    <span class="stat-value">{{ stats.jovenes }}</span>
-                </div>
+            <div class="empty-state mt-4" *ngIf="reportData.length === 0">
+                <i class="fa-solid fa-chart-column"></i>
+                <h3>No hay datos para mostrar</h3>
+                <p>Utilice los filtros avanzados para generar un reporte de asistencia.</p>
+                <button class="btn btn-outline-primary mt-3" (click)="openFilterModal()">
+                    Configurar Filtros
+                </button>
             </div>
+        </div>
+    </div>
+</div>
 
-            <div class="stat-card ninos">
-                <div class="stat-icon"><i class="fa-solid fa-child"></i></div>
-                <div class="stat-info">
-                    <span class="stat-label">Niños</span>
-                    <span class="stat-value">{{ stats.ninos }}</span>
+<!-- Filter Modal -->
+<div class="modal-overlay" *ngIf="showFilterModal" (click)="closeFilterModal()">
+    <div class="modal-content filter-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-filter"></i> Filtros de Reporte</h3>
+            <button class="btn-close" (click)="closeFilterModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="filter-form premium-form">
+                <div class="form-row">
+                    <div class="form-group premium-group">
+                        <label><i class="fa-solid fa-user-tag"></i> Tipo de Persona</label>
+                        <div class="select-wrapper">
+                            <select class="form-control premium-select" [(ngModel)]="filters.typeOfPeople">
+                                <option [ngValue]="undefined">Todos los tipos</option>
+                                <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group premium-group">
+                        <label><i class="fa-solid fa-layer-group"></i> Categoría</label>
+                        <div class="select-wrapper">
+                            <select class="form-control premium-select" [(ngModel)]="filters.category">
+                                <option [ngValue]="undefined">Todas las categorías</option>
+                                <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group premium-group">
+                    <label><i class="fa-solid fa-church"></i> Servicio Específico</label>
+                    <div class="select-wrapper">
+                        <select class="form-control premium-select" [(ngModel)]="filters.serviceId">
+                            <option [ngValue]="undefined">Todos los servicios disponibles</option>
+                            <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group premium-group search-member-group">
+                    <label><i class="fa-solid fa-user-magnifying-glass"></i> Filtrar por Integrante (Opcional)</label>
+                    <div class="search-input-container">
+                        <!-- Selected Member Badge -->
+                        <div class="selected-member-chip" *ngIf="filters.userId">
+                            <span>{{ selectedMemberName }}</span>
+                            <button class="remove-chip" (click)="clearMemberSelection()">&times;</button>
+                        </div>
+
+                        <!-- Search Input -->
+                        <div class="input-relative" *ngIf="!filters.userId">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" class="form-control premium-input-icon" [(ngModel)]="memberSearchQuery"
+                                (input)="onMemberSearch()" placeholder="Escribe el nombre del integrante...">
+                            <i class="fa-solid fa-circle-notch fa-spin loader-icon" *ngIf="isSearchingMembers"></i>
+                        </div>
+
+                        <!-- Results Dropdown -->
+                        <div class="search-results-dropdown" *ngIf="memberResults.length > 0 && !filters.userId">
+                            <div class="result-item" *ngFor="let m of memberResults" (click)="selectMember(m)">
+                                <img [src]="m.pictureProfileUrl || 'https://ui-avatars.com/api/?name='+m.completeName+'&background=random'"
+                                    alt="">
+                                <div class="result-info">
+                                    <span class="result-name">{{ m.completeName }}</span>
+                                    <span class="result-meta">{{ m.category }} • {{ m.cc }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group premium-group">
+                        <label><i class="fa-solid fa-calendar-plus"></i> Desde</label>
+                        <input type="datetime-local" class="form-control premium-date" [(ngModel)]="filters.startDate">
+                    </div>
+                    <div class="form-group premium-group">
+                        <label><i class="fa-solid fa-calendar-minus"></i> Hasta</label>
+                        <input type="datetime-local" class="form-control premium-date" [(ngModel)]="filters.endDate">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="premium-checkbox">
+                        <input type="checkbox" [(ngModel)]="filters.onlyActive">
+                        <span class="checkmark"></span>
+                        Solo integrantes activos
+                    </label>
                 </div>
             </div>
         </div>
-
-        <div class="report-details mt-4">
-            <h3>Próximos Informes Automáticos</h3>
-            <p class="text-muted">Los reportes semanales se generan todos los domingos a las 8:00 PM.</p>
-
-            <div class="empty-state mt-4">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <p>No hay reportes previos generados aún.</p>
-            </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeFilterModal()">Cancelar</button>
+            <button class="btn btn-primary" (click)="applyFilters()" [disabled]="isLoading">
+                {{ isLoading ? 'Generando...' : 'Generar Reporte' }}
+            </button>
         </div>
     </div>
 </div>

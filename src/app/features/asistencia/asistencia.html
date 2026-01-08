@@ -1,71 +1,250 @@
+<button class="btn-fixed-services" (click)="openServicesModal()">
+    <i class="fa-solid fa-gear"></i>
+    Gestión de Servicios
+</button>
+
 <div class="asistencia-container">
-    <div class="card">
-        <div class="card-header spread">
-            <div class="header-left">
-                <i class="fa-solid fa-calendar-check"></i>
-                <h2>Registro de Asistencia</h2>
-            </div>
-            <div class="header-right">
-                <div class="date-picker">
-                    <label for="fecha">Fecha:</label>
-                    <input id="fecha" type="date" [(ngModel)]="fecha" (change)="loadAttendance()">
+    <div class="card premium-card">
+        <!-- Header Filters -->
+        <div class="asistencia-header">
+            <div class="filter-group">
+                <div class="input-with-label">
+                    <label>Fecha y Hora del Servicio</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <input type="datetime-local" [(ngModel)]="attendanceDateTime" class="premium-input">
+                    </div>
+                </div>
+
+                <div class="input-with-label flex-1">
+                    <label>Tipo de Servicio</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-church"></i>
+                        <select [(ngModel)]="selectedServiceId" class="premium-input">
+                            <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-with-label search-group flex-1">
+                    <label>Buscar</label>
+                    <div class="input-icon-wrapper search-wrapper">
+                        <button class="search-icon-btn" (click)="onSearch()" title="Buscar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                            placeholder="Buscar por nombre..." class="premium-input">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="asistencia-stats" *ngIf="records.length > 0">
-            <div class="stat-item">
-                <span class="stat-label">Total Integrantes:</span>
-                <span class="stat-value font-bold">{{ records.length }}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Presentes:</span>
-                <span class="stat-value text-success font-bold">{{ getTotalPresente() }}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Ausentes:</span>
-                <span class="stat-value text-danger font-bold">{{ records.length - getTotalPresente() }}</span>
-            </div>
-        </div>
-
+        <!-- Attendance Table -->
         <div class="table-container">
-            <table class="data-table">
+            <table class="premium-table">
                 <thead>
                     <tr>
-                        <th>INTEGRANTE</th>
-                        <th>CATEGORÍA</th>
-                        <th class="text-center">ASISTENCIA</th>
+                        <th>FOTO</th>
+                        <th>NOMBRE COMPLETO</th>
+                        <th>CEDULA</th>
+                        <th>CATEGORIA</th>
+                        <th>TIPOS DE USUARIOS</th>
+                        <th>TELEFONO</th>
+                        <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let record of records">
+                    <tr *ngFor="let member of members">
                         <td>
-                            <div class="user-cell">
-                                <img [src]="'https://ui-avatars.com/api/?name=' + record.integranteNombre + '&background=random'"
+                            <div class="avatar-cell">
+                                <img [src]="member.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + member.completeName + '&background=random'"
                                     alt="Avatar">
-                                <span>{{ record.integranteNombre }}</span>
                             </div>
                         </td>
+                        <td><span class="user-fullname">{{ member.completeName }}</span></td>
+                        <td>{{ member.cc }}</td>
                         <td>
-                            <span class="badge" [ngClass]="getBadgeClass(record.categoria)">{{ record.categoria
-                                }}</span>
+                            <span class="badge" [ngClass]="getBadgeClass(member.category)">{{ member.category }}</span>
                         </td>
+                        <td>{{ member.type }}</td>
+                        <td>{{ member.cellphone }}</td>
                         <td class="text-center">
-                            <label class="switch">
-                                <input type="checkbox" [(ngModel)]="record.presente">
-                                <span class="slider round"></span>
-                            </label>
+                            <div class="actions-mini justify-center">
+                                <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver detalles">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <label class="checkbox-container-mini">
+                                    <input type="checkbox" [checked]="isSelected(member.id)"
+                                        (change)="toggleSelection(member.id)">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="members.length === 0 && !isLoading">
+                        <td colspan="7" class="empty-state">No se encontraron integrantes activos</td>
+                    </tr>
+                    <tr *ngIf="isLoading">
+                        <td colspan="7" class="loading-state">
+                            <div class="spinner"></div>
+                            Cargando integrantes...
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="card-footer">
-            <button class="btn btn-primary" (click)="save()">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                Guardar Asistencia de Hoy
+        <!-- Pagination & Footer -->
+        <div class="asistencia-footer">
+            <div class="pagination-controls">
+                <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
+                <div class="pagination-btns">
+                    <button class="btn-paged" (click)="prevPage()" [disabled]="currentPage === 0">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn-paged" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-save-attendance" (click)="save()" [disabled]="isLoading">
+                Guardar Asistencia
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Services Management Modal -->
+<div class="modal-overlay" *ngIf="showServicesModal" (click)="closeServicesModal()">
+    <div class="modal-content services-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isEditingService ? 'Editar Servicio' : 'Gestión de Servicios' }}</h2>
+            <button class="close-btn" (click)="closeServicesModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Service Form -->
+            <form (submit)="onServiceSubmit()" class="service-quick-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre del Servicio</label>
+                        <input type="text" [(ngModel)]="serviceForm.name" name="name"
+                            placeholder="Ej: Culto de Adoración" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <input type="text" [(ngModel)]="serviceForm.description" name="description"
+                            placeholder="Breve descripción" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-add-service" [disabled]="isSavingService">
+                        <i class="fa-solid" [ngClass]="isEditingService ? 'fa-save' : 'fa-plus'"></i>
+                        {{ isEditingService ? 'Actualizar' : 'Agregar' }}
+                    </button>
+                    <button type="button" *ngIf="isEditingService" class="btn btn-muted btn-add-service"
+                        (click)="resetServiceForm()">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+
+            <hr class="modal-divider">
+
+            <!-- Services List -->
+            <div class="services-list-container">
+                <table class="premium-table compact">
+                    <thead>
+                        <tr>
+                            <th>NOMBRE</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th class="text-center">ESTADO</th>
+                            <th class="text-center">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let s of servicesAll" [class.inactive-row]="!s.active">
+                            <td><strong>{{ s.name }}</strong></td>
+                            <td class="text-muted">{{ s.description }}</td>
+                            <td class="text-center">
+                                <label class="switch-sm">
+                                    <input type="checkbox" [checked]="s.active" (change)="toggleServiceStatus(s)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
+                            <td class="text-center">
+                                <div class="actions-mini justify-center">
+                                    <button class="action-btn-sm edit" (click)="editService(s)" title="Editar">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button class="action-btn-sm delete" (click)="deleteService(s.id)" title="Eliminar">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="servicesAll.length === 0">
+                            <td colspan="4" class="empty-state small">No hay servicios registrados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Detalles del Integrante</h2>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" *ngIf="selectedMember">
+            <div class="profile-header">
+                <img [src]="selectedMember.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + selectedMember.completeName + '&size=128&background=random'"
+                    alt="Avatar Grande">
+                <div class="profile-title">
+                    <h3>{{ selectedMember.completeName }}</h3>
+                    <span class="badge" [ngClass]="getBadgeClass(selectedMember.category)">{{ selectedMember.category
+                        }}</span>
+                </div>
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <label>Cédula:</label>
+                    <span>{{ selectedMember.cc }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tipo:</label>
+                    <span>{{ selectedMember.type }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Teléfono:</label>
+                    <span>{{ selectedMember.cellphone }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Nacimiento:</label>
+                    <span>{{ selectedMember.birthdate }}</span>
+                </div>
+                <div class="detail-item full">
+                    <label>Dirección:</label>
+                    <span>{{ selectedMember.address }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Registrado:</label>
+                    <span>{{ selectedMember.createdAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Última Actualización:</label>
+                    <span>{{ selectedMember.updatedAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Estado:</label>
+                    <span [class.text-success]="selectedMember.active" [class.text-danger]="!selectedMember.active">
+                        {{ selectedMember.active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

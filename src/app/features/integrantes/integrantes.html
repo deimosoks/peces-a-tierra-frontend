@@ -1,122 +1,217 @@
-<div class="integrantes-container">
-    <div class="grid">
-        <!-- Form Section -->
-        <section class="form-section">
-            <div class="card">
-                <div class="card-header">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <h2>{{ isEditing ? 'Editar Persona' : 'Añadir Nueva Persona' }}</h2>
+<div class="integrantes-container full-width">
+    <div class="card full-card">
+        <div class="card-header spread">
+            <div class="header-left">
+                <i class="fa-solid fa-users"></i>
+                <h3>Listado de Personas</h3>
+            </div>
+            <div class="header-actions">
+                <div class="toggle-filter">
+                    <label class="switch-sm">
+                        <input type="checkbox" [(ngModel)]="onlyActive" (change)="onToggleOnlyActive()">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-label">{{ onlyActive ? 'Activos' : 'Todos' }}</span>
                 </div>
 
-                <form [formGroup]="integranteForm" (ngSubmit)="onSubmit()" class="integrante-form">
-                    <div class="form-group">
-                        <label for="cedula">Cédula</label>
-                        <input id="cedula" type="text" formControlName="cedula" placeholder="V-12345678">
-                    </div>
+                <div class="search-box-mini">
+                    <button class="search-icon-btn" (click)="onSearch()" title="Buscar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                        placeholder="Buscar integrantes...">
+                </div>
 
-                    <div class="form-group">
-                        <label>Foto</label>
-                        <div class="file-upload">
-                            <i class="fa-solid fa-circle-user avatar-placeholder"></i>
-                            <button type="button" class="btn btn-outline">Choose File</button>
-                            <span>No file chosen</span>
+                <button class="btn btn-primary btn-sm btn-new" (click)="openFormModal()">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Nuevo
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container full-table">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>NOMBRE</th>
+                        <th>CATEGORÍA</th>
+                        <th>TIPO</th>
+                        <th>ESTADO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let member of members" [class.inactive-row]="!member.active">
+                        <td>
+                            <div class="user-cell-mini">
+                                <img [src]="member.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + member.completeName + '&background=random'"
+                                    alt="Avatar">
+                                <span class="user-name">{{ member.completeName }}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-sm" [ngClass]="getBadgeClass(member.category)">{{
+                                member.category }}</span></td>
+                        <td>{{ member.type }}</td>
+                        <td>
+                            <label class="switch-sm">
+                                <input type="checkbox" [checked]="member.active" (change)="toggleMemberStatus(member)">
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td class="actions-mini">
+                            <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver"><i
+                                    class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn-sm edit" (click)="editIntegrante(member)" title="Editar"><i
+                                    class="fa-solid fa-pencil"></i></button>
+                            <button class="action-btn-sm delete" (click)="deleteIntegrante(member.id)"
+                                title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-mini">
+            <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
+            <div class="pagination-buttons">
+                <button class="btn btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form Modal -->
+<div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
+    <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isEditing ? 'Editar Integrante' : 'Nuevo Integrante' }}</h2>
+            <button class="close-btn" (click)="closeFormModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="integranteForm" (ngSubmit)="onSubmit()" class="integrante-form-modal">
+                <div class="form-header-row">
+                    <div class="photo-upload-container-large">
+                        <div class="photo-preview-large" (click)="fileInput.click()">
+                            <img [src]="imagePreview || 'https://ui-avatars.com/api/?name=?&size=100&background=e2e8f0&color=94a3b8'"
+                                alt="Preview">
+                            <div class="photo-overlay-large">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
                         </div>
+                        <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
+                        <span class="photo-label">Foto de Perfil</span>
                     </div>
 
+                    <div class="form-group flex-1">
+                        <label for="completeName">Nombre Completo *</label>
+                        <input id="completeName" type="text" formControlName="completeName"
+                            placeholder="Ej: Juan Pérez">
+                    </div>
+                </div>
+
+                <div class="form-grid">
                     <div class="form-group">
-                        <label for="nombre">Nombre Completo</label>
-                        <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Juan Pérez">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="telefono">Teléfono</label>
-                            <input id="telefono" type="text" formControlName="telefono" placeholder="0414-1234567">
-                        </div>
-                        <div class="form-group">
-                            <label for="fechaNacimiento">Fecha de Nacimiento</label>
-                            <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="direccion">Dirección</label>
-                        <textarea id="direccion" formControlName="direccion"
-                            placeholder="Calle, sector, ciudad"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="categoria">Categoría</label>
-                        <select id="categoria" formControlName="categoria">
-                            <option value="" disabled selected>Seleccione una categoría</option>
-                            <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+                        <label for="type">Tipo *</label>
+                        <select id="type" formControlName="type">
+                            <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="category">Categoría *</label>
+                        <select id="category" formControlName="category">
+                            <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cellphone">Teléfono</label>
+                        <input id="cellphone" type="text" formControlName="cellphone" placeholder="0414-1234567">
+                    </div>
+                    <div class="form-group">
+                        <label for="birthdate">Nacimiento</label>
+                        <input id="birthdate" type="date" formControlName="birthdate">
+                    </div>
+                    <div class="form-group">
+                        <label for="cc">Identificación (CC)</label>
+                        <input id="cc" type="text" formControlName="cc" placeholder="V-12345678">
+                    </div>
+                    <div class="form-group full">
+                        <label for="address">Dirección</label>
+                        <textarea id="address" formControlName="address" rows="2"
+                            placeholder="Dirección completa del integrante"></textarea>
+                    </div>
+                </div>
 
-                    <button type="submit" class="btn btn-primary btn-block" [disabled]="integranteForm.invalid">
+                <div class="form-footer">
+                    <button type="button" class="btn btn-muted" (click)="closeFormModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="integranteForm.invalid">
                         <i class="fa-solid fa-save"></i>
-                        {{ isEditing ? 'Actualizar Persona' : 'Registrar Persona' }}
+                        {{ isEditing ? 'Actualizar' : 'Guardar' }}
                     </button>
-
-                    <button *ngIf="isEditing" type="button" class="btn btn-muted btn-block" (click)="resetForm()">
-                        Cancelar
-                    </button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Table Section -->
-        <section class="table-section">
-            <div class="card">
-                <div class="card-header spread">
-                    <div class="header-left">
-                        <i class="fa-solid fa-users"></i>
-                        <h2>Listado de Personas Registradas</h2>
-                    </div>
-                    <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" placeholder="Buscar...">
-                    </div>
                 </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>NOMBRE</th>
-                                <th>CÉDULA</th>
-                                <th>TELÉFONO</th>
-                                <th>CATEGORÍA</th>
-                                <th>ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let item of integrantes$ | async">
-                                <td>
-                                    <div class="user-cell">
-                                        <img [src]="'https://ui-avatars.com/api/?name=' + item.nombre + '&background=random'"
-                                            alt="Avatar">
-                                        <span>{{ item.nombre }}</span>
-                                    </div>
-                                </td>
-                                <td>{{ item.cedula }}</td>
-                                <td>{{ item.telefono }}</td>
-                                <td>
-                                    <span class="badge" [ngClass]="getBadgeClass(item.categoria)">{{ item.categoria
-                                        }}</span>
-                                </td>
-                                <td class="actions">
-                                    <button class="action-btn view" title="Ver"><i class="fa-solid fa-eye"></i></button>
-                                    <button class="action-btn edit" title="Editar" (click)="editIntegrante(item)"><i
-                                            class="fa-solid fa-pencil"></i></button>
-                                    <button class="action-btn delete" title="Eliminar"
-                                        (click)="deleteIntegrante(item.id!)"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Detalles del Integrante</h2>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" *ngIf="selectedMember">
+            <div class="profile-header">
+                <img [src]="selectedMember.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + selectedMember.completeName + '&size=128&background=random'"
+                    alt="Avatar Grande">
+                <div class="profile-title">
+                    <h3>{{ selectedMember.completeName }}</h3>
+                    <span class="badge" [ngClass]="getBadgeClass(selectedMember.category)">{{ selectedMember.category
+                        }}</span>
                 </div>
             </div>
-        </section>
+
+            <div class="details-grid">
+                <div class="detail-item">
+                    <label>Cédula:</label>
+                    <span>{{ selectedMember.cc }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tipo:</label>
+                    <span>{{ selectedMember.type }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Teléfono:</label>
+                    <span>{{ selectedMember.cellphone }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Nacimiento:</label>
+                    <span>{{ selectedMember.birthdate }}</span>
+                </div>
+                <div class="detail-item full">
+                    <label>Dirección:</label>
+                    <span>{{ selectedMember.address }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Registrado:</label>
+                    <span>{{ selectedMember.createdAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Última Actualización:</label>
+                    <span>{{ selectedMember.updatedAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Estado:</label>
+                    <span [class.text-success]="selectedMember.active" [class.text-danger]="!selectedMember.active">
+                        {{ selectedMember.active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

@@ -1,39 +1,39 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, map } from 'rxjs';
-import { Asistencia, AttendanceRecord } from '../models/asistencia.model';
-import { IntegranteService } from './integrante';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { IglesiaService, AttendanceCreateDto } from '../models/asistencia.model';
+import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AsistenciaService {
-  private integranteService = inject(IntegranteService);
-  private asistenciasSubject = new BehaviorSubject<Asistencia[]>([]);
+  private http = inject(HttpClient);
+  private baseUrl = API_CONFIG.baseUrl;
 
-  // Simulation of getting members and creating attendance records for a specific date
-  getAttendanceForDate(fecha: string): Observable<AttendanceRecord[]> {
-    return this.integranteService.getIntegrantes().pipe(
-      map(integrantes => integrantes.map(i => ({
-        integranteId: i.id!,
-        integranteNombre: i.nombre,
-        categoria: i.categoria,
-        presente: this.isPresent(i.id!, fecha)
-      })))
-    );
+  getServices(onlyActive: boolean = false): Observable<IglesiaService[]> {
+    const params = new HttpParams().set('onlyActive', onlyActive.toString());
+    return this.http.get<IglesiaService[]>(`${this.baseUrl}/services`, { params });
   }
 
-  private isPresent(integranteId: number, fecha: string): boolean {
-    return this.asistenciasSubject.value.some(a => a.integranteId === integranteId && a.fecha === fecha && a.presente);
+  addService(service: { name: string; description: string }): Observable<IglesiaService> {
+    return this.http.post<IglesiaService>(`${this.baseUrl}/services`, service);
   }
 
-  saveAttendance(records: AttendanceRecord[], fecha: string): void {
-    const current = this.asistenciasSubject.value.filter(a => a.fecha !== fecha);
-    const newRecords: Asistencia[] = records.map(r => ({
-      integranteId: r.integranteId,
-      fecha: fecha,
-      presente: r.presente
-    }));
-    this.asistenciasSubject.next([...current, ...newRecords]);
-    console.log('Asistencia guardada para:', fecha);
+  updateService(id: string, service: { name: string; description: string }): Observable<IglesiaService> {
+    return this.http.put<IglesiaService>(`${this.baseUrl}/services/${id}`, service);
+  }
+
+  deleteService(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/services/${id}`);
+  }
+
+  toggleServiceStatus(id: string, active: boolean): Observable<boolean> {
+    const params = new HttpParams().set('active', active.toString());
+    return this.http.patch<boolean>(`${this.baseUrl}/services/${id}`, null, { params });
+  }
+
+  saveAttendances(attendances: AttendanceCreateDto[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/attendances`, attendances);
   }
 }

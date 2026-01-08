@@ -1,14 +1,22 @@
-export interface Asistencia {
-    id?: number;
-    integranteId: number;
-    fecha: string;
-    presente: boolean;
-    nota?: string;
+export interface IglesiaService {
+    id: string;
+    name: string;
+    active: boolean;
+    createdAt?: string;
+    description?: string;
 }
 
-export interface AttendanceRecord {
-    integranteNombre: string;
-    integranteId: number;
+export interface AttendanceCreateDto {
+    serviceId: string;
+    memberId: string;
+    attendanceDate: string; // LocalDateTime string format
+}
+
+export interface Asistencia {
+    id?: string;
+    memberId: string;
+    serviceId: string;
+    attendanceDate: string;
+    // UI helper
     presente: boolean;
-    categoria: string;
 }

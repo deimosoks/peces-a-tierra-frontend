@@ -1,13 +1,22 @@
 .main-content {
     margin-left: var(--sidebar-width);
     padding-top: var(--header-height);
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    position: relative;
 }
 
 .page-container {
     flex: 1;
-    padding: 2rem;
+    padding: 1.25rem 1.5rem;
+    /* Slightly reduced padding */
     background-color: var(--bg-main);
+    overflow: hidden;
+    /* Desktop app style: no global scroll */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Allow flex item to shrink */
 }

@@ -1,53 +1,52 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Integrante } from '../models/integrante.model';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Integrante, MemberPagesResponseDto } from '../models/integrante.model';
+import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class IntegranteService {
-  private integrantesSubject = new BehaviorSubject<Integrante[]>([
-    {
-      id: 1,
-      cedula: 'V-12.345.678',
-      nombre: 'María Rodriguez',
-      telefono: '0412-9876543',
-      categoria: 'Damas',
-      direccion: 'Calle Principal, Sector 1',
-      fechaNacimiento: '1990-05-15'
-    },
-    {
-      id: 2,
-      cedula: 'V-9.876.543',
-      nombre: 'Carlos Gómez',
-      telefono: '0416-1234567',
-      categoria: 'Caballeros',
-      direccion: 'Av. Las Palmas, Edif. A',
-      fechaNacimiento: '1985-11-20'
-    }
-  ]);
+  private http = inject(HttpClient);
+  private baseUrl = API_CONFIG.baseUrl;
 
-  getIntegrantes(): Observable<Integrante[]> {
-    return this.integrantesSubject.asObservable();
+  getMembers(page: number, onlyActive: boolean): Observable<MemberPagesResponseDto> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('onlyActive', onlyActive.toString());
+
+    return this.http.get<MemberPagesResponseDto>(`${this.baseUrl}/members`, { params });
   }
 
-  addIntegrante(integrante: Integrante): void {
-    const current = this.integrantesSubject.value;
-    const nextId = current.length > 0 ? Math.max(...current.map(i => i.id || 0)) + 1 : 1;
-    this.integrantesSubject.next([...current, { ...integrante, id: nextId }]);
+  searchMembers(query: string, page: number, onlyActive: boolean): Observable<MemberPagesResponseDto> {
+    const params = new HttpParams()
+      .set('query', query)
+      .set('page', page.toString())
+      .set('onlyActive', onlyActive.toString());
+
+    return this.http.get<MemberPagesResponseDto>(`${this.baseUrl}/members/query`, { params });
   }
 
-  updateIntegrante(id: number, updated: Integrante): void {
-    const current = this.integrantesSubject.value;
-    const index = current.findIndex(i => i.id === id);
-    if (index !== -1) {
-      current[index] = { ...updated, id };
-      this.integrantesSubject.next([...current]);
-    }
+  toggleStatus(id: string, active: boolean): Observable<boolean> {
+    const params = new HttpParams().set('active', active.toString());
+    return this.http.patch<boolean>(`${this.baseUrl}/members/${id}`, null, { params });
   }
 
-  deleteIntegrante(id: number): void {
-    const current = this.integrantesSubject.value;
-    this.integrantesSubject.next(current.filter(i => i.id !== id));
+  getMemberById(id: string): Observable<Integrante> {
+    return this.http.get<Integrante>(`${this.baseUrl}/members/${id}`);
+  }
+
+  // CRUD with FormData for @ModelAttribute and MultipartFile
+  addIntegrante(formData: FormData): Observable<Integrante> {
+    return this.http.post<Integrante>(`${this.baseUrl}/members`, formData);
+  }
+
+  updateIntegrante(id: string, formData: FormData): Observable<Integrante> {
+    return this.http.put<Integrante>(`${this.baseUrl}/members/${id}`, formData);
+  }
+
+  deleteIntegrante(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/members/${id}`);
   }
 }
