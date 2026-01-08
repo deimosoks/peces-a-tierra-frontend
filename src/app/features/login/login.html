@@ -1,0 +1,80 @@
+<div class="login-wrapper">
+    <div class="login-container">
+        <!-- Left Side: Spiritual/Thematic -->
+        <div class="login-left">
+            <div class="overlay"></div>
+            <div class="content">
+                <blockquote class="bible-quote">
+                    “Echad la red a la derecha de la barca, y hallaréis.”
+                    <cite>Juan 21:6</cite>
+                </blockquote>
+
+                <div class="glossy-icons">
+                    <div class="icon-orb red">
+                        <i class="fa-solid fa-cross"></i>
+                    </div>
+                    <div class="icon-orb orange">
+                        <i class="fa-solid fa-dove"></i>
+                    </div>
+                    <div class="icon-orb blue">
+                        <i class="fa-solid fa-wine-glass-empty"></i>
+                    </div>
+                    <div class="icon-orb purple">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                </div>
+
+                <div class="church-name">
+                    <h1>ICC TABERNÀCULO<br>DE ADORACIÒN</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Form -->
+        <div class="login-right">
+            <div class="form-content">
+                <div class="logo-section">
+                    <img src="assets/img/logo-login.png" alt="Peces a Tierra" class="login-logo">
+                    <h2>Peces a Tierra</h2>
+                    <p>Plataforma administrativa. Ingresa tus credenciales para gestionar el sistema.</p>
+                </div>
+
+                <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form">
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <div class="input-wrapper">
+                            <input type="email" name="email" [(ngModel)]="loginData.email"
+                                placeholder="usuario@icctba.com" required>
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <div class="input-wrapper">
+                            <input [type]="showPassword ? 'text' : 'password'" name="password"
+                                [(ngModel)]="loginData.password" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" (click)="togglePassword()">
+                                <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div *ngIf="errorMessage" class="error-msg">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        {{ errorMessage }}
+                    </div>
+
+                    <button type="submit" class="btn-login" [disabled]="isLoading">
+                        <span *ngIf="!isLoading">Iniciar Sesión</span>
+                        <div *ngIf="isLoading" class="loader"></div>
+                    </button>
+                </form>
+
+                <div class="footer-note">
+                    <p>© 2025 Peces a tierra. Módulo de Gestión.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -13,10 +13,51 @@
     padding: 1.25rem 1.5rem;
     /* Slightly reduced padding */
     background-color: var(--bg-main);
-    overflow: hidden;
-    /* Desktop app style: no global scroll */
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     min-height: 0;
     /* Allow flex item to shrink */
+}
+
+/* Custom Scrollbar for the main content */
+.page-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.page-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.page-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid var(--bg-main);
+}
+
+.page-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Page Header Styles */
+.page-header {
+    margin-bottom: 2rem;
+    padding: 0.5rem 0.5rem 0 0.5rem;
+}
+
+.page-header h1 {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.page-header p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin: 0;
 }

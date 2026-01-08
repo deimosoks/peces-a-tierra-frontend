@@ -573,7 +573,7 @@
 
 .empty-state {
     text-align: center;
-    padding: 5rem 2rem;
+    padding: 3rem 2rem;
     background-color: #f8fafc;
     border-radius: 16px;
     border: 2px dashed var(--border-color);

@@ -1,0 +1,158 @@
+<div class="user-panel-container">
+    <header class="page-header">
+        <p>Administra los accesos y credenciales de los usuarios de la plataforma.</p>
+    </header>
+    <!-- Stats Row -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon users">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ totalUsers }}</span>
+                <span class="stat-label">Total de Usuarios</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon active">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ activeUsers }}</span>
+                <span class="stat-label">Usuarios Activos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
+                placeholder="Buscar por usuario o nombre real...">
+        </div>
+        <button class="btn-new-user" (click)="openNewModal()">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Nuevo Usuario</span>
+        </button>
+    </div>
+
+    <!-- Users Table Card -->
+    <div class="users-card">
+        <div class="table-container" *ngIf="!isLoading">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>USUARIO DEL SISTEMA</th>
+                        <th>PERSONA ENLAZADA</th>
+                        <th>ROL DEL SISTEMA</th>
+                        <th>ESTADO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of users">
+                        <td>
+                            <div class="user-identity">
+                                <div class="avatar">
+                                    <img src="assets/img/default-avatar.png" alt="Avatar">
+                                </div>
+                                <span class="username">{{ user.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="member-name">{{ user.memberName }}</span>
+                        </td>
+                        <td>
+                            <div class="roles-badges">
+                                <span *ngFor="let role of user.rolesNames" class="role-badge">
+                                    {{ role }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <label class="status-switch">
+                                <input type="checkbox" [checked]="user.active" (change)="toggleStatus(user)">
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <button class="action-btn edit" (click)="editUser(user)" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="action-btn delete" (click)="deleteUser(user)" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-footer" *ngIf="!isLoading">
+            <span class="results-info">Mostrando {{ users.length }} de {{ totalUsers }} resultados</span>
+            <div class="pagination-controls">
+                <button class="page-btn" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button *ngFor="let p of [].constructor(totalPages); let i = index" class="page-btn"
+                    [class.active]="i === currentPage" (click)="changePage(i)">
+                    {{ i + 1 }}
+                </button>
+                <button class="page-btn" [disabled]="currentPage === totalPages - 1"
+                    (click)="changePage(currentPage + 1)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Cargando usuarios...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Form Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content user-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Usuario (Username)</label>
+                    <input type="text" [(ngModel)]="currentUser.username" placeholder="Nombre de usuario">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" [(ngModel)]="currentUser.password" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>Persona Relacionada (ID)</label>
+                    <select [(ngModel)]="currentUser.memberId">
+                        <option value="">Seleccione un integrante...</option>
+                        <!-- For now empty as requested -->
+                        <option *ngFor="let m of members" [value]="m.id">{{ m.completeName }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Roles del Sistema</label>
+                    <select multiple [(ngModel)]="currentUser.rolesId">
+                        <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+            <button class="btn-save" (click)="saveUser()">Guardar Usuario</button>
+        </div>
+    </div>
+</div>

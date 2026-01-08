@@ -1,0 +1,115 @@
+<div class="roles-container">
+    <header class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+            <div>
+                <p>Configura los niveles de acceso y seguridad de la plataforma.</p>
+            </div>
+            <button class="btn-primary-premium" (click)="openNewModal()">
+                <i class="fa-solid fa-plus"></i>
+                Nuevo Rol
+            </button>
+        </div>
+    </header>
+
+    <div class="roles-grid" *ngIf="!isLoading">
+        <div class="role-card" *ngFor="let role of roles" [style.border-top-color]="role.color">
+            <div class="role-card-header">
+                <div class="role-badge" [style.background-color]="role.color + '20'" [style.color]="role.color">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="role-actions">
+                    <button class="action-btn" (click)="editRole(role)" title="Editar">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="action-btn delete" (click)="deleteRole(role)" title="Eliminar">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="role-card-body">
+                <h3>{{ role.name }}</h3>
+                <p>{{ role.description }}</p>
+                <div class="role-meta">
+                    <span class="member-count">
+                        <i class="fa-solid fa-user-group"></i>
+                        {{ role.memberCount }} usuarios
+                    </span>
+                    <span class="perms-count">
+                        <i class="fa-solid fa-key"></i>
+                        {{ role.permissions.length }} permisos
+                    </span>
+                </div>
+            </div>
+            <div class="role-card-footer">
+                <div class="perms-preview">
+                    <span *ngFor="let pId of role.permissions.slice(0, 3)" class="perm-tag">
+                        {{ pId.split('_').pop() | lowercase }}
+                    </span>
+                    <span *ngIf="role.permissions.length > 3" class="perm-more">+{{ role.permissions.length - 3
+                        }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="roles-loading" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Cargando roles del sistema...</p>
+    </div>
+</div>
+
+<!-- Role Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content role-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isEditing ? 'Editar Rol' : 'Crear Nuevo Rol' }}</h2>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-section">
+                <label>Información Básica</label>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nombre del Rol</label>
+                        <input type="text" [(ngModel)]="currentRole.name" placeholder="Ej: Administrador">
+                    </div>
+                    <div class="form-group">
+                        <label>Color Identificador</label>
+                        <input type="color" [(ngModel)]="currentRole.color">
+                    </div>
+                    <div class="form-group full">
+                        <label>Descripción</label>
+                        <textarea [(ngModel)]="currentRole.description" rows="2"
+                            placeholder="Describa brevemente las responsabilidades de este rol"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section perms-section">
+                <label>Matriz de Permisos</label>
+                <div class="perms-grid">
+                    <div class="perm-category" *ngFor="let group of groupedPermissions">
+                        <h3>{{ group.category }}</h3>
+                        <div class="perm-item" *ngFor="let perm of group.permissions"
+                            [class.active]="hasPermission(perm.id)" (click)="togglePermission(perm.id)">
+                            <div class="perm-checkbox">
+                                <i class="fa-solid fa-check" *ngIf="hasPermission(perm.id)"></i>
+                            </div>
+                            <div class="perm-info">
+                                <span class="perm-name">{{ perm.name }}</span>
+                                <span class="perm-desc">{{ perm.description }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+            <button class="btn-primary-premium" (click)="saveRole()" [disabled]="!currentRole.name">
+                {{ isEditing ? 'Actualizar Rol' : 'Guardar Rol' }}
+            </button>
+        </div>
+    </div>
+</div>

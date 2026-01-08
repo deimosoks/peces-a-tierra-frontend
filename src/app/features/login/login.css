@@ -1,0 +1,294 @@
+.login-wrapper {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1a1a1a;
+    overflow: hidden;
+}
+
+.login-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    max-width: 1600px;
+}
+
+/* Left Panel */
+.login-left {
+    flex: 1.2;
+    position: relative;
+    background: url('/img/bible-login.png') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.login-left .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4));
+}
+
+.login-left .content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 2rem;
+    max-width: 600px;
+}
+
+.bible-quote {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 3rem;
+    font-style: italic;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.bible-quote cite {
+    display: block;
+    font-size: 1rem;
+    margin-top: 1rem;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.glossy-icons {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 4rem;
+}
+
+.icon-orb {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    position: relative;
+    box-shadow:
+        inset 0 4px 10px rgba(255, 255, 255, 0.4),
+        0 8px 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.icon-orb::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 15px;
+    width: 50px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: rotate(-10deg);
+}
+
+.icon-orb.red {
+    background: radial-gradient(circle at 30% 30%, #ff4d4d, #990000);
+}
+
+.icon-orb.orange {
+    background: radial-gradient(circle at 30% 30%, #ffcc00, #ff8800);
+}
+
+.icon-orb.blue {
+    background: radial-gradient(circle at 30% 30%, #00ccff, #0044cc);
+}
+
+.icon-orb.purple {
+    background: radial-gradient(circle at 30% 30%, #cc33ff, #660099);
+}
+
+.church-name h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+/* Right Panel */
+.login-right {
+    flex: 0.8;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+}
+
+.form-content {
+    width: 100%;
+    max-width: 400px;
+}
+
+.logo-section {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.login-logo {
+    width: 60px;
+    margin-bottom: 1rem;
+}
+
+.logo-section h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 0.5rem;
+}
+
+.logo-section p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: #000;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    padding-right: 3rem;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary);
+    background: #fff;
+}
+
+.input-wrapper i {
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 2rem;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.btn-login:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.error-msg {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-note {
+    margin-top: 4rem;
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1.5rem;
+}
+
+.footer-note p {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+/* Loader Animation */
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .login-left {
+        display: none;
+    }
+
+    .login-right {
+        flex: 1;
+    }
+}
