@@ -363,7 +363,7 @@
     align-items: center;
     gap: 1.25rem;
     flex: 1;
-    justify-content: flex-end;
+
 }
 
 .toggle-filter {
@@ -382,9 +382,9 @@
 .search-box-mini {
     position: relative;
     flex: 1;
-    max-width: 500px;
     display: flex;
     align-items: center;
+    flex-grow: 1;
 }
 
 .search-box-mini input {

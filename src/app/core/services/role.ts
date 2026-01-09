@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
-import { Role, Permission } from '../models/role.model';
+import { Role, RoleRequestDto, PermissionDefinition } from '../models/role.model';
 
 @Injectable({
     providedIn: 'root'
@@ -19,11 +19,11 @@ export class RoleService {
         return this.http.get<Role>(`${this.baseUrl}/${id}`);
     }
 
-    createRole(role: Partial<Role>): Observable<Role> {
+    createRole(role: RoleRequestDto): Observable<Role> {
         return this.http.post<Role>(this.baseUrl, role);
     }
 
-    updateRole(id: string, role: Partial<Role>): Observable<Role> {
+    updateRole(id: string, role: RoleRequestDto): Observable<Role> {
         return this.http.put<Role>(`${this.baseUrl}/${id}`, role);
     }
 
@@ -31,14 +31,14 @@ export class RoleService {
         return this.http.delete<void>(`${this.baseUrl}/${id}`);
     }
 
-    // Permissions provided by the user for precise control
-    getAvailablePermissions(): Observable<Permission[]> {
+    // Static permissions for UI selection
+    getAvailablePermissions(): Observable<PermissionDefinition[]> {
         return of([
             // ROLES
             { id: 'VIEW_ROLE_PANEL', name: 'Ver Panel de Roles', description: 'Acceso a la vista de gestión de roles', category: 'ROLES' },
-            { id: 'CREATE_ROLE', name: 'Crear Rol', description: 'Permite crear nuevos roles de usuario', category: 'ROLES' },
-            { id: 'UPDATE_ROLE', name: 'Actualizar Rol', description: 'Permite editar roles existentes', category: 'ROLES' },
-            { id: 'DELETE_ROLE', name: 'Eliminar Rol', description: 'Permite borrar roles del sistema', category: 'ROLES' },
+            { id: 'CREATE_ROLE', name: 'Crear Role', description: 'Permite crear nuevos roles de usuario', category: 'ROLES' },
+            { id: 'UPDATE_ROLE', name: 'Actualizar Role', description: 'Permite editar roles existentes', category: 'ROLES' },
+            { id: 'DELETE_ROLE', name: 'Eliminar Role', description: 'Permite borrar roles del sistema', category: 'ROLES' },
 
             // MEMBER
             { id: 'VIEW_MEMBER_PANEL', name: 'Ver Panel de Integrantes', description: 'Acceso a la lista de integrantes', category: 'MEMBER' },
@@ -59,7 +59,7 @@ export class RoleService {
             { id: 'DELETE_SERVICE', name: 'Eliminar Servicio', description: 'Permite borrar servicios', category: 'SERVICE' },
 
             // ATTENDANCE
-            { id: 'MANAGE_ATTENDANCE', name: 'Gestionar Asistencia', description: 'Permite tomar y editar asistencias', category: 'ATTENDANCE' },
+            { id: 'MANAGE_ATTENDANCE', name: 'Gestionar Asistencia', description: 'Permite tomar asistencias', category: 'ATTENDANCE' },
 
             // REPORT
             { id: 'MANAGE_REPORT', name: 'Gestionar Reportes', description: 'Acceso total a la generación de reportes', category: 'REPORT' },

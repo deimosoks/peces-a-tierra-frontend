@@ -3,13 +3,13 @@
     </div>
 
     <div class="topbar-right">
-        <div class="user-info">
+        <div class="user-info" *ngIf="authService.currentUser() as user">
             <div class="user-text">
-                <span class="user-name">Daniela Sarmiento</span>
-                <span class="user-role">Pastor</span>
+                <span class="user-name">{{ user.completeName }}</span>
             </div>
             <div class="user-avatar">
-                <img src="https://ui-avatars.com/api/?name=Daniela+Sarmiento&background=3b82f6&color=fff" alt="Avatar">
+                <img [src]="user.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + user.completeName + '&background=3b82f6&color=fff'"
+                    alt="Avatar">
             </div>
         </div>
     </div>

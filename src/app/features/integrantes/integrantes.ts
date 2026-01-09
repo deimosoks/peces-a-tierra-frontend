@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { IntegranteService } from '../../core/services/integrante';
+import { AuthService } from '../../core/services/auth.service';
 import { Integrante } from '../../core/models/integrante.model';
 
 @Component({
@@ -14,6 +15,7 @@ import { Integrante } from '../../core/models/integrante.model';
 export class Integrantes implements OnInit {
   private fb = inject(FormBuilder);
   private integranteService = inject(IntegranteService);
+  private authService = inject(AuthService);
 
   members: Integrante[] = [];
   totalPages = 0;
@@ -38,6 +40,10 @@ export class Integrantes implements OnInit {
   ngOnInit() {
     this.initForm();
     this.loadMembers();
+  }
+
+  can(permission: string): boolean {
+    return this.authService.can(permission);
   }
 
   initForm() {

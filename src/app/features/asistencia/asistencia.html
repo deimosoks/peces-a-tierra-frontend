@@ -1,10 +1,10 @@
-<button class="btn-fixed-services" (click)="openServicesModal()">
+<button class="btn-fixed-services" (click)="openServicesModal()" *ngIf="can('VIEW_SERVICE_PANEL')">
     <i class="fa-solid fa-gear"></i>
     Gestión de Servicios
 </button>
 
 <header class="page-header">
-    <p>Registra la participación de los miembros en los diferentes servicios y actividades de la iglesia.</p>
+    <p>Control y registro de asistencia a servicios y eventos.</p>
 </header>
 
 <div class="asistencia-container">

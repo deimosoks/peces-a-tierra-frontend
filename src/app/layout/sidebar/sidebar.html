@@ -12,11 +12,11 @@
     <nav class="sidebar-nav">
         <div class="nav-section">
             <h3 class="section-title">PRINCIPAL</h3>
-            <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+            <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_DASHBOARD')">
                 <i class="fa-solid fa-gauge"></i>
                 <span>Dashboard</span>
             </a>
-            <a routerLink="/reportes" routerLinkActive="active" class="nav-item">
+            <a routerLink="/reportes" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_REPORT')">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Reportes</span>
             </a>
@@ -24,11 +24,11 @@
 
         <div class="nav-section">
             <h3 class="section-title">GESTIÓN DE INTEGRANTES</h3>
-            <a routerLink="/integrantes" routerLinkActive="active" class="nav-item">
+            <a routerLink="/integrantes" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_MEMBER_PANEL')">
                 <i class="fa-solid fa-users"></i>
                 <span>Integrantes</span>
             </a>
-            <a routerLink="/asistencia" routerLinkActive="active" class="nav-item">
+            <a routerLink="/asistencia" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_ATTENDANCE')">
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>Asistencias</span>
             </a>
@@ -36,11 +36,11 @@
 
         <div class="nav-section">
             <h3 class="section-title">ADMINISTRACIÓN</h3>
-            <a routerLink="/usuarios" routerLinkActive="active" class="nav-item">
+            <a routerLink="/usuarios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_USER_PANEL')">
                 <i class="fa-solid fa-user-gear"></i>
                 <span>Usuarios del sistema</span>
             </a>
-            <a routerLink="/roles" routerLinkActive="active" class="nav-item">
+            <a routerLink="/roles" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_ROLE_PANEL')">
                 <i class="fa-solid fa-id-card-clip"></i>
                 <span>Roles y permisos</span>
             </a>
@@ -48,7 +48,7 @@
     </nav>
 
     <div class="sidebar-footer">
-        <button class="nav-item logout-btn">
+        <button class="nav-item logout-btn" (click)="logout()">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Cerrar Sesión</span>
         </button>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AsistenciaService } from '../../core/services/asistencia';
 import { IntegranteService } from '../../core/services/integrante';
+import { AuthService } from '../../core/services/auth.service';
 import { IglesiaService, AttendanceCreateDto } from '../../core/models/asistencia.model';
 import { Integrante } from '../../core/models/integrante.model';
 
@@ -16,6 +17,7 @@ import { Integrante } from '../../core/models/integrante.model';
 export class Asistencia implements OnInit {
   private asistenciaService = inject(AsistenciaService);
   private integranteService = inject(IntegranteService);
+  private authService = inject(AuthService);
 
   // Filters & State
   attendanceDateTime: string = this.getNowForInput();
@@ -44,6 +46,10 @@ export class Asistencia implements OnInit {
   ngOnInit() {
     this.loadServices();
     this.loadMembers();
+  }
+
+  can(permission: string): boolean {
+    return this.authService.can(permission);
   }
 
   loadServices() {

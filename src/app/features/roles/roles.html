@@ -1,14 +1,9 @@
 <div class="roles-container">
     <header class="page-header">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
-            <div>
-                <p>Configura los niveles de acceso y seguridad de la plataforma.</p>
-            </div>
-            <button class="btn-primary-premium" (click)="openNewModal()">
-                <i class="fa-solid fa-plus"></i>
-                Nuevo Rol
-            </button>
-        </div>
+        <p>Define roles y sus niveles de acceso al sistema.</p>
+        <button class="btn-new-role" (click)="openNewModal()" *ngIf="can('CREATE_ROLE')">
+            <i class="fa-solid fa-shield-cat"></i> Nuevo Rol
+        </button>
     </header>
 
     <div class="roles-grid" *ngIf="!isLoading">
@@ -18,21 +13,22 @@
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div class="role-actions">
-                    <button class="action-btn" (click)="editRole(role)" title="Editar">
+                    <button class="action-btn" (click)="editRole(role)" title="Editar" *ngIf="can('UPDATE_ROLE')">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <button class="action-btn delete" (click)="deleteRole(role)" title="Eliminar">
+                    <button class="action-btn delete" (click)="deleteRole(role)" title="Eliminar"
+                        *ngIf="can('DELETE_ROLE')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
             </div>
             <div class="role-card-body">
                 <h3>{{ role.name }}</h3>
-                <p>{{ role.description }}</p>
+                <p>{{ role.description || 'Sin descripción' }}</p>
                 <div class="role-meta">
                     <span class="member-count">
                         <i class="fa-solid fa-user-group"></i>
-                        {{ role.memberCount }} usuarios
+                        {{ role.totalUsers }} usuarios
                     </span>
                     <span class="perms-count">
                         <i class="fa-solid fa-key"></i>
@@ -42,11 +38,12 @@
             </div>
             <div class="role-card-footer">
                 <div class="perms-preview">
-                    <span *ngFor="let pId of role.permissions.slice(0, 3)" class="perm-tag">
-                        {{ pId.split('_').pop() | lowercase }}
+                    <span *ngFor="let p of role.permissions.slice(0, 3)" class="perm-tag">
+                        {{ p.name.split('_').pop() | lowercase }}
                     </span>
-                    <span *ngIf="role.permissions.length > 3" class="perm-more">+{{ role.permissions.length - 3
-                        }}</span>
+                    <span *ngIf="role.permissions.length > 3" class="perm-more">
+                        +{{ role.permissions.length - 3 }}
+                    </span>
                 </div>
             </div>
         </div>
@@ -72,15 +69,15 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Nombre del Rol</label>
-                        <input type="text" [(ngModel)]="currentRole.name" placeholder="Ej: Administrador">
+                        <input type="text" [(ngModel)]="currentRoleName" placeholder="Ej: Administrador">
                     </div>
                     <div class="form-group">
                         <label>Color Identificador</label>
-                        <input type="color" [(ngModel)]="currentRole.color">
+                        <input type="color" [(ngModel)]="currentRoleColor">
                     </div>
                     <div class="form-group full">
                         <label>Descripción</label>
-                        <textarea [(ngModel)]="currentRole.description" rows="2"
+                        <textarea [(ngModel)]="currentRoleDesc" rows="2"
                             placeholder="Describa brevemente las responsabilidades de este rol"></textarea>
                     </div>
                 </div>
@@ -92,9 +89,10 @@
                     <div class="perm-category" *ngFor="let group of groupedPermissions">
                         <h3>{{ group.category }}</h3>
                         <div class="perm-item" *ngFor="let perm of group.permissions"
-                            [class.active]="hasPermission(perm.id)" (click)="togglePermission(perm.id)">
+                            [class.active]="isPermissionSelected(perm.id)" (click)="togglePermission(perm.id)">
+                            <!-- Mapping by ID -->
                             <div class="perm-checkbox">
-                                <i class="fa-solid fa-check" *ngIf="hasPermission(perm.id)"></i>
+                                <i class="fa-solid fa-check" *ngIf="isPermissionSelected(perm.id)"></i>
                             </div>
                             <div class="perm-info">
                                 <span class="perm-name">{{ perm.name }}</span>
@@ -104,10 +102,14 @@
                     </div>
                 </div>
             </div>
+
+            <div class="error-msg" *ngIf="errorMessage" style="margin-top: 1rem; color: #ef4444;">
+                {{ errorMessage }}
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
-            <button class="btn-primary-premium" (click)="saveRole()" [disabled]="!currentRole.name">
+            <button class="btn-primary-premium" (click)="saveRole()" [disabled]="!currentRoleName">
                 {{ isEditing ? 'Actualizar Rol' : 'Guardar Rol' }}
             </button>
         </div>

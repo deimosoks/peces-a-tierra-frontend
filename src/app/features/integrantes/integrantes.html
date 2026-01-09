@@ -21,7 +21,7 @@
                         placeholder="Buscar integrantes...">
                 </div>
 
-                <button class="btn btn-primary btn-sm btn-new" (click)="openFormModal()">
+                <button class="btn btn-primary btn-sm btn-new" (click)="openFormModal()" *ngIf="can('CREATE_MEMBER')">
                     <i class="fa-solid fa-user-plus"></i>
                     Nuevo
                 </button>
@@ -53,17 +53,18 @@
                         <td>{{ member.type }}</td>
                         <td>
                             <label class="switch-sm">
-                                <input type="checkbox" [checked]="member.active" (change)="toggleMemberStatus(member)">
+                                <input type="checkbox" [checked]="member.active" (change)="toggleMemberStatus(member)"
+                                    [disabled]="!can('UPDATE_MEMBER')">
                                 <span class="slider round"></span>
                             </label>
                         </td>
                         <td class="actions-mini">
                             <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver"><i
                                     class="fa-solid fa-eye"></i></button>
-                            <button class="action-btn-sm edit" (click)="editIntegrante(member)" title="Editar"><i
-                                    class="fa-solid fa-pencil"></i></button>
-                            <button class="action-btn-sm delete" (click)="deleteIntegrante(member.id)"
-                                title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                            <button class="action-btn-sm edit" (click)="editIntegrante(member)" title="Editar"
+                                *ngIf="can('UPDATE_MEMBER')"><i class="fa-solid fa-pencil"></i></button>
+                            <button class="action-btn-sm delete" (click)="deleteIntegrante(member.id)" title="Eliminar"
+                                *ngIf="can('DELETE_MEMBER')"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 </tbody>

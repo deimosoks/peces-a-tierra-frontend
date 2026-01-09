@@ -2,7 +2,8 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoleService } from '../../core/services/role';
-import { Role, Permission } from '../../core/models/role.model';
+import { AuthService } from '../../core/services/auth.service';
+import { Role, PermissionDefinition, RoleRequestDto } from '../../core/models/role.model';
 
 @Component({
     selector: 'app-roles',
@@ -13,69 +14,56 @@ import { Role, Permission } from '../../core/models/role.model';
 })
 export class Roles implements OnInit {
     private roleService = inject(RoleService);
+    private authService = inject(AuthService);
     private cdr = inject(ChangeDetectorRef);
 
+    // Data
     roles: Role[] = [];
-    availablePermissions: Permission[] = [];
-    groupedPermissions: { category: string, permissions: Permission[] }[] = [];
+    availablePermissions: PermissionDefinition[] = [];
+    groupedPermissions: { category: string, permissions: PermissionDefinition[] }[] = [];
 
+    // UI state
     isLoading = true;
     showModal = false;
     isEditing = false;
+    errorMessage = '';
 
-    // Form State
-    currentRole: Partial<Role> = {
-        name: '',
-        description: '',
-        permissions: [],
-        color: '#3b82f6'
-    };
+    // Form State (using DTO structure mostly for logic, but UI binds to a partial object)
+    currentRoleName = '';
+    currentRoleDesc = '';
+    currentRoleColor = '#3b82f6';
+    currentRolePermissions: Set<string> = new Set();
+    editingRoleId: string | null = null;
 
     ngOnInit() {
-        this.loadData();
+        this.loadPermissions();
     }
 
-    loadData() {
-        this.isLoading = true;
-        this.roleService.getRoles().subscribe({
-            next: (roles) => {
-                this.roles = roles;
-                this.loadPermissions();
-            },
-            error: () => {
-                // Fallback for demo/dev if API fails
-                this.roles = [
-                    {
-                        id: '1', name: 'Administrador', description: 'Acceso total al sistema', permissions: [
-                            'VIEW_ROLE_PANEL', 'CREATE_ROLE', 'UPDATE_ROLE', 'DELETE_ROLE',
-                            'VIEW_MEMBER_PANEL', 'CREATE_MEMBER', 'UPDATE_MEMBER', 'DELETE_MEMBER',
-                            'VIEW_USER_PANEL', 'CREATE_USER', 'UPDATE_USER', 'DELETE_USER',
-                            'VIEW_SERVICE_PANEL', 'CREATE_SERVICE', 'UPDATE_SERVICE', 'DELETE_SERVICE',
-                            'MANAGE_ATTENDANCE', 'MANAGE_REPORT', 'MANAGE_DASHBOARD'
-                        ], memberCount: 3, color: '#ef4444'
-                    },
-                    {
-                        id: '2', name: 'Pastor', description: 'Visualización de reportes y gestión básica', permissions: [
-                            'VIEW_DASHBOARD', 'VIEW_MEMBER_PANEL', 'MANAGE_REPORT', 'MANAGE_DASHBOARD'
-                        ], memberCount: 1, color: '#8b5cf6'
-                    },
-                    {
-                        id: '3', name: 'Secretaría', description: 'Registro de integrantes y asistencia', permissions: [
-                            'VIEW_MEMBER_PANEL', 'CREATE_MEMBER', 'UPDATE_MEMBER', 'MANAGE_ATTENDANCE'
-                        ], memberCount: 5, color: '#10b981'
-                    }
-                ];
-                this.loadPermissions();
-            }
-        });
+    can(permission: string): boolean {
+        return this.authService.can(permission);
     }
 
     loadPermissions() {
         this.roleService.getAvailablePermissions().subscribe(permissions => {
             this.availablePermissions = permissions;
             this.groupPermissions();
-            this.isLoading = false;
-            this.cdr.detectChanges();
+            // Load roles after permissions to map them correctly if needed
+            this.loadRoles();
+        });
+    }
+
+    loadRoles() {
+        this.isLoading = true;
+        this.roleService.getRoles().subscribe({
+            next: (roles) => {
+                this.roles = roles;
+                this.isLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error('Error loading roles', err);
+                this.isLoading = false;
+            }
         });
     }
 
@@ -89,18 +77,28 @@ export class Roles implements OnInit {
 
     openNewModal() {
         this.isEditing = false;
-        this.currentRole = {
-            name: '',
-            description: '',
-            permissions: [],
-            color: '#3b82f6'
-        };
+        this.editingRoleId = null;
+        this.currentRoleName = '';
+        this.currentRoleDesc = '';
+        this.currentRoleColor = '#3b82f6';
+        this.currentRolePermissions.clear();
+        this.errorMessage = '';
         this.showModal = true;
     }
 
     editRole(role: Role) {
         this.isEditing = true;
-        this.currentRole = { ...role, permissions: [...role.permissions] };
+        this.editingRoleId = role.id;
+        this.currentRoleName = role.name;
+        this.currentRoleDesc = role.description;
+        this.currentRoleColor = role.color;
+
+        this.currentRolePermissions.clear();
+        if (role.permissions) {
+            role.permissions.forEach(p => this.currentRolePermissions.add(p.name));
+        }
+
+        this.errorMessage = '';
         this.showModal = true;
     }
 
@@ -108,41 +106,47 @@ export class Roles implements OnInit {
         this.showModal = false;
     }
 
-    togglePermission(permId: string) {
-        const perms = this.currentRole.permissions || [];
-        if (perms.includes(permId)) {
-            this.currentRole.permissions = perms.filter(id => id !== permId);
+    togglePermission(permName: string) {
+        if (this.currentRolePermissions.has(permName)) {
+            this.currentRolePermissions.delete(permName);
         } else {
-            this.currentRole.permissions = [...perms, permId];
+            this.currentRolePermissions.add(permName);
         }
     }
 
-    hasPermission(permId: string): boolean {
-        return this.currentRole.permissions?.includes(permId) || false;
+    isPermissionSelected(permName: string): boolean {
+        return this.currentRolePermissions.has(permName);
     }
 
     saveRole() {
-        if (!this.currentRole.name) return;
+        if (!this.currentRoleName.trim()) {
+            this.errorMessage = 'El nombre del rol es obligatorio';
+            return;
+        }
 
-        const obs = this.isEditing && this.currentRole.id
-            ? this.roleService.updateRole(this.currentRole.id, this.currentRole)
-            : this.roleService.createRole(this.currentRole);
+        const payload: RoleRequestDto = {
+            name: this.currentRoleName,
+            description: this.currentRoleDesc,
+            color: this.currentRoleColor,
+            permissions: Array.from(this.currentRolePermissions).map(p => ({ namename: p, name: p }))
+            // Wait, backend expects Set<PermissionRequestDto> where DTO has 'name'.
+        };
+
+        // Correction: Map string array to object array
+        payload.permissions = Array.from(this.currentRolePermissions).map(pName => ({ name: pName }));
+
+        const obs = this.isEditing && this.editingRoleId
+            ? this.roleService.updateRole(this.editingRoleId, payload)
+            : this.roleService.createRole(payload);
 
         obs.subscribe({
             next: () => {
-                this.loadData();
+                this.loadRoles();
                 this.closeModal();
             },
-            error: () => {
-                // Local update for demo/dev
-                if (this.isEditing) {
-                    const idx = this.roles.findIndex(r => r.id === this.currentRole.id);
-                    if (idx !== -1) this.roles[idx] = { ...this.roles[idx], ...this.currentRole as Role };
-                } else {
-                    this.roles.push({ ...this.currentRole as Role, id: Math.random().toString(36).substr(2, 9), memberCount: 0 });
-                }
-                this.closeModal();
-                this.cdr.detectChanges();
+            error: (err) => {
+                console.error('Error saving role', err);
+                this.errorMessage = 'Ocurrió un error al guardar el rol.';
             }
         });
     }
@@ -150,11 +154,8 @@ export class Roles implements OnInit {
     deleteRole(role: Role) {
         if (confirm(`¿Estás seguro de eliminar el rol "${role.name}"?`)) {
             this.roleService.deleteRole(role.id).subscribe({
-                next: () => this.loadData(),
-                error: () => {
-                    this.roles = this.roles.filter(r => r.id !== role.id);
-                    this.cdr.detectChanges();
-                }
+                next: () => this.loadRoles(),
+                error: (err) => console.error('Error deleting role', err)
             });
         }
     }

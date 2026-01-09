@@ -1,0 +1,40 @@
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding-top: var(--header-height);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.page-container {
+    flex: 1;
+    padding: 1.25rem 1.5rem;
+    /* Slightly reduced padding */
+    background-color: var(--bg-main);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Allow flex item to shrink */
+}
+
+/* Custom Scrollbar for the main content */
+.page-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.page-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.page-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid var(--bg-main);
+}
+
+.page-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

@@ -1,37 +1,35 @@
 <div class="user-panel-container">
-    <header class="page-header">
-        <p>Administra los accesos y credenciales de los usuarios de la plataforma.</p>
-    </header>
-    <!-- Stats Row -->
-    <div class="stats-row">
-        <div class="stat-card">
-            <div class="stat-icon users">
+    <!-- Combined Header & Stats Row -->
+    <div class="header-actions-row">
+        <header class="page-header simple">
+            <p>Administra los accesos y credenciales de los usuarios de la plataforma.</p>
+        </header>
+
+        <div class="stats-mini-group">
+            <div class="stat-pill">
                 <i class="fa-solid fa-users"></i>
+                <div class="pill-info">
+                    <span class="value">{{ totalUsers }}</span>
+                    <span class="label">Totales</span>
+                </div>
             </div>
-            <div class="stat-info">
-                <span class="stat-value">{{ totalUsers }}</span>
-                <span class="stat-label">Total de Usuarios</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon active">
+            <div class="stat-pill active">
                 <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <div class="stat-info">
-                <span class="stat-value">{{ activeUsers }}</span>
-                <span class="stat-label">Usuarios Activos</span>
+                <div class="pill-info">
+                    <span class="value">{{ activeUsers }}</span>
+                    <span class="label">Activos</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Search Bar -->
-    <div class="search-container">
+    <!-- Search & Main Actions -->
+    <div class="toolbar-container">
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
-                placeholder="Buscar por usuario o nombre real...">
+            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Buscar por usuario...">
         </div>
-        <button class="btn-new-user" (click)="openNewModal()">
+        <button class="btn-new-user" (click)="openNewModal()" *ngIf="can('CREATE_USER')">
             <i class="fa-solid fa-user-plus"></i>
             <span>Nuevo Usuario</span>
         </button>
@@ -45,7 +43,7 @@
                     <tr>
                         <th>USUARIO DEL SISTEMA</th>
                         <th>PERSONA ENLAZADA</th>
-                        <th>ROL DEL SISTEMA</th>
+                        <th>ROLES</th>
                         <th>ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
@@ -55,55 +53,64 @@
                         <td>
                             <div class="user-identity">
                                 <div class="avatar">
-                                    <img src="assets/img/default-avatar.png" alt="Avatar">
+                                    <img [src]="user.memberResponseDto.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + user.memberResponseDto.completeName + '&background=random'"
+                                        alt="Avatar">
                                 </div>
                                 <span class="username">{{ user.username }}</span>
                             </div>
                         </td>
                         <td>
-                            <span class="member-name">{{ user.memberName }}</span>
+                            <span class="member-name">{{ user.memberResponseDto.completeName }}</span>
                         </td>
                         <td>
                             <div class="roles-badges">
-                                <span *ngFor="let role of user.rolesNames" class="role-badge">
-                                    {{ role }}
+                                <span *ngFor="let role of user.roles" class="role-badge" [title]="role.name"
+                                    [style.background-color]="role.color ? role.color + '20' : ''"
+                                    [style.color]="role.color || ''">
+                                    {{ role.name }}
                                 </span>
                             </div>
                         </td>
                         <td>
                             <label class="status-switch">
-                                <input type="checkbox" [checked]="user.active" (change)="toggleStatus(user)">
+                                <input type="checkbox" [checked]="user.active"
+                                    [disabled]="toggleProcessing.has(user.id) || !can('UPDATE_USER')"
+                                    (change)="toggleStatus(user)">
                                 <span class="slider round"></span>
                             </label>
                         </td>
                         <td>
                             <div class="actions">
-                                <button class="action-btn edit" (click)="editUser(user)" title="Editar">
+                                <button class="action-btn view" (click)="viewDetails(user)" title="Ver Detalles">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="action-btn edit" (click)="editUser(user)" title="Editar"
+                                    *ngIf="can('UPDATE_USER')">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
-                                <button class="action-btn delete" (click)="deleteUser(user)" title="Eliminar">
+                                <button class="action-btn delete" (click)="deleteUser(user)" title="Eliminar"
+                                    *ngIf="can('DELETE_USER')">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
+                    </tr>
+                    <tr *ngIf="users.length === 0">
+                        <td colspan="5" class="text-center p-4 text-muted">No se encontraron usuarios.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
-        <div class="pagination-footer" *ngIf="!isLoading">
-            <span class="results-info">Mostrando {{ users.length }} de {{ totalUsers }} resultados</span>
+        <div class="pagination-footer" *ngIf="!isLoading && totalPages > 1">
+            <span class="results-info">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
             <div class="pagination-controls">
-                <button class="page-btn" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">
+                <button class="page-btn" [disabled]="currentPage === 0" (click)="prevPage()">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <button *ngFor="let p of [].constructor(totalPages); let i = index" class="page-btn"
-                    [class.active]="i === currentPage" (click)="changePage(i)">
-                    {{ i + 1 }}
-                </button>
-                <button class="page-btn" [disabled]="currentPage === totalPages - 1"
-                    (click)="changePage(currentPage + 1)">
+                <span class="page-number">{{ currentPage + 1 }}</span>
+                <button class="page-btn" [disabled]="currentPage === totalPages - 1" (click)="nextPage()">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -126,33 +133,165 @@
         </div>
         <div class="modal-body">
             <div class="form-grid">
-                <div class="form-group">
-                    <label>Usuario (Username)</label>
-                    <input type="text" [(ngModel)]="currentUser.username" placeholder="Nombre de usuario">
+                <!-- Member Selection -->
+                <div class="form-group full-width">
+                    <label>Persona Relacionada *</label>
+
+                    <div class="selected-member-card" *ngIf="selectedMember">
+                        <img [src]="selectedMember.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + selectedMember.completeName + '&background=random'"
+                            alt="">
+                        <div class="member-info">
+                            <strong>{{ selectedMember.completeName }}</strong>
+                            <span>{{ selectedMember.category }} • {{ selectedMember.type }}</span>
+                        </div>
+                        <button class="btn-icon-remove" (click)="clearSelectedMember()" title="Cambiar Persona">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="member-search-wrapper" *ngIf="!selectedMember">
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" [(ngModel)]="memberSearchQuery" (input)="onMemberSearch()"
+                                placeholder="Buscar integrante por nombre..." class="form-control">
+                            <div class="spinner-mini" *ngIf="isSearchingMembers"></div>
+                        </div>
+
+                        <div class="search-results-list" *ngIf="availableMembers.length > 0">
+                            <div class="result-item" *ngFor="let m of availableMembers" (click)="selectMember(m)">
+                                <div class="result-avatar">
+                                    <img [src]="m.pictureProfileUrl || 'https://ui-avatars.com/api/?name=?'" alt="">
+                                </div>
+                                <div class="result-text">
+                                    <div class="name">{{ m.completeName }}</div>
+                                    <div class="meta">{{ m.category }} - {{ m.cc || 'Sin CC' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="no-results"
+                            *ngIf="memberSearchQuery && availableMembers.length === 0 && !isSearchingMembers">
+                            No se encontraron integrantes activos con ese nombre.
+                        </div>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" [(ngModel)]="currentUser.password" placeholder="••••••••">
+                    <label>Nombre de Usuario *</label>
+                    <input type="text" [(ngModel)]="currentUser.username" placeholder="Ej: jperez" class="form-control">
                 </div>
+
                 <div class="form-group">
-                    <label>Persona Relacionada (ID)</label>
-                    <select [(ngModel)]="currentUser.memberId">
-                        <option value="">Seleccione un integrante...</option>
-                        <!-- For now empty as requested -->
-                        <option *ngFor="let m of members" [value]="m.id">{{ m.completeName }}</option>
-                    </select>
+                    <label>Contraseña {{ isEditing ? '(Opcional)' : '*' }}</label>
+                    <input type="password" [(ngModel)]="currentUser.password" placeholder="••••••••"
+                        class="form-control">
                 </div>
-                <div class="form-group">
-                    <label>Roles del Sistema</label>
-                    <select multiple [(ngModel)]="currentUser.rolesId">
-                        <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
-                    </select>
+
+                <div class="form-group full-width">
+                    <label>Roles del Sistema *</label>
+                    <div class="multi-select-container">
+                        <div class="multi-select-display select-box" (click)="toggleRoleDropdown()"
+                            [class.active]="showRoleDropdown">
+                            <div class="placeholder" *ngIf="currentUser.rolesId.length === 0">Seleccionar roles...</div>
+                            <div class="selected-tags">
+                                <span *ngFor="let roleId of currentUser.rolesId" class="selected-tag"
+                                    [style.background-color]="getRoleColor(roleId) + '20'"
+                                    [style.color]="getRoleColor(roleId)" [style.border-color]="getRoleColor(roleId)">
+                                    {{ getRoleName(roleId) }}
+                                    <i class="fa-solid fa-times" (click)="removeRole(roleId, $event)"></i>
+                                </span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                        </div>
+
+                        <div class="dropdown-overlay" *ngIf="showRoleDropdown" (click)="showRoleDropdown = false"></div>
+
+                        <div class="multi-select-dropdown" *ngIf="showRoleDropdown">
+                            <div class="dropdown-item" *ngFor="let role of roles" (click)="toggleRole(role.id)">
+                                <div class="checkbox-custom" [class.checked]="isRoleSelected(role.id)"
+                                    [style.background-color]="isRoleSelected(role.id) ? role.color : ''"
+                                    [style.border-color]="isRoleSelected(role.id) ? role.color : ''">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <div class="role-item-info">
+                                    <span class="role-name-item" [style.color]="role.color">{{ role.name }}</span>
+                                    <span class="role-desc-item" *ngIf="role.description">{{ role.description }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="error-msg" *ngIf="errorMessage">
+                <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
-            <button class="btn-save" (click)="saveUser()">Guardar Usuario</button>
+            <button class="btn-save" (click)="onSubmit()">
+                {{ isEditing ? 'Actualizar' : 'Crear Usuario' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal && selectedUser" (click)="closeDetailsModal()">
+    <div class="modal-content details-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Detalles del Usuario</h2>
+            <button class="close-btn" (click)="closeDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="user-profile-header">
+                <div class="large-avatar">
+                    <img [src]="selectedUser.memberResponseDto.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + selectedUser.memberResponseDto.completeName + '&size=120'"
+                        alt="">
+                </div>
+                <div class="user-main-info">
+                    <h3>{{ selectedUser.username }}</h3>
+                    <span class="member-badge">{{ selectedUser.memberResponseDto.completeName }}</span>
+                    <div class="status-badge" [class.active]="selectedUser.active">
+                        {{ selectedUser.active ? 'Activo' : 'Inactivo' }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-section full-width">
+                    <h4>Roles Asignados</h4>
+                    <div class="roles-list">
+                        <span *ngFor="let role of selectedUser.roles" class="role-tag" [style.border-color]="role.color"
+                            [title]="'Otorgado por: ' + (role.givenById || 'Sistema') + ' (Click para copiar)'"
+                            (click)="copyText(role.givenById)" style="cursor: pointer;">
+                            {{ role.name }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>Información de Membresía</h4>
+                    <div class="info-row">
+                        <label>Categoría:</label> <span>{{ selectedUser.memberResponseDto.category }}</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Tipo:</label> <span>{{ selectedUser.memberResponseDto.type }}</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Cédula:</label> <span>{{ selectedUser.memberResponseDto.cc || 'N/A' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>Auditoría</h4>
+                    <div class="info-row">
+                        <label>Creado:</label> <span>{{ selectedUser.createdAt | date:'medium' }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="selectedUser.updateAt">
+                        <label>Actualizado:</label> <span>{{ selectedUser.updateAt | date:'medium' }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

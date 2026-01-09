@@ -1,11 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AuthService } from '../../core/services/auth.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-topbar',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './topbar.html',
-  styleUrl: './topbar.css',
+  styleUrls: ['./topbar.css'],
 })
 export class Topbar {
-
+  authService = inject(AuthService);
 }

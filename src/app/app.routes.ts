@@ -8,13 +8,26 @@ import { Roles } from './features/roles/roles';
 import { Login } from './features/login/login';
 import { Usuarios } from './features/usuarios/usuarios';
 
+import { authGuard } from './core/guards/auth.guard';
+import { permissionRedirectGuard } from './core/guards/permission-redirect.guard';
+import { permissionGuard } from './core/guards/permission.guard';
+import { MainLayout } from './layout/main-layout/main-layout';
+
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
     { path: 'login', component: Login },
-    { path: 'dashboard', component: Dashboard },
-    { path: 'integrantes', component: Integrantes },
-    { path: 'asistencia', component: Asistencia },
-    { path: 'reportes', component: Reportes },
-    { path: 'roles', component: Roles },
-    { path: 'usuarios', component: Usuarios },
+    {
+        path: '',
+        component: MainLayout,
+        canActivate: [authGuard],
+        children: [
+            { path: 'dashboard', component: Dashboard, canActivate: [permissionGuard], data: { permission: 'MANAGE_DASHBOARD' } },
+            { path: 'integrantes', component: Integrantes, canActivate: [permissionGuard], data: { permission: 'VIEW_MEMBER_PANEL' } },
+            { path: 'asistencia', component: Asistencia, canActivate: [permissionGuard], data: { permission: 'MANAGE_ATTENDANCE' } },
+            { path: 'reportes', component: Reportes, canActivate: [permissionGuard], data: { permission: 'MANAGE_REPORT' } },
+            { path: 'roles', component: Roles, canActivate: [permissionGuard], data: { permission: 'VIEW_ROLE_PANEL' } },
+            { path: 'usuarios', component: Usuarios, canActivate: [permissionGuard], data: { permission: 'VIEW_USER_PANEL' } },
+        ]
+    },
+    { path: '**', canActivate: [permissionRedirectGuard], component: MainLayout } // Component doesn't matter, guard redirects
 ];

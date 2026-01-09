@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
     selector: 'app-login',
@@ -11,6 +12,9 @@ import { Router } from '@angular/router';
     styleUrls: ['./login.css']
 })
 export class Login {
+    private authService = inject(AuthService);
+    private router = inject(Router);
+
     loginData = {
         email: '',
         password: ''
@@ -19,8 +23,6 @@ export class Login {
     showPassword = false;
     isLoading = false;
     errorMessage = '';
-
-    constructor(private router: Router) { }
 
     togglePassword() {
         this.showPassword = !this.showPassword;
@@ -35,16 +37,23 @@ export class Login {
         this.isLoading = true;
         this.errorMessage = '';
 
-        // Mock authentication for now
-        setTimeout(() => {
-            this.isLoading = false;
-            // In a real app, we would validate with a service here
-            if (this.loginData.email === 'usuario@icctba.com' && this.loginData.password === '123456') {
-                localStorage.setItem('isLoggedIn', 'true');
+        this.authService.login({
+            username: this.loginData.email,
+            password: this.loginData.password
+        }).subscribe({
+            next: () => {
                 this.router.navigate(['/dashboard']);
-            } else {
-                this.errorMessage = 'Credenciales inválidas. Intente de nuevo.';
+                this.isLoading = false;
+            },
+            error: (err) => {
+                console.error('Login failed', err);
+                this.isLoading = false;
+                if (err.status === 401 || err.status === 403) {
+                    this.errorMessage = 'Credenciales inválidas. Intente de nuevo.';
+                } else {
+                    this.errorMessage = 'Ocurrió un error al iniciar sesión. Inténtelo más tarde.';
+                }
             }
-        }, 1500);
+        });
     }
 }
