@@ -59,7 +59,8 @@ export class RoleService {
             { id: 'DELETE_SERVICE', name: 'Eliminar Servicio', description: 'Permite borrar servicios', category: 'SERVICE' },
 
             // ATTENDANCE
-            { id: 'MANAGE_ATTENDANCE', name: 'Gestionar Asistencia', description: 'Permite tomar asistencias', category: 'ATTENDANCE' },
+            { id: 'REGISTER_ATTENDANCE', name: 'Pasar Asistencia', description: 'Permite registrar la asistencia de los integrantes', category: 'ATTENDANCE' },
+            { id: 'MANAGE_ATTENDANCE', name: 'Administrar Asistencias', description: 'Permite ver, filtrar e invalidar registros de asistencia', category: 'ATTENDANCE' },
 
             // REPORT
             { id: 'MANAGE_REPORT', name: 'Gestionar Reportes', description: 'Acceso total a la generación de reportes', category: 'REPORT' },

@@ -1,0 +1,258 @@
+<header class="page-header">
+    <p>Visualiza y gestiona el historial de asistencias registradas.</p>
+</header>
+
+<div class="asistencia-container">
+    <div class="card premium-card">
+        <!-- Filters -->
+        <div class="asistencia-header-actions">
+            <button class="btn btn-primary btn-filter-trigger" (click)="openFilterModal()">
+                <i class="fa-solid fa-filter"></i>
+                Filtros Avanzados
+            </button>
+            <div class="active-filters-chips"
+                *ngIf="selectedMemberName || filters.serviceId || filters.startDate || filters.endDate">
+                <span class="filter-chip" *ngIf="selectedMemberName">
+                    {{ selectedMemberName }}
+                    <button (click)="clearMemberFilter()">&times;</button>
+                </span>
+                <!-- Could add more chips here for other filters if desired -->
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>INTEGRANTE</th>
+                        <th>SERVICIO</th>
+                        <th>INICIO DE SERVICIO</th>
+                        <th>HORA DE LLEGADA</th>
+                        <th class="text-center">ESTADO</th>
+                        <th class="text-center">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let att of attendances" [class.invalid-row]="att.invalid">
+                        <td>
+                            <div class="user-info-cell">
+                                <span class="user-fullname">{{ att.memberCompleteName }}</span>
+                            </div>
+                        </td>
+                        <td>{{ att.serviceName }}</td>
+                        <td>{{ att.id.serviceDate | date:'short' }}</td>
+                        <td>{{ att.attendanceDate | date:'shortTime' }}</td>
+                        <td class="text-center">
+                            <span class="status-indicator" [class.invalid]="att.invalid">
+                                {{ att.invalid ? 'Invalida' : 'Válida' }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="actions-mini justify-center">
+                                <button class="action-btn-sm view" (click)='viewDetails(att)' title="Ver detalles">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="action-btn-sm delete" (click)="openInvalidateModal(att)"
+                                    *ngIf="!att.invalid && can('MANAGE_ATTENDANCE')" title="Invalidar">
+                                    <i class="fa-solid fa-ban"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="attendances.length === 0 && !isLoading">
+                        <td colspan="6" class="empty-state">No se encontraron asistencias</td>
+                    </tr>
+                    <tr *ngIf="isLoading">
+                        <td colspan="6" class="loading-state">
+                            <div class="spinner"></div>
+                            Cargando asistencias...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="asistencia-footer">
+            <div class="pagination-mini">
+                <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
+                <div class="pagination-buttons">
+                    <button class="btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Detalles de Asistencia</h2>
+            <button class="close-btn" (click)="closeDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body" *ngIf="attendanceDetails">
+            <div class="details-grid">
+                <div class="detail-item full">
+                    <label>Integrante:</label>
+                    <span class="highlight">{{ attendanceDetails.memberCompleteName }}</span>
+                </div>
+                <div class="detail-item full">
+                    <label>Servicio:</label>
+                    <span>{{ attendanceDetails.serviceName }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Categoría:</label>
+                    <span class="badge" [ngClass]="getBadgeClass(attendanceDetails.memberCategory)">{{
+                        attendanceDetails.memberCategory }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tipo:</label>
+                    <span>{{ attendanceDetails.memberType }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Fecha del Servicio:</label>
+                    <span>{{ attendanceDetails.id.serviceDate | date:'medium' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Hora de Llegada:</label>
+                    <span>{{ attendanceDetails.attendanceDate | date:'medium' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Registrado por:</label>
+                    <span>{{ attendanceDetails.registeredBy }}</span>
+                </div>
+                <div class="detail-item full" *ngIf="attendanceDetails.note">
+                    <label>Nota:</label>
+                    <p class="note-box">{{ attendanceDetails.note }}</p>
+                </div>
+
+                <div class="invalid-details full" *ngIf="attendanceDetails.invalid">
+                    <h3 class="text-danger"><i class="fa-solid fa-circle-exclamation"></i> Información de Invalidación
+                    </h3>
+                    <div class="detail-item">
+                        <label>Motivo:</label>
+                        <p class="reason-box">{{ attendanceDetails.invalidReason }}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Invalidado en:</label>
+                        <span>{{ attendanceDetails.invalidAt | date:'medium' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Invalidado por (ID):</label>
+                        <span>{{ attendanceDetails.invalidatorId }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Invalidate Reason Modal -->
+<div class="modal-overlay" *ngIf="showInvalidateModal" (click)="closeInvalidateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Invalidar Asistencia</h2>
+            <button class="close-btn" (click)="closeInvalidateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>¿Estás seguro de que deseas invalidar la asistencia de <strong>{{ selectedAttendance?.memberCompleteName
+                    }}</strong>?</p>
+            <div class="form-group-centered" style="margin-top: 1.5rem;">
+                <label>Motivo de la invalidación:</label>
+                <textarea [(ngModel)]="invalidReason" class="premium-input no-icon" rows="4"
+                    placeholder="Escribe el motivo aquí..." style="resize: vertical;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeInvalidateModal()">Cancelar</button>
+            <button class="btn btn-danger" (click)="confirmInvalidate()"
+                [disabled]="isInvalidating || !invalidReason.trim()">
+                {{ isInvalidating ? 'Invalidando...' : 'Confirmar Invalidación' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal-overlay" *ngIf="showFilterModal" (click)="closeFilterModal()">
+    <div class="modal-content filter-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-filter"></i> Filtros de Búsqueda</h2>
+            <button class="close-btn" (click)="closeFilterModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="filter-form-layout">
+                <!-- Member Search -->
+                <div class="input-with-label member-filter-relative">
+                    <label>Integrante</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" [(ngModel)]="memberSearchQuery" (input)="onMemberSearchInput()"
+                            [placeholder]="selectedMemberName || 'Buscar integrante...'" class="premium-input"
+                            (focus)="showMemberResults = memberSearchResults.length > 0">
+                        <button *ngIf="filters.memberId" class="clear-selection-btn" (click)="clearMemberFilter()">
+                            &times;
+                        </button>
+                    </div>
+
+                    <!-- Search Results Dropdown -->
+                    <div class="search-results-dropdown" *ngIf="showMemberResults">
+                        <div class="search-result-item" *ngFor="let m of memberSearchResults" (click)="selectMember(m)">
+                            <img [src]="m.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + m.completeName"
+                                class="avatar-sm">
+                            <div class="result-info">
+                                <strong>{{ m.completeName }}</strong>
+                                <span>{{ m.cc }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Selector -->
+                <div class="input-with-label">
+                    <label>Servicio</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-church"></i>
+                        <select [(ngModel)]="filters.serviceId" class="premium-input">
+                            <option value="">Todos los servicios</option>
+                            <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date Range -->
+                <div class="date-range-grid">
+                    <div class="input-with-label">
+                        <label>Fecha Inicio</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-calendar"></i>
+                            <input type="datetime-local" [(ngModel)]="filters.startDate" class="premium-input">
+                        </div>
+                    </div>
+
+                    <div class="input-with-label">
+                        <label>Fecha Fin</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-calendar"></i>
+                            <input type="datetime-local" [(ngModel)]="filters.endDate" class="premium-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeFilterModal()">Cancelar</button>
+            <button class="btn btn-primary" (click)="onSearch()" [disabled]="isLoading">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Aplicar Filtros
+            </button>
+        </div>
+    </div>
+</div>

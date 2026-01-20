@@ -1,12 +1,15 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IntegranteService } from '../../core/services/integrante';
 import { AsistenciaService } from '../../core/services/asistencia';
 import { ReporteService } from '../../core/services/reporte';
 import { ReportFilters, ReportData } from '../../core/models/reporte.model';
 import { IglesiaService } from '../../core/models/asistencia.model';
-import { NgApexchartsModule } from 'ng-apexcharts';
+import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
+import { ReportService, ReportColumn } from '../../core/services/report.service';
+import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { NotificationService } from '../../core/services/notification.service';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -16,10 +19,8 @@ import {
   ApexStroke,
   ApexGrid,
   ApexTooltip,
-  ApexPlotOptions,
-  ChartComponent
+  ApexPlotOptions
 } from "ng-apexcharts";
-import { ViewChild } from '@angular/core';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -36,15 +37,19 @@ export type ChartOptions = {
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, DragDropModule],
   templateUrl: './reportes.html',
   styleUrl: './reportes.css',
+  providers: [DatePipe]
 })
 export class Reportes implements OnInit {
   private integranteService = inject(IntegranteService);
   private asistenciaService = inject(AsistenciaService);
   private reporteService = inject(ReporteService);
+  private reportService = inject(ReportService);
+  private datePipe = inject(DatePipe);
   private cdr = inject(ChangeDetectorRef);
+  private notificationService = inject(NotificationService);
 
   @ViewChild("chart") chart!: ChartComponent;
 
@@ -86,6 +91,18 @@ export class Reportes implements OnInit {
   memberResults: any[] = [];
   selectedMemberName = '';
   isSearchingMembers = false;
+
+  // Report Personalization
+  showReportModal = false;
+  exportLoading = false;
+  reportColumns: ReportColumn[] = [
+    { id: 'date', label: 'Fecha', visible: true, order: 0 },
+    { id: 'serviceName', label: 'Servicio', visible: true, order: 1 },
+    { id: 'category', label: 'Categoría', visible: true, order: 2 },
+    { id: 'typePeople', label: 'Tipo', visible: true, order: 3 },
+    { id: 'total', label: 'Total', visible: true, order: 4 }
+  ];
+  groupBy: string = '';
 
   // Enums
   tipos = ['INICIANTE', 'VISITANTE', 'MIEMBRO', 'SIMPATIZANTE'];
@@ -141,20 +158,37 @@ export class Reportes implements OnInit {
           borderRadius: 6,
           dataLabels: {
             total: {
-              enabled: false // Disabled to avoid overlap on dense charts
+              enabled: false
             }
           }
         },
       },
-      dataLabels: { enabled: false },
+      dataLabels: {
+        enabled: true,
+        style: {
+          fontSize: '10px',
+          fontWeight: 'bold',
+          colors: ['#fff']
+        },
+        formatter: function (val: number) {
+          return val > 0 ? val : '';
+        }
+      },
       stroke: { show: true, width: 2, colors: ['transparent'] },
       xaxis: {
         type: 'category',
         categories: safeCategories,
         labels: {
-          show: false
+          show: true,
+          rotate: -45,
+          rotateAlways: true,
+          style: {
+            fontSize: '10px'
+          },
+          trim: false,
+          hideOverlappingLabels: false
         },
-        axisBorder: { show: false },
+        axisBorder: { show: true },
         tooltip: { enabled: false }
       },
       yaxis: {
@@ -241,7 +275,6 @@ export class Reportes implements OnInit {
   applyFilters() {
     this.isLoading = true;
 
-    // Prepare filters for backend DTO (lists and ISO format)
     const reportFilters: ReportFilters = {
       onlyActive: this.filters.onlyActive,
       userId: this.filters.userId || undefined,
@@ -250,11 +283,9 @@ export class Reportes implements OnInit {
       serviceIds: this.filters.serviceId ? [this.filters.serviceId] : undefined,
     };
 
-    // Date/Time logic: ensure format is YYYY-MM-DDTHH:mm:ss
     const formatDateTime = (val: string) => {
       if (!val) return undefined;
       if (!val.includes('T')) return `${val}T00:00:00`;
-      // If it's YYYY-MM-DDTHH:mm, add :00
       if (val.split(':').length === 2) return `${val}:00`;
       return val;
     };
@@ -272,7 +303,6 @@ export class Reportes implements OnInit {
       error: (err) => {
         console.error('Error fetching report:', err);
         this.isLoading = false;
-        alert('Error al generar el reporte');
       }
     });
   }
@@ -285,10 +315,8 @@ export class Reportes implements OnInit {
       return;
     }
 
-    // 1. Calculate Metrics (First time or when data changes)
     this.calculateStats();
 
-    // 2. Process all data for the chart
     const serviceMap = new Map<string, string>();
     this.reportData.forEach(d => {
       const key = d.serviceTime || `${d.date}_${d.serviceName}`;
@@ -326,7 +354,6 @@ export class Reportes implements OnInit {
     const start = this.currentPage * this.pageSize;
     const end = start + this.pageSize;
 
-    // Slice both labels and data within each series
     const pagedLabels = this.allXLabels.slice(start, end);
     const pagedSeries = this.allSeries.map(s => ({
       name: s.name,
@@ -395,7 +422,39 @@ export class Reportes implements OnInit {
     };
   }
 
+  isExporting = false;
+
+  openReportModal() {
+    if (!this.reportData || this.reportData.length === 0) return;
+    this.showReportModal = true;
+  }
+
+  closeReportModal() {
+    this.showReportModal = false;
+  }
+
+  dropColumn(event: CdkDragDrop<ReportColumn[]>) {
+    moveItemInArray(this.reportColumns, event.previousIndex, event.currentIndex);
+    this.reportColumns.forEach((col, index) => col.order = index);
+  }
+
+  exportReport(format: 'excel' | 'pdf') {
+    if (!this.reportData || this.reportData.length === 0) return;
+
+    this.exportLoading = true;
+    const fileName = `Reporte_Asistencia_${this.datePipe.transform(new Date(), 'yyyyMMdd_HHmm')}`;
+
+    if (format === 'excel') {
+      this.reportService.exportToExcel(this.reportData, this.reportColumns, fileName, this.groupBy || undefined);
+    } else {
+      this.reportService.exportToPdf(this.reportData, this.reportColumns, fileName, 'Reporte de Asistencias', this.groupBy || undefined);
+    }
+
+    this.exportLoading = false;
+    this.closeReportModal();
+  }
+
   downloadReport() {
-    alert('Generando reporte con los filtros actuales...');
+    this.openReportModal();
   }
 }

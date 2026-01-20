@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { IglesiaService, AttendanceCreateDto } from '../models/asistencia.model';
+import { IglesiaService, AttendanceCreateDto, AttendancePagesResponseDto, AttendanceResponseDto, AttendanceFiltersRequestDto, AttendanceInvalidateDto } from '../models/asistencia.model';
 import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
@@ -35,5 +35,16 @@ export class AsistenciaService {
 
   saveAttendances(attendances: AttendanceCreateDto[]): Observable<any> {
     return this.http.post(`${this.baseUrl}/attendances`, attendances);
+  }
+
+  getAttendances(filters: AttendanceFiltersRequestDto, page: number): Observable<AttendancePagesResponseDto> {
+    const params = new HttpParams().set('page', page.toString());
+
+    // Updated to POST /search to match backend change and support RequestBody
+    return this.http.post<AttendancePagesResponseDto>(`${this.baseUrl}/attendances/search`, filters, { params });
+  }
+
+  invalidateAttendance(dto: AttendanceInvalidateDto): Observable<AttendanceResponseDto> {
+    return this.http.patch<AttendanceResponseDto>(`${this.baseUrl}/attendances/invalidate`, dto);
   }
 }

@@ -4,6 +4,8 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } 
 import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
 import { Integrante } from '../../core/models/integrante.model';
+import { ConfirmationService } from '../../core/services/confirmation.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-integrantes',
@@ -16,6 +18,8 @@ export class Integrantes implements OnInit {
   private fb = inject(FormBuilder);
   private integranteService = inject(IntegranteService);
   private authService = inject(AuthService);
+  private confirmationService = inject(ConfirmationService);
+  private notificationService = inject(NotificationService);
 
   members: Integrante[] = [];
   totalPages = 0;
@@ -120,6 +124,7 @@ export class Integrantes implements OnInit {
     this.integranteService.toggleStatus(member.id, newStatus).subscribe({
       next: (currentStatus) => {
         member.active = currentStatus;
+        this.notificationService.success(`Integrante ${currentStatus ? 'activado' : 'desactivado'} correctamente`);
         // Small delay before allowing another toggle
         setTimeout(() => this.togglingIds.delete(member.id), 500);
       },
@@ -168,11 +173,13 @@ export class Integrantes implements OnInit {
         this.integranteService.updateIntegrante(this.currentId, formData).subscribe(() => {
           this.closeFormModal();
           this.loadMembers();
+          this.notificationService.success('Integrante actualizado correctamente');
         });
       } else {
         this.integranteService.addIntegrante(formData).subscribe(() => {
           this.closeFormModal();
           this.loadMembers();
+          this.notificationService.success('Integrante creado correctamente');
         });
       }
     }
@@ -186,10 +193,18 @@ export class Integrantes implements OnInit {
     this.showFormModal = true;
   }
 
-  deleteIntegrante(id: string) {
-    if (confirm('¿Está seguro de eliminar este integrante?')) {
+  async deleteIntegrante(id: string) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Eliminar Integrante',
+      message: '¿Está seguro de eliminar este integrante?',
+      type: 'danger',
+      confirmText: 'Eliminar'
+    });
+
+    if (confirmed) {
       this.integranteService.deleteIntegrante(id).subscribe(() => {
         this.loadMembers();
+        this.notificationService.success('Integrante eliminado correctamente');
       });
     }
   }

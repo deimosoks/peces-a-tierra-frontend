@@ -21,7 +21,7 @@ export interface Role {
     description: string;
     createdAt?: string;
     updatedAt?: string;
-    givenById?: string;
+    givenBy?: string;
     totalUsers: number;
     permissions: PermissionResponseDto[];
 }

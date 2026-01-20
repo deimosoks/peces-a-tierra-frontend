@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RoleService } from '../../core/services/role';
 import { AuthService } from '../../core/services/auth.service';
 import { Role, PermissionDefinition, RoleRequestDto } from '../../core/models/role.model';
+import { ConfirmationService } from '../../core/services/confirmation.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
     selector: 'app-roles',
@@ -16,6 +18,8 @@ export class Roles implements OnInit {
     private roleService = inject(RoleService);
     private authService = inject(AuthService);
     private cdr = inject(ChangeDetectorRef);
+    private confirmationService = inject(ConfirmationService);
+    private notificationService = inject(NotificationService);
 
     // Data
     roles: Role[] = [];
@@ -142,6 +146,7 @@ export class Roles implements OnInit {
         obs.subscribe({
             next: () => {
                 this.loadRoles();
+                this.notificationService.success(this.isEditing ? 'Rol actualizado correctamente' : 'Rol creado correctamente');
                 this.closeModal();
             },
             error: (err) => {
@@ -151,10 +156,20 @@ export class Roles implements OnInit {
         });
     }
 
-    deleteRole(role: Role) {
-        if (confirm(`¿Estás seguro de eliminar el rol "${role.name}"?`)) {
+    async deleteRole(role: Role) {
+        const confirmed = await this.confirmationService.confirm({
+            title: 'Eliminar Rol',
+            message: `¿Estás seguro de eliminar el rol "${role.name}"?`,
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
+
+        if (confirmed) {
             this.roleService.deleteRole(role.id).subscribe({
-                next: () => this.loadRoles(),
+                next: () => {
+                    this.loadRoles();
+                    this.notificationService.success('Rol eliminado correctamente');
+                },
                 error: (err) => console.error('Error deleting role', err)
             });
         }

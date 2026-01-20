@@ -25,7 +25,7 @@ export class IntegranteService {
       .set('page', page.toString())
       .set('onlyActive', onlyActive.toString());
 
-    return this.http.get<MemberPagesResponseDto>(`${this.baseUrl}/members/query`, { params });
+    return this.http.get<MemberPagesResponseDto>(`${this.baseUrl}/members`, { params });
   }
 
   toggleStatus(id: string, active: boolean): Observable<boolean> {

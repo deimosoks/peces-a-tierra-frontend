@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { AsistenciaService } from '../../core/services/asistencia';
 import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { IglesiaService, AttendanceCreateDto } from '../../core/models/asistencia.model';
 import { Integrante } from '../../core/models/integrante.model';
+import { ConfirmationService } from '../../core/services/confirmation.service';
 
 @Component({
   selector: 'app-asistencia',
@@ -18,11 +20,20 @@ export class Asistencia implements OnInit {
   private asistenciaService = inject(AsistenciaService);
   private integranteService = inject(IntegranteService);
   private authService = inject(AuthService);
+  private notificationService = inject(NotificationService);
+  private confirmationService = inject(ConfirmationService);
 
   // Filters & State
-  attendanceDateTime: string = this.getNowForInput();
+  serviceDate: string = this.getNowForInput();
+  attendanceDate: string = this.getNowForInput();
   selectedServiceId: string = '';
   searchQuery: string = '';
+
+  // Note System
+  memberNotes: Map<string, string> = new Map();
+  showNoteModal = false;
+  noteEditingMember?: Integrante;
+  tempNote: string = '';
 
   services: IglesiaService[] = [];
   members: Integrante[] = [];
@@ -106,33 +117,42 @@ export class Asistencia implements OnInit {
 
   save() {
     if (!this.selectedServiceId) {
-      alert('Por favor seleccione un servicio');
+      this.notificationService.warning('Por favor seleccione un servicio');
       return;
     }
     if (this.selectedMemberIds.size === 0) {
-      alert('Por favor seleccione al menos un integrante');
+      this.notificationService.warning('Por favor seleccione al menos un integrante');
       return;
     }
 
-    // Use the combined date-time and ensure backend compatibility (adding :00 for seconds)
-    const attendanceDate = this.attendanceDateTime.includes(':') && this.attendanceDateTime.split(':').length === 2
-      ? `${this.attendanceDateTime}:00`
-      : this.attendanceDateTime;
+    // Ensure backend compatibility (adding :00 for seconds)
+    const formattedServiceDate = this.serviceDate.includes(':') && this.serviceDate.split(':').length === 2
+      ? `${this.serviceDate}:00`
+      : this.serviceDate;
+
+    const formattedAttendanceDate = this.attendanceDate.includes(':') && this.attendanceDate.split(':').length === 2
+      ? `${this.attendanceDate}:00`
+      : this.attendanceDate;
 
     const attendances: AttendanceCreateDto[] = Array.from(this.selectedMemberIds).map(memberId => ({
       serviceId: this.selectedServiceId,
       memberId: memberId,
-      attendanceDate: attendanceDate
+      serviceDate: formattedServiceDate,
+      attendanceDate: formattedAttendanceDate,
+      note: this.memberNotes.get(memberId) || undefined
     }));
 
     this.asistenciaService.saveAttendances(attendances).subscribe({
       next: () => {
-        alert('Asistencia guardada exitosamente');
+        this.isLoading = true;
         this.selectedMemberIds.clear();
+        this.memberNotes.clear();
+        this.notificationService.success('Asistencia guardada exitosamente');
+        this.loadMembers();
       },
       error: (err) => {
         console.error('Error saving attendance:', err);
-        alert('Error al guardar la asistencia');
+        // Interceptor handles error display
       }
     });
   }
@@ -172,6 +192,35 @@ export class Asistencia implements OnInit {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
+  // --- Note Modal Methods ---
+
+  openNoteModal(member: Integrante) {
+    this.noteEditingMember = member;
+    this.tempNote = this.memberNotes.get(member.id) || '';
+    this.showNoteModal = true;
+  }
+
+  saveMemberNote() {
+    if (this.noteEditingMember) {
+      if (this.tempNote.trim()) {
+        this.memberNotes.set(this.noteEditingMember.id, this.tempNote);
+      } else {
+        this.memberNotes.delete(this.noteEditingMember.id);
+      }
+    }
+    this.closeNoteModal();
+  }
+
+  closeNoteModal() {
+    this.showNoteModal = false;
+    this.noteEditingMember = undefined;
+    this.tempNote = '';
+  }
+
+  hasNote(memberId: string): boolean {
+    return this.memberNotes.has(memberId);
+  }
+
   // --- Service Management Methods ---
 
   openServicesModal() {
@@ -199,6 +248,7 @@ export class Asistencia implements OnInit {
       this.asistenciaService.updateService(this.editingServiceId, this.serviceForm).subscribe({
         next: () => {
           this.isSavingService = false;
+          this.notificationService.success('Servicio actualizado correctamente');
           this.resetServiceForm();
           this.loadAllServices();
         },
@@ -208,6 +258,7 @@ export class Asistencia implements OnInit {
       this.asistenciaService.addService(this.serviceForm).subscribe({
         next: () => {
           this.isSavingService = false;
+          this.notificationService.success('Servicio creado correctamente');
           this.resetServiceForm();
           this.loadAllServices();
         },
@@ -225,10 +276,18 @@ export class Asistencia implements OnInit {
     };
   }
 
-  deleteService(id: string) {
-    if (confirm('¿Está seguro de eliminar este servicio?')) {
+  async deleteService(id: string) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Eliminar Servicio',
+      message: '¿Está seguro de eliminar este servicio?',
+      type: 'danger',
+      confirmText: 'Eliminar'
+    });
+
+    if (confirmed) {
       this.asistenciaService.deleteService(id).subscribe(() => {
         this.loadAllServices();
+        this.notificationService.success('Servicio eliminado correctamente');
       });
     }
   }
@@ -237,6 +296,7 @@ export class Asistencia implements OnInit {
     const newStatus = !service.active;
     this.asistenciaService.toggleServiceStatus(service.id, newStatus).subscribe(res => {
       service.active = res;
+      this.notificationService.success(`Servicio ${res ? 'activado' : 'desactivado'} correctamente`);
     });
   }
 

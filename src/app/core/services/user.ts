@@ -24,7 +24,7 @@ export class UserService {
         const params = new HttpParams()
             .set('query', query)
             .set('page', page.toString());
-        return this.http.get<UserPagesResponseDto>(`${this.baseUrl}/query`, { params });
+        return this.http.get<UserPagesResponseDto>(`${this.baseUrl}`, { params });
     }
 
     createUser(user: UserRequestDto): Observable<User> {

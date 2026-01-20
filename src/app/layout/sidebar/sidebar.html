@@ -28,9 +28,9 @@
                 <i class="fa-solid fa-users"></i>
                 <span>Integrantes</span>
             </a>
-            <a routerLink="/asistencia" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_ATTENDANCE')">
+            <a routerLink="/asistencia" routerLinkActive="active" class="nav-item" *ngIf="can('REGISTER_ATTENDANCE')">
                 <i class="fa-solid fa-calendar-check"></i>
-                <span>Asistencias</span>
+                <span>Pasar Asistencia</span>
             </a>
         </div>
 
@@ -43,6 +43,11 @@
             <a routerLink="/roles" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_ROLE_PANEL')">
                 <i class="fa-solid fa-id-card-clip"></i>
                 <span>Roles y permisos</span>
+            </a>
+            <a routerLink="/asistencias/administrar" routerLinkActive="active" class="nav-item"
+                *ngIf="can('MANAGE_ATTENDANCE')">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Administrar Asistencias</span>
             </a>
         </div>
     </nav>

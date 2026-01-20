@@ -1,0 +1,22 @@
+<div class="modal-backdrop" *ngIf="show && !isLoginPage" (click)="handleCancel()">
+    <div class="confirmation-modal" (click)="$event.stopPropagation()">
+        <div class="modal-body">
+            <div class="icon-container">
+                <i [class]="getIconClass()"></i>
+            </div>
+            <div class="text-content">
+                <h3>{{ options?.title }}</h3>
+                <p>{{ options?.message }}</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="handleCancel()">
+                {{ options?.cancelText }}
+            </button>
+            <button class="btn" [ngClass]="options?.type === 'danger' ? 'btn-danger' : 'btn-primary'"
+                (click)="handleConfirm()">
+                {{ options?.confirmText }}
+            </button>
+        </div>
+    </div>
+</div>

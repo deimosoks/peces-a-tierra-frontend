@@ -5,7 +5,8 @@
     <div class="topbar-right">
         <div class="user-info" *ngIf="authService.currentUser() as user">
             <div class="user-text">
-                <span class="user-name">{{ user.completeName }}</span>
+                <span class="complete-name">{{ user.completeName }}</span>
+                <span class="user-name">{{ user.username }}</span>
             </div>
             <div class="user-avatar">
                 <img [src]="user.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + user.completeName + '&background=3b82f6&color=fff'"

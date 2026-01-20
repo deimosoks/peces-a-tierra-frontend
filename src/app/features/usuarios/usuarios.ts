@@ -8,6 +8,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { User, UserRequestDto } from '../../core/models/user.model';
 import { Role } from '../../core/models/role.model';
 import { Integrante } from '../../core/models/integrante.model';
+import { ConfirmationService } from '../../core/services/confirmation.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
     selector: 'app-usuarios',
@@ -22,6 +24,8 @@ export class Usuarios implements OnInit {
     private integranteService = inject(IntegranteService);
     private authService = inject(AuthService);
     private cdr = inject(ChangeDetectorRef);
+    private confirmationService = inject(ConfirmationService);
+    private notificationService = inject(NotificationService);
 
     // Data
     users: User[] = [];
@@ -79,19 +83,14 @@ export class Usuarios implements OnInit {
 
     loadUsers() {
         this.isLoading = true;
-        const obs = this.searchQuery
-            ? this.userService.searchUsers(this.searchQuery, this.currentPage)
-            : this.userService.getUsers(this.currentPage);
-
-        obs.subscribe({
-            next: (res) => {
-                this.users = res.users;
-                this.totalPages = res.pages;
+        this.userService.getUsers(this.currentPage).subscribe({
+            next: (response) => {
+                this.users = response.users;
+                this.totalPages = response.pages;
                 this.isLoading = false;
-                this.cdr.detectChanges();
             },
             error: (err) => {
-                console.error('Error loading users', err);
+                console.error('Error loading users:', err);
                 this.isLoading = false;
             }
         });
@@ -102,8 +101,45 @@ export class Usuarios implements OnInit {
     }
 
     onSearch() {
-        this.currentPage = 0;
-        this.loadUsers();
+        this.currentPage = 0; // Reset to first page on new search
+        if (this.searchQuery.trim()) {
+            this.isLoading = true;
+            this.userService.searchUsers(this.searchQuery, this.currentPage).subscribe({
+                next: (response) => {
+                    this.users = response.users;
+                    this.totalPages = response.pages;
+                    this.isLoading = false;
+                },
+                error: (err) => {
+                    console.error('Error searching users:', err);
+                    this.isLoading = false;
+                }
+            });
+        } else {
+            this.loadUsers();
+        }
+    }
+
+    nextPage() {
+        if (this.currentPage < this.totalPages - 1) {
+            this.currentPage++;
+            if (this.searchQuery.trim()) {
+                this.onSearch();
+            } else {
+                this.loadUsers();
+            }
+        }
+    }
+
+    prevPage() {
+        if (this.currentPage > 0) {
+            this.currentPage--;
+            if (this.searchQuery.trim()) {
+                this.onSearch();
+            } else {
+                this.loadUsers();
+            }
+        }
     }
 
     // Modal & Form Logic
@@ -234,6 +270,7 @@ export class Usuarios implements OnInit {
             next: () => {
                 this.loadUsers();
                 this.loadStats();
+                this.notificationService.success(this.isEditing ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
                 this.closeModal();
             },
             error: (err) => {
@@ -261,34 +298,56 @@ export class Usuarios implements OnInit {
     toggleStatus(user: User) {
         if (this.toggleProcessing.has(user.id)) return;
 
+        const originalStatus = user.active;
+        const targetStatus = !originalStatus;
+
+        // Prevenir desactivarse a sí mismo en el frontend
+        const currentUsername = this.authService.currentUser()?.username;
+        if (user.username === currentUsername && originalStatus === true) {
+            this.notificationService.error('No puedes desactivar tu propio usuario.');
+            // Revertir visualmente el toggle (Angular detectará el cambio y lo sincronizará)
+            user.active = !originalStatus;
+            setTimeout(() => {
+                user.active = originalStatus;
+                this.cdr.detectChanges();
+            }, 0);
+            return;
+        }
+
         this.toggleProcessing.add(user.id);
 
         // Optimistic update
-        const originalStatus = user.active;
-        // Don't flip immediately, let the switch animation handle validation or wait for result?
-        // Actually, with a switch, it's better to wait or disable.
+        user.active = targetStatus;
 
-        setTimeout(() => {
-            this.userService.toggleActive(user.id, !user.active).subscribe({
-                next: (newStatus) => {
-                    user.active = newStatus;
-                    this.loadStats();
-                    this.toggleProcessing.delete(user.id);
-                },
-                error: () => {
-                    // Revert if error (if we did optimistic)
-                    // user.active = originalStatus; 
-                    this.toggleProcessing.delete(user.id);
-                }
-            });
-        }, 500); // 500ms delay to prevent spam
+        this.userService.toggleActive(user.id, targetStatus).subscribe({
+            next: (newStatus) => {
+                user.active = newStatus;
+                this.loadStats();
+                this.notificationService.success(`Usuario ${newStatus ? 'activado' : 'desactivado'} correctamente`);
+                this.toggleProcessing.delete(user.id);
+            },
+            error: (err) => {
+                // Revertir si hay error (ej. 400 Bad Request del backend)
+                user.active = originalStatus;
+                this.toggleProcessing.delete(user.id);
+                // El error interceptor se encarga de mostrar el mensaje de error del backend
+            }
+        });
     }
 
-    deleteUser(user: User) {
-        if (confirm(`¿Eliminar usuario ${user.username}?`)) {
+    async deleteUser(user: User) {
+        const confirmed = await this.confirmationService.confirm({
+            title: 'Eliminar Usuario',
+            message: `¿Eliminar usuario ${user.username}?`,
+            type: 'danger',
+            confirmText: 'Eliminar'
+        });
+
+        if (confirmed) {
             this.userService.deleteUser(user.id).subscribe(() => {
                 this.loadUsers();
                 this.loadStats();
+                this.notificationService.success('Usuario eliminado correctamente');
             });
         }
     }
@@ -307,21 +366,5 @@ export class Usuarios implements OnInit {
         if (!text) return;
         navigator.clipboard.writeText(text);
         // Optional: Add toast or visual feedback here
-    }
-
-    // Pagination
-    changePage(page: number) {
-        if (page >= 0 && page < this.totalPages) {
-            this.currentPage = page;
-            this.loadUsers();
-        }
-    }
-
-    prevPage() {
-        if (this.currentPage > 0) this.changePage(this.currentPage - 1);
-    }
-
-    nextPage() {
-        if (this.currentPage < this.totalPages - 1) this.changePage(this.currentPage + 1);
     }
 }

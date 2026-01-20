@@ -1,0 +1,14 @@
+<div class="toast-container" *ngIf="!isLoginPage">
+    <div *ngFor="let toast of toasts$ | async" class="toast-item" [ngClass]="toast.type" (click)="remove(toast.id)">
+        <div class="toast-icon">
+            <i [class]="getIcon(toast.type)"></i>
+        </div>
+        <div class="toast-content">
+            <p>{{ toast.message }}</p>
+        </div>
+        <div class="toast-progress" *ngIf="toast.duration">
+            <div class="progress-bar" [style.animationDuration.ms]="toast.duration"></div>
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+</div>

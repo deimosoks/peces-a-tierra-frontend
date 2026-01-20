@@ -74,10 +74,10 @@
         <div class="pagination-mini">
             <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
             <div class="pagination-buttons">
-                <button class="btn btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
+                <button class="btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <button class="btn btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                <button class="btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -177,6 +177,10 @@
             </div>
 
             <div class="details-grid">
+                <div class="detail-item">
+                    <label>ID del sistema:</label>
+                    <span class="text-sm font-mono text-muted">{{ selectedMember.id }}</span>
+                </div>
                 <div class="detail-item">
                     <label>Cédula:</label>
                     <span>{{ selectedMember.cc }}</span>

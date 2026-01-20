@@ -22,6 +22,9 @@ export const permissionRedirectGuard: CanActivateFn = (route, state): UrlTree =>
         return router.createUrlTree(['/integrantes']);
     }
     if (authService.can('MANAGE_ATTENDANCE')) {
+        return router.createUrlTree(['/asistencias/administrar']);
+    }
+    if (authService.can('REGISTER_ATTENDANCE')) {
         return router.createUrlTree(['/asistencia']);
     }
     if (authService.can('VIEW_USER_PANEL')) {
@@ -31,7 +34,9 @@ export const permissionRedirectGuard: CanActivateFn = (route, state): UrlTree =>
         return router.createUrlTree(['/roles']);
     }
 
-    // Default fallback if authenticated but no explicit panel permissions
-    // Maybe they just have basic access
-    return router.createUrlTree(['/dashboard']);
+    // Default fallback if authenticated but trying to access something they can't
+    // If they have MANAGE_DASHBOARD, they already went to /dashboard above.
+    // If they don't have it, we shouldn't send them to /dashboard as it will loop.
+    // For now, let's pick the first one they DO have, or just let them stay if no redirect found.
+    return router.createUrlTree(['/login']); // Or a 403 page if you have one
 };

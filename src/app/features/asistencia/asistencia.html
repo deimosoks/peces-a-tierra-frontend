@@ -11,16 +11,24 @@
     <div class="card premium-card">
         <!-- Header Filters -->
         <div class="asistencia-header">
-            <div class="filter-group">
+            <div class="filter-group registration-grid">
                 <div class="input-with-label">
-                    <label>Fecha y Hora del Servicio</label>
+                    <label>Fecha del Servicio (Inicio)</label>
                     <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-calendar-check"></i>
-                        <input type="datetime-local" [(ngModel)]="attendanceDateTime" class="premium-input">
+                        <i class="fa-solid fa-calendar-alt"></i>
+                        <input type="datetime-local" [(ngModel)]="serviceDate" class="premium-input">
                     </div>
                 </div>
 
-                <div class="input-with-label flex-1">
+                <div class="input-with-label">
+                    <label>Fecha de Llegada</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-clock"></i>
+                        <input type="datetime-local" [(ngModel)]="attendanceDate" class="premium-input">
+                    </div>
+                </div>
+
+                <div class="input-with-label">
                     <label>Tipo de Servicio</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-church"></i>
@@ -30,8 +38,8 @@
                     </div>
                 </div>
 
-                <div class="input-with-label search-group flex-1">
-                    <label>Buscar</label>
+                <div class="input-with-label search-group">
+                    <label>Buscar Integrante</label>
                     <div class="input-icon-wrapper search-wrapper">
                         <button class="search-icon-btn" (click)="onSearch()" title="Buscar">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -48,7 +56,6 @@
             <table class="premium-table">
                 <thead>
                     <tr>
-                        <th>FOTO</th>
                         <th>NOMBRE COMPLETO</th>
                         <th>CEDULA</th>
                         <th>CATEGORIA</th>
@@ -60,12 +67,14 @@
                 <tbody>
                     <tr *ngFor="let member of members">
                         <td>
-                            <div class="avatar-cell">
-                                <img [src]="member.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + member.completeName + '&background=random'"
-                                    alt="Avatar">
+                            <div class="user-info-cell">
+                                <div class="avatar-cell">
+                                    <img [src]="member.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + member.completeName + '&background=random'"
+                                        alt="Avatar">
+                                </div>
+                                <span class="user-fullname">{{ member.completeName }}</span>
                             </div>
                         </td>
-                        <td><span class="user-fullname">{{ member.completeName }}</span></td>
                         <td>{{ member.cc }}</td>
                         <td>
                             <span class="badge" [ngClass]="getBadgeClass(member.category)">{{ member.category }}</span>
@@ -76,6 +85,12 @@
                             <div class="actions-mini justify-center">
                                 <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver detalles">
                                     <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="action-btn-sm edit" (click)="openNoteModal(member)"
+                                    [title]="hasNote(member.id) ? 'Editar nota' : 'Agregar nota'"
+                                    [class.has-note]="hasNote(member.id)">
+                                    <i class="fa-solid"
+                                        [ngClass]="hasNote(member.id) ? 'fa-note-sticky' : 'fa-file-signature'"></i>
                                 </button>
                                 <label class="checkbox-container-mini">
                                     <input type="checkbox" [checked]="isSelected(member.id)"
@@ -100,13 +115,13 @@
 
         <!-- Pagination & Footer -->
         <div class="asistencia-footer">
-            <div class="pagination-controls">
+            <div class="pagination-mini">
                 <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
-                <div class="pagination-btns">
-                    <button class="btn-paged" (click)="prevPage()" [disabled]="currentPage === 0">
+                <div class="pagination-buttons">
+                    <button class="btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <button class="btn-paged" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                    <button class="btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
                         <i class="fa-solid fa-chevron-right"></i>
                     </button>
                 </div>
@@ -195,7 +210,7 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal Details -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -214,6 +229,10 @@
             </div>
 
             <div class="details-grid">
+                <div class="detail-item">
+                    <label>Id del sistema:</label>
+                    <span>{{ selectedMember.id }}</span>
+                </div>
                 <div class="detail-item">
                     <label>Cédula:</label>
                     <span>{{ selectedMember.cc }}</span>
@@ -249,6 +268,27 @@
                     </span>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Member Note Modal -->
+<div class="modal-overlay" *ngIf="showNoteModal" (click)="closeNoteModal()">
+    <div class="modal-content small-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Nota para {{ noteEditingMember?.completeName }}</h2>
+            <button class="close-btn" (click)="closeNoteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Escribe una nota para este integrante:</label>
+                <textarea [(ngModel)]="tempNote" class="premium-input" rows="4"
+                    placeholder="Ej: Devocional, escuela para padres, etc..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeNoteModal()">Cancelar</button>
+            <button class="btn btn-primary" (click)="saveMemberNote()">Guardar Nota</button>
         </div>
     </div>
 </div>

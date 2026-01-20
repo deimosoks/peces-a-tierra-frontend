@@ -10,8 +10,8 @@
 
 .page-container {
     flex: 1;
-    padding: 1.25rem 1.5rem;
-    /* Slightly reduced padding */
+    padding: 0.75rem;
+    /* Reduced global padding for more space */
     background-color: var(--bg-main);
     overflow-y: auto;
     display: flex;
