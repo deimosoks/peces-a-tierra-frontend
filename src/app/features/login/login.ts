@@ -12,6 +12,8 @@ import { AuthService } from '../../core/services/auth.service';
     styleUrls: ['./login.css']
 })
 export class Login {
+    currentYear = new Date().getFullYear();
+
     private authService = inject(AuthService);
     private router = inject(Router);
 
