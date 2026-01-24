@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Output, EventEmitter } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -10,5 +10,11 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./topbar.css'],
 })
 export class Topbar {
+  @Output() toggleSidebar = new EventEmitter<void>();
+
   authService = inject(AuthService);
+
+  onToggleSidebar() {
+    this.toggleSidebar.emit();
+  }
 }

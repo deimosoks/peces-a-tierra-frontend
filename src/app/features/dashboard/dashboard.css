@@ -490,9 +490,6 @@
 }
 
 @media (max-width: 768px) {
-    .dashboard-container {
-        padding: 1.5rem;
-    }
 
     .metrics-grid {
         grid-template-columns: 1fr;

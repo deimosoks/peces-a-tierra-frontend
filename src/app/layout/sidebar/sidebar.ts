@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { PwaService } from '../../core/services/pwa.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -11,7 +12,15 @@ import { CommonModule } from '@angular/common';
   styleUrl: './sidebar.css'
 })
 export class Sidebar {
+  @Input() isOpen = false;
+  @Output() closeSidebar = new EventEmitter<void>();
+
   authService = inject(AuthService);
+  pwaService = inject(PwaService);
+
+  close() {
+    this.closeSidebar.emit();
+  }
 
   logout() {
     this.authService.logout();
@@ -19,5 +28,9 @@ export class Sidebar {
 
   can(permission: string): boolean {
     return this.authService.can(permission);
+  }
+
+  installApp() {
+    this.pwaService.addToHomeScreen();
   }
 }

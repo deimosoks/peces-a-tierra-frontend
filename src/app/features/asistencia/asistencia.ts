@@ -26,6 +26,7 @@ export class Asistencia implements OnInit {
   // Filters & State
   serviceDate: string = this.getNowForInput();
   attendanceDate: string = this.getNowForInput();
+  isManualAttendanceTime: boolean = false;
   selectedServiceId: string = '';
   searchQuery: string = '';
 
@@ -40,14 +41,7 @@ export class Asistencia implements OnInit {
   selectedMemberIds = new Set<string>();
   selectedMember?: Integrante;
   showModal = false; // For details
-  showServicesModal = false; // For services management
-
-  // Services Management State
-  servicesAll: IglesiaService[] = [];
-  serviceForm = { name: '', description: '' };
-  isEditingService = false;
-  editingServiceId?: string;
-  isSavingService = false;
+  showFilterModal = false; // For mobile config
 
   // Pagination
   currentPage = 0;
@@ -61,6 +55,19 @@ export class Asistencia implements OnInit {
 
   can(permission: string): boolean {
     return this.authService.can(permission);
+  }
+
+  openFilterModal() {
+    this.showFilterModal = true;
+  }
+
+  closeFilterModal() {
+    this.showFilterModal = false;
+  }
+
+  getSelectedServiceName(): string {
+    const service = this.services.find(s => s.id === this.selectedServiceId);
+    return service ? service.name : 'Seleccionar Servicio';
   }
 
   loadServices() {
@@ -123,6 +130,11 @@ export class Asistencia implements OnInit {
     if (this.selectedMemberIds.size === 0) {
       this.notificationService.warning('Por favor seleccione al menos un integrante');
       return;
+    }
+
+    // Refresh attendance date if automatic
+    if (!this.isManualAttendanceTime) {
+      this.attendanceDate = this.getNowForInput();
     }
 
     // Ensure backend compatibility (adding :00 for seconds)
@@ -221,88 +233,5 @@ export class Asistencia implements OnInit {
     return this.memberNotes.has(memberId);
   }
 
-  // --- Service Management Methods ---
 
-  openServicesModal() {
-    this.showServicesModal = true;
-    this.loadAllServices();
-  }
-
-  closeServicesModal() {
-    this.showServicesModal = false;
-    this.resetServiceForm();
-    this.loadServices(); // Refresh main dropdown
-  }
-
-  loadAllServices() {
-    this.asistenciaService.getServices(false).subscribe(data => {
-      this.servicesAll = data;
-    });
-  }
-
-  onServiceSubmit() {
-    if (!this.serviceForm.name || !this.serviceForm.description) return;
-
-    this.isSavingService = true;
-    if (this.isEditingService && this.editingServiceId) {
-      this.asistenciaService.updateService(this.editingServiceId, this.serviceForm).subscribe({
-        next: () => {
-          this.isSavingService = false;
-          this.notificationService.success('Servicio actualizado correctamente');
-          this.resetServiceForm();
-          this.loadAllServices();
-        },
-        error: () => this.isSavingService = false
-      });
-    } else {
-      this.asistenciaService.addService(this.serviceForm).subscribe({
-        next: () => {
-          this.isSavingService = false;
-          this.notificationService.success('Servicio creado correctamente');
-          this.resetServiceForm();
-          this.loadAllServices();
-        },
-        error: () => this.isSavingService = false
-      });
-    }
-  }
-
-  editService(service: IglesiaService) {
-    this.isEditingService = true;
-    this.editingServiceId = service.id;
-    this.serviceForm = {
-      name: service.name,
-      description: service.description || ''
-    };
-  }
-
-  async deleteService(id: string) {
-    const confirmed = await this.confirmationService.confirm({
-      title: 'Eliminar Servicio',
-      message: '¿Está seguro de eliminar este servicio?',
-      type: 'danger',
-      confirmText: 'Eliminar'
-    });
-
-    if (confirmed) {
-      this.asistenciaService.deleteService(id).subscribe(() => {
-        this.loadAllServices();
-        this.notificationService.success('Servicio eliminado correctamente');
-      });
-    }
-  }
-
-  toggleServiceStatus(service: IglesiaService) {
-    const newStatus = !service.active;
-    this.asistenciaService.toggleServiceStatus(service.id, newStatus).subscribe(res => {
-      service.active = res;
-      this.notificationService.success(`Servicio ${res ? 'activado' : 'desactivado'} correctamente`);
-    });
-  }
-
-  resetServiceForm() {
-    this.serviceForm = { name: '', description: '' };
-    this.isEditingService = false;
-    this.editingServiceId = undefined;
-  }
 }

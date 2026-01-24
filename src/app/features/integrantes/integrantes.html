@@ -6,7 +6,7 @@
         <div class="card-header spread justify-end">
             <div class="header-actions">
                 <div class="toggle-filter">
-                    <label class="switch-sm">
+                    <label class="status-switch">
                         <input type="checkbox" [(ngModel)]="onlyActive" (change)="onToggleOnlyActive()">
                         <span class="slider round"></span>
                     </label>
@@ -23,7 +23,7 @@
 
                 <button class="btn btn-primary btn-sm btn-new" (click)="openFormModal()" *ngIf="can('CREATE_MEMBER')">
                     <i class="fa-solid fa-user-plus"></i>
-                    Nuevo
+                    <span>Nuevo</span>
                 </button>
             </div>
         </div>
@@ -33,9 +33,9 @@
                 <thead>
                     <tr>
                         <th>NOMBRE</th>
-                        <th>CATEGORÍA</th>
-                        <th>TIPO</th>
-                        <th>ESTADO</th>
+                        <th class="desktop-only">CATEGORÍA</th>
+                        <th class="desktop-only">TIPO</th>
+                        <th class="desktop-only text-center">ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
                 </thead>
@@ -48,23 +48,60 @@
                                 <span class="user-name">{{ member.completeName }}</span>
                             </div>
                         </td>
-                        <td><span class="badge badge-sm" [ngClass]="getBadgeClass(member.category)">{{
+                        <td class="desktop-only"><span class="badge badge-sm" [ngClass]="getBadgeClass(member.category)">{{
                                 member.category }}</span></td>
-                        <td>{{ member.type }}</td>
-                        <td>
-                            <label class="switch-sm">
-                                <input type="checkbox" [checked]="member.active" (change)="toggleMemberStatus(member)"
+                        <td class="desktop-only">{{ member.type }}</td>
+                        <td class="desktop-only text-center">
+                            <label class="status-switch" appSafeClick (safeClick)="toggleMemberStatus(member)">
+                                <input type="checkbox" [checked]="member.active"
                                     [disabled]="!can('UPDATE_MEMBER')">
                                 <span class="slider round"></span>
                             </label>
                         </td>
                         <td class="actions-mini">
-                            <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver"><i
-                                    class="fa-solid fa-eye"></i></button>
-                            <button class="action-btn-sm edit" (click)="editIntegrante(member)" title="Editar"
-                                *ngIf="can('UPDATE_MEMBER')"><i class="fa-solid fa-pencil"></i></button>
-                            <button class="action-btn-sm delete" (click)="deleteIntegrante(member.id)" title="Eliminar"
-                                *ngIf="can('DELETE_MEMBER')"><i class="fa-solid fa-trash"></i></button>
+                            <!-- Desktop Actions -->
+                            <div class="desktop-actions desktop-only">
+                                <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver"><i
+                                        class="fa-solid fa-eye"></i></button>
+                                <button class="action-btn-sm edit" (click)="editIntegrante(member)" title="Editar"
+                                    *ngIf="can('UPDATE_MEMBER')"><i class="fa-solid fa-pencil"></i></button>
+                                <button class="action-btn-sm delete" (click)="deleteIntegrante(member.id)" title="Eliminar"
+                                    *ngIf="can('DELETE_MEMBER')"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+
+                            <!-- Mobile Actions Dropdown -->
+                            <div class="mobile-actions-wrapper mobile-only">
+                                <button class="action-btn-sm menu-trigger" (click)="toggleDropdown($event, member.id)">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+                                
+                                <div class="action-dropdown" *ngIf="activeDropdownId === member.id" (click)="$event.stopPropagation()">
+                                    <div class="dropdown-header-mobile">
+                                        <span class="member-name-small">{{ member.completeName }}</span>
+                                    </div>
+                                    <div class="dropdown-item status-row">
+                                        <span class="dropdown-label">Estado</span>
+                                        <label class="status-switch" appSafeClick (safeClick)="toggleMemberStatus(member)">
+                                            <input type="checkbox" [checked]="member.active"
+                                                [disabled]="!can('UPDATE_MEMBER')">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <hr class="dropdown-divider">
+                                    <button class="dropdown-item" (click)="viewMember(member); closeDropdown()">
+                                        <i class="fa-solid fa-eye"></i>
+                                        <span>Ver Detalles</span>
+                                    </button>
+                                    <button class="dropdown-item" (click)="editIntegrante(member); closeDropdown()" *ngIf="can('UPDATE_MEMBER')">
+                                        <i class="fa-solid fa-pencil text-primary"></i>
+                                        <span>Editar</span>
+                                    </button>
+                                    <button class="dropdown-item" (click)="deleteIntegrante(member.id); closeDropdown()" *ngIf="can('DELETE_MEMBER')">
+                                        <i class="fa-solid fa-trash text-danger"></i>
+                                        <span class="delete-text">Eliminar</span>
+                                    </button>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -90,8 +127,17 @@
     <div class="modal-content form-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
             <h2>{{ isEditing ? 'Editar Integrante' : 'Nuevo Integrante' }}</h2>
-            <button class="close-btn" (click)="closeFormModal()">&times;</button>
+            <button class="close-btn" (click)="closeFormModal()" [disabled]="isSaving">&times;</button>
         </div>
+
+        <!-- Loading Overlay -->
+        <div class="modal-loading-overlay" *ngIf="isSaving">
+            <div class="spinner-wrapper">
+                <div class="spinner-circle"></div>
+                <p>Procesando...</p>
+            </div>
+        </div>
+
         <div class="modal-body">
             <form [formGroup]="integranteForm" (ngSubmit)="onSubmit()" class="integrante-form-modal">
                 <div class="form-header-row">
@@ -147,10 +193,10 @@
                 </div>
 
                 <div class="form-footer">
-                    <button type="button" class="btn btn-muted" (click)="closeFormModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" [disabled]="integranteForm.invalid">
-                        <i class="fa-solid fa-save"></i>
-                        {{ isEditing ? 'Actualizar' : 'Guardar' }}
+                    <button type="button" class="btn btn-muted" (click)="closeFormModal()" [disabled]="isSaving">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="integranteForm.invalid || isSaving">
+                        <i class="fa-solid" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                        {{ isSaving ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
                     </button>
                 </div>
             </form>

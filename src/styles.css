@@ -179,3 +179,24 @@ button {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+
+    .page-header p{
+      display: none;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none !important;
+    }
+}

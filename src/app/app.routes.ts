@@ -8,6 +8,7 @@ import { Dashboard } from './features/dashboard/dashboard';
 import { Roles } from './features/roles/roles';
 import { Login } from './features/login/login';
 import { Usuarios } from './features/usuarios/usuarios';
+import { Servicios } from './features/servicios/servicios';
 
 import { authGuard } from './core/guards/auth.guard';
 import { permissionRedirectGuard } from './core/guards/permission-redirect.guard';
@@ -15,7 +16,9 @@ import { permissionGuard } from './core/guards/permission.guard';
 import { MainLayout } from './layout/main-layout/main-layout';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'login', pathMatch: 'full' },
+    //TODO: cambiar logica de redireccionamiento de rutas vacias, cuando leas esto tenes que cambiar
+    //TODO: la logica de redireccionamiento de rutas vacias 
+    {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
     { path: 'login', component: Login },
     {
         path: '',
@@ -29,6 +32,7 @@ export const routes: Routes = [
             { path: 'reportes', component: Reportes, canActivate: [permissionGuard], data: { permission: 'MANAGE_REPORT' } },
             { path: 'roles', component: Roles, canActivate: [permissionGuard], data: { permission: 'VIEW_ROLE_PANEL' } },
             { path: 'usuarios', component: Usuarios, canActivate: [permissionGuard], data: { permission: 'VIEW_USER_PANEL' } },
+            { path: 'servicios', component: Servicios, canActivate: [permissionGuard], data: { permission: 'VIEW_SERVICE_PANEL' } },
         ]
     },
     { path: '**', canActivate: [permissionRedirectGuard], component: MainLayout } // Component doesn't matter, guard redirects

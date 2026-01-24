@@ -27,9 +27,9 @@
                     <tr>
                         <th>INTEGRANTE</th>
                         <th>SERVICIO</th>
-                        <th>INICIO DE SERVICIO</th>
-                        <th>HORA DE LLEGADA</th>
-                        <th class="text-center">ESTADO</th>
+                        <th class="desktop-only">INICIO DE SERVICIO</th>
+                        <th class="desktop-only">HORA DE LLEGADA</th>
+                        <th class="text-center desktop-only">ESTADO</th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
@@ -41,22 +41,61 @@
                             </div>
                         </td>
                         <td>{{ att.serviceName }}</td>
-                        <td>{{ att.id.serviceDate | date:'short' }}</td>
-                        <td>{{ att.attendanceDate | date:'shortTime' }}</td>
-                        <td class="text-center">
+                        <td class="desktop-only">{{ att.id.serviceDate | date:'short' }}</td>
+                        <td class="desktop-only">{{ att.attendanceDate | date:'shortTime' }}</td>
+                        <td class="text-center desktop-only">
                             <span class="status-indicator" [class.invalid]="att.invalid">
                                 {{ att.invalid ? 'Invalida' : 'Válida' }}
                             </span>
                         </td>
                         <td class="text-center">
                             <div class="actions-mini justify-center">
-                                <button class="action-btn-sm view" (click)='viewDetails(att)' title="Ver detalles">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <button class="action-btn-sm delete" (click)="openInvalidateModal(att)"
-                                    *ngIf="!att.invalid && can('MANAGE_ATTENDANCE')" title="Invalidar">
-                                    <i class="fa-solid fa-ban"></i>
-                                </button>
+                                <!-- Desktop Actions -->
+                                <div class="desktop-only desktop-actions">
+                                    <button class="action-btn-sm view" (click)='viewDetails(att)' title="Ver detalles">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn-sm delete" (click)="openInvalidateModal(att)"
+                                        *ngIf="!att.invalid && can('MANAGE_ATTENDANCE')" title="Invalidar">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Mobile Actions -->
+                                <div class="mobile-only mobile-actions-wrapper">
+                                    <button class="menu-trigger" (click)="toggleDropdown($event, att.id.memberId + att.id.serviceDate)">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+
+                                    <div class="action-dropdown" *ngIf="activeDropdownId === (att.id.memberId + att.id.serviceDate)" (click)="$event.stopPropagation()">
+                                        <div class="dropdown-header-mobile">
+                                            <span class="member-name-small">{{ att.memberCompleteName }}</span>
+                                        </div>
+                                        
+                                        <div class="dropdown-item status-row">
+                                            <span class="dropdown-label">Estado</span>
+                                            <span class="status-indicator-small" [class.invalid]="att.invalid">
+                                                {{ att.invalid ? 'Invalida' : 'Válida' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="dropdown-item status-row">
+                                            <span class="dropdown-label">Llegada</span>
+                                            <span class="arrival-time-small">{{ att.attendanceDate | date:'shortTime' }}</span>
+                                        </div>
+
+                                        <hr class="dropdown-divider">
+
+                                        <button class="dropdown-item" (click)="viewDetails(att); closeDropdown()">
+                                            <i class="fa-solid fa-eye text-primary"></i>
+                                            <span>Ver Detalles</span>
+                                        </button>
+                                        <button class="dropdown-item" (click)="openInvalidateModal(att); closeDropdown()" *ngIf="!att.invalid && can('MANAGE_ATTENDANCE')">
+                                            <i class="fa-solid fa-ban text-danger"></i>
+                                            <span class="text-danger">Invalidar</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -132,10 +171,13 @@
                     <label>Nota:</label>
                     <p class="note-box">{{ attendanceDetails.note }}</p>
                 </div>
+            </div>
 
-                <div class="invalid-details full" *ngIf="attendanceDetails.invalid">
-                    <h3 class="text-danger"><i class="fa-solid fa-circle-exclamation"></i> Información de Invalidación
-                    </h3>
+            <!-- Invalidation Details - Full Width Section -->
+            <div class="invalid-details-section" *ngIf="attendanceDetails.invalid">
+                <h3 class="text-danger"><i class="fa-solid fa-circle-exclamation"></i> Información de Invalidación
+                </h3>
+                <div class="invalid-details-grid">
                     <div class="detail-item">
                         <label>Motivo:</label>
                         <p class="reason-box">{{ attendanceDetails.invalidReason }}</p>
@@ -145,8 +187,8 @@
                         <span>{{ attendanceDetails.invalidAt | date:'medium' }}</span>
                     </div>
                     <div class="detail-item">
-                        <label>Invalidado por (ID):</label>
-                        <span>{{ attendanceDetails.invalidatorId }}</span>
+                        <label>Invalidado por:</label>
+                        <span>{{ attendanceDetails.invalidatedBy }}</span>
                     </div>
                 </div>
             </div>
@@ -167,7 +209,7 @@
             <div class="form-group-centered" style="margin-top: 1.5rem;">
                 <label>Motivo de la invalidación:</label>
                 <textarea [(ngModel)]="invalidReason" class="premium-input no-icon" rows="4"
-                    placeholder="Escribe el motivo aquí..." style="resize: vertical;"></textarea>
+                    placeholder="Escribe el motivo aquí..." style="resize: vertical;" maxlength="240"></textarea>
             </div>
         </div>
         <div class="modal-footer">

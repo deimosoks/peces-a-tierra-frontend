@@ -3,9 +3,10 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
-import { APP_INITIALIZER } from '@angular/core';
+import { APP_INITIALIZER, isDevMode } from '@angular/core';
 import { AuthService } from './core/services/auth.service';
 import { routes } from './app.routes';
+import { provideServiceWorker } from '@angular/service-worker';
 
 function initializeAuth(authService: AuthService) {
   return () => authService.initialize();
@@ -21,6 +22,9 @@ export const appConfig: ApplicationConfig = {
       useFactory: initializeAuth,
       deps: [AuthService],
       multi: true
-    }
+    }, provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
   ]
 };

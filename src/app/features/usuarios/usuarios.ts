@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, HostListener } from '@angular/core';
+import { SafeClickDirective } from '../../shared/directives/safe-click.directive';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user';
@@ -14,7 +15,7 @@ import { NotificationService } from '../../core/services/notification.service';
 @Component({
     selector: 'app-usuarios',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, SafeClickDirective],
     templateUrl: './usuarios.html',
     styleUrl: './usuarios.css'
 })
@@ -42,6 +43,8 @@ export class Usuarios implements OnInit {
     isLoading = true;
     showModal = false;
     showDetailsModal = false;
+    activeDropdownId: string | null = null;
+    isSaving = false;
     isEditing = false;
     errorMessage = '';
 
@@ -259,21 +262,23 @@ export class Usuarios implements OnInit {
             return;
         }
 
-        const obs = this.isEditing && this.selectedMember // hacky check for id availability, usually passed separately or in DTO if needed
-            // Wait, update endpoint needs ID. The user object in the list has the ID.
-            // I need to store the editing ID somewhere.
-            // I'll add editingUserId to the class.
+        if (this.isSaving) return;
+        this.isSaving = true;
+
+        const obs = this.isEditing && this.selectedMember
             ? this.userService.updateUser(this.editingUserId, this.currentUser)
             : this.userService.createUser(this.currentUser);
 
         obs.subscribe({
             next: () => {
+                this.isSaving = false;
                 this.loadUsers();
                 this.loadStats();
                 this.notificationService.success(this.isEditing ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
                 this.closeModal();
             },
             error: (err) => {
+                this.isSaving = false;
                 console.error(err);
                 this.errorMessage = 'Error al guardar el usuario';
             }
@@ -293,11 +298,7 @@ export class Usuarios implements OnInit {
 
     // Actions
     // Actions
-    toggleProcessing = new Set<string>();
-
     toggleStatus(user: User) {
-        if (this.toggleProcessing.has(user.id)) return;
-
         const originalStatus = user.active;
         const targetStatus = !originalStatus;
 
@@ -305,7 +306,7 @@ export class Usuarios implements OnInit {
         const currentUsername = this.authService.currentUser()?.username;
         if (user.username === currentUsername && originalStatus === true) {
             this.notificationService.error('No puedes desactivar tu propio usuario.');
-            // Revertir visualmente el toggle (Angular detectará el cambio y lo sincronizará)
+            // Revertir visualmente el toggle
             user.active = !originalStatus;
             setTimeout(() => {
                 user.active = originalStatus;
@@ -313,8 +314,6 @@ export class Usuarios implements OnInit {
             }, 0);
             return;
         }
-
-        this.toggleProcessing.add(user.id);
 
         // Optimistic update
         user.active = targetStatus;
@@ -324,13 +323,10 @@ export class Usuarios implements OnInit {
                 user.active = newStatus;
                 this.loadStats();
                 this.notificationService.success(`Usuario ${newStatus ? 'activado' : 'desactivado'} correctamente`);
-                this.toggleProcessing.delete(user.id);
             },
             error: (err) => {
-                // Revertir si hay error (ej. 400 Bad Request del backend)
+                // Revert if error
                 user.active = originalStatus;
-                this.toggleProcessing.delete(user.id);
-                // El error interceptor se encarga de mostrar el mensaje de error del backend
             }
         });
     }
@@ -360,6 +356,16 @@ export class Usuarios implements OnInit {
     closeDetailsModal() {
         this.showDetailsModal = false;
         this.selectedUser = null;
+    }
+
+    toggleDropdown(event: Event, id: string) {
+        event.stopPropagation();
+        this.activeDropdownId = this.activeDropdownId === id ? null : id;
+    }
+
+    @HostListener('document:click')
+    closeDropdown() {
+        this.activeDropdownId = null;
     }
 
     copyText(text: string | undefined) {

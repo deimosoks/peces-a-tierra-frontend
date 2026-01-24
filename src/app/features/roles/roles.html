@@ -61,8 +61,17 @@
     <div class="modal-content role-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
             <h2>{{ isEditing ? 'Editar Rol' : 'Crear Nuevo Rol' }}</h2>
-            <button class="close-btn" (click)="closeModal()">&times;</button>
+            <button class="close-btn" (click)="closeModal()" [disabled]="isSaving">&times;</button>
         </div>
+
+        <!-- Loading Overlay -->
+        <div class="modal-loading-overlay" *ngIf="isSaving">
+            <div class="spinner-wrapper">
+                <div class="spinner-circle"></div>
+                <p>Procesando...</p>
+            </div>
+        </div>
+
         <div class="modal-body">
             <div class="form-section">
                 <label>Información Básica</label>
@@ -108,9 +117,10 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
-            <button class="btn-primary-premium" (click)="saveRole()" [disabled]="!currentRoleName">
-                {{ isEditing ? 'Actualizar Rol' : 'Guardar Rol' }}
+            <button class="btn-secondary" (click)="closeModal()" [disabled]="isSaving">Cancelar</button>
+            <button class="btn-primary-premium" (click)="saveRole()" [disabled]="!currentRoleName || isSaving">
+                <i class="fa-solid" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                {{ isSaving ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar Rol' : 'Guardar Rol') }}
             </button>
         </div>
     </div>

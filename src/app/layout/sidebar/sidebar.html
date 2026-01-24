@@ -1,4 +1,8 @@
-<aside class="sidebar">
+<aside class="sidebar" [ngClass]="{'sidebar-open': isOpen}">
+    <button class="mobile-close-btn" (click)="close()">
+        <i class="fa-solid fa-times"></i>
+    </button>
+    
     <div class="sidebar-header">
         <div class="logo">
             <i class="fa-solid fa-church"></i>
@@ -12,11 +16,11 @@
     <nav class="sidebar-nav">
         <div class="nav-section">
             <h3 class="section-title">PRINCIPAL</h3>
-            <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_DASHBOARD')">
+            <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_DASHBOARD')" (click)="close()">
                 <i class="fa-solid fa-gauge"></i>
                 <span>Dashboard</span>
             </a>
-            <a routerLink="/reportes" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_REPORT')">
+            <a routerLink="/reportes" routerLinkActive="active" class="nav-item" *ngIf="can('MANAGE_REPORT')" (click)="close()">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Reportes</span>
             </a>
@@ -24,11 +28,11 @@
 
         <div class="nav-section">
             <h3 class="section-title">GESTIÓN DE INTEGRANTES</h3>
-            <a routerLink="/integrantes" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_MEMBER_PANEL')">
+            <a routerLink="/integrantes" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_MEMBER_PANEL')" (click)="close()">
                 <i class="fa-solid fa-users"></i>
                 <span>Integrantes</span>
             </a>
-            <a routerLink="/asistencia" routerLinkActive="active" class="nav-item" *ngIf="can('REGISTER_ATTENDANCE')">
+            <a routerLink="/asistencia" routerLinkActive="active" class="nav-item" *ngIf="can('REGISTER_ATTENDANCE')" (click)="close()">
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>Pasar Asistencia</span>
             </a>
@@ -36,16 +40,20 @@
 
         <div class="nav-section">
             <h3 class="section-title">ADMINISTRACIÓN</h3>
-            <a routerLink="/usuarios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_USER_PANEL')">
+            <a routerLink="/usuarios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_USER_PANEL')" (click)="close()">
                 <i class="fa-solid fa-user-gear"></i>
                 <span>Usuarios del sistema</span>
             </a>
-            <a routerLink="/roles" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_ROLE_PANEL')">
+            <a routerLink="/roles" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_ROLE_PANEL')" (click)="close()">
                 <i class="fa-solid fa-id-card-clip"></i>
                 <span>Roles y permisos</span>
             </a>
+            <a routerLink="/servicios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_SERVICE_PANEL')" (click)="close()">
+                <i class="fa-solid fa-church"></i>
+                <span>Gestión de Servicios</span>
+            </a>
             <a routerLink="/asistencias/administrar" routerLinkActive="active" class="nav-item"
-                *ngIf="can('MANAGE_ATTENDANCE')">
+                *ngIf="can('MANAGE_ATTENDANCE')" (click)="close()">
                 <i class="fa-solid fa-clipboard-list"></i>
                 <span>Administrar Asistencias</span>
             </a>
@@ -53,6 +61,10 @@
     </nav>
 
     <div class="sidebar-footer">
+        <button class="nav-item" *ngIf="pwaService.showInstallButton" (click)="installApp()" style="color: #4f46e5; background: #e0e7ff; margin-bottom: 0.5rem;">
+            <i class="fa-solid fa-download"></i>
+            <span>Instalar App</span>
+        </button>
         <button class="nav-item logout-btn" (click)="logout()">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Cerrar Sesión</span>

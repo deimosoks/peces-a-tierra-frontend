@@ -1,8 +1,3 @@
-<button class="btn-fixed-services" (click)="openServicesModal()" *ngIf="can('VIEW_SERVICE_PANEL')">
-    <i class="fa-solid fa-gear"></i>
-    Gestión de Servicios
-</button>
-
 <header class="page-header">
     <p>Control y registro de asistencia a servicios y eventos.</p>
 </header>
@@ -11,8 +6,18 @@
     <div class="card premium-card">
         <!-- Header Filters -->
         <div class="asistencia-header">
+            <!-- Mobile Configuration Summary trigger -->
+            <button class="mobile-config-trigger" (click)="openFilterModal()">
+                <div class="config-info">
+                    <span class="service-name">{{ getSelectedServiceName() }}</span>
+                    <span class="service-date">{{ serviceDate | date:'d MMM, h:mm a' }}</span>
+                </div>
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+            <!-- Desktop Filters (Hidden on Mobile) -->
             <div class="filter-group registration-grid">
-                <div class="input-with-label">
+                <div class="input-with-label desktop-only">
                     <label>Fecha del Servicio (Inicio)</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-calendar-alt"></i>
@@ -20,15 +25,25 @@
                     </div>
                 </div>
 
-                <div class="input-with-label">
-                    <label>Fecha de Llegada</label>
-                    <div class="input-icon-wrapper">
+                <div class="input-with-label desktop-only">
+                    <div class="label-with-toggle">
+                        <label>Hora de Llegada</label>
+                        <div class="toggle-wrapper" title="Modo Automático/Manual">
+                            <span class="toggle-label">{{ isManualAttendanceTime ? 'Manual' : 'Auto' }}</span>
+                            <label class="switch-xs">
+                                <input type="checkbox" [(ngModel)]="isManualAttendanceTime">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-icon-wrapper" [class.disabled]="!isManualAttendanceTime">
                         <i class="fa-solid fa-clock"></i>
-                        <input type="datetime-local" [(ngModel)]="attendanceDate" class="premium-input">
+                        <input type="datetime-local" [(ngModel)]="attendanceDate" class="premium-input"
+                            [disabled]="!isManualAttendanceTime">
                     </div>
                 </div>
 
-                <div class="input-with-label">
+                <div class="input-with-label desktop-only">
                     <label>Tipo de Servicio</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-church"></i>
@@ -57,10 +72,10 @@
                 <thead>
                     <tr>
                         <th>NOMBRE COMPLETO</th>
-                        <th>CEDULA</th>
-                        <th>CATEGORIA</th>
-                        <th>TIPOS DE USUARIOS</th>
-                        <th>TELEFONO</th>
+                        <th class="mobile-hide">CEDULA</th>
+                        <th class="mobile-hide">CATEGORIA</th>
+                        <th class="mobile-hide">TIPOS DE USUARIOS</th>
+                        <th class="mobile-hide">TELEFONO</th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
@@ -75,12 +90,12 @@
                                 <span class="user-fullname">{{ member.completeName }}</span>
                             </div>
                         </td>
-                        <td>{{ member.cc }}</td>
-                        <td>
+                        <td class="mobile-hide">{{ member.cc }}</td>
+                        <td class="mobile-hide">
                             <span class="badge" [ngClass]="getBadgeClass(member.category)">{{ member.category }}</span>
                         </td>
-                        <td>{{ member.type }}</td>
-                        <td>{{ member.cellphone }}</td>
+                        <td class="mobile-hide">{{ member.type }}</td>
+                        <td class="mobile-hide">{{ member.cellphone }}</td>
                         <td class="text-center">
                             <div class="actions-mini justify-center">
                                 <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver detalles">
@@ -134,81 +149,6 @@
     </div>
 </div>
 
-<!-- Services Management Modal -->
-<div class="modal-overlay" *ngIf="showServicesModal" (click)="closeServicesModal()">
-    <div class="modal-content services-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2>{{ isEditingService ? 'Editar Servicio' : 'Gestión de Servicios' }}</h2>
-            <button class="close-btn" (click)="closeServicesModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <!-- Service Form -->
-            <form (submit)="onServiceSubmit()" class="service-quick-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nombre del Servicio</label>
-                        <input type="text" [(ngModel)]="serviceForm.name" name="name"
-                            placeholder="Ej: Culto de Adoración" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <input type="text" [(ngModel)]="serviceForm.description" name="description"
-                            placeholder="Breve descripción" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-add-service" [disabled]="isSavingService">
-                        <i class="fa-solid" [ngClass]="isEditingService ? 'fa-save' : 'fa-plus'"></i>
-                        {{ isEditingService ? 'Actualizar' : 'Agregar' }}
-                    </button>
-                    <button type="button" *ngIf="isEditingService" class="btn btn-muted btn-add-service"
-                        (click)="resetServiceForm()">
-                        Cancelar
-                    </button>
-                </div>
-            </form>
-
-            <hr class="modal-divider">
-
-            <!-- Services List -->
-            <div class="services-list-container">
-                <table class="premium-table compact">
-                    <thead>
-                        <tr>
-                            <th>NOMBRE</th>
-                            <th>DESCRIPCIÓN</th>
-                            <th class="text-center">ESTADO</th>
-                            <th class="text-center">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let s of servicesAll" [class.inactive-row]="!s.active">
-                            <td><strong>{{ s.name }}</strong></td>
-                            <td class="text-muted">{{ s.description }}</td>
-                            <td class="text-center">
-                                <label class="switch-sm">
-                                    <input type="checkbox" [checked]="s.active" (change)="toggleServiceStatus(s)">
-                                    <span class="slider round"></span>
-                                </label>
-                            </td>
-                            <td class="text-center">
-                                <div class="actions-mini justify-center">
-                                    <button class="action-btn-sm edit" (click)="editService(s)" title="Editar">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    <button class="action-btn-sm delete" (click)="deleteService(s.id)" title="Eliminar">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr *ngIf="servicesAll.length === 0">
-                            <td colspan="4" class="empty-state small">No hay servicios registrados</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Modal Details -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
@@ -289,6 +229,60 @@
         <div class="modal-footer">
             <button class="btn btn-muted" (click)="closeNoteModal()">Cancelar</button>
             <button class="btn btn-primary" (click)="saveMemberNote()">Guardar Nota</button>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Filter Configuration Modal -->
+<div class="modal-overlay" *ngIf="showFilterModal" (click)="closeFilterModal()">
+    <div class="modal-content filter-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Configuración de Asistencia</h2>
+            <button class="close-btn" (click)="closeFilterModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="filter-form-stack">
+                <div class="input-with-label">
+                    <label>Tipo de Servicio</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-church"></i>
+                        <select [(ngModel)]="selectedServiceId" class="premium-input">
+                            <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-with-label">
+                    <label>Fecha del Servicio</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-calendar-alt"></i>
+                        <input type="datetime-local" [(ngModel)]="serviceDate" class="premium-input">
+                    </div>
+                </div>
+
+                <div class="input-with-label">
+                    <div class="label-with-toggle">
+                        <label>Hora de Llegada</label>
+                        <div class="toggle-wrapper" title="Modo Automático/Manual">
+                            <span class="toggle-label">{{ isManualAttendanceTime ? 'Manual' : 'Auto' }}</span>
+                            <label class="switch-xs">
+                                <input type="checkbox" [(ngModel)]="isManualAttendanceTime">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-icon-wrapper" [class.disabled]="!isManualAttendanceTime">
+                        <i class="fa-solid fa-clock"></i>
+                        <input type="datetime-local" [(ngModel)]="attendanceDate" class="premium-input"
+                            [disabled]="!isManualAttendanceTime">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary full-width" (click)="closeFilterModal()">
+                Listo
+            </button>
         </div>
     </div>
 </div>

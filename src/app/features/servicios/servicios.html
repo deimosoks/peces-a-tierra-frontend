@@ -1,0 +1,156 @@
+<header class="page-header">
+    <p>Administra los servicios y eventos de la iglesia.</p>
+</header>
+
+<!-- Floating Action Button (Mobile Only) -->
+<button class="fab-add-service" (click)="openFormModal()" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
+    <i class="fa-solid fa-plus"></i>
+</button>
+
+<div class="servicios-container">
+    <div class="card premium-card">
+        <!-- Service Form - Desktop Inline -->
+        <form (submit)="onServiceSubmit()" class="service-form service-form-desktop" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre del Servicio</label>
+                    <input type="text" [(ngModel)]="serviceForm.name" name="name"
+                        placeholder="Ej: Culto de Adoración" required class="premium-input">
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <input type="text" [(ngModel)]="serviceForm.description" name="description"
+                        placeholder="Breve descripción" required class="premium-input">
+                </div>
+                <button type="submit" class="btn btn-primary btn-add-service" [disabled]="isSavingService">
+                    <i class="fa-solid" [ngClass]="isSavingService ? 'fa-spinner fa-spin' : (isEditingService ? 'fa-save' : 'fa-plus')"></i>
+                    {{ isSavingService ? (isEditingService ? 'Actualizando...' : 'Agregando...') : (isEditingService ? 'Actualizar' : 'Agregar') }}
+                </button>
+                <button type="button" *ngIf="isEditingService" class="btn btn-muted btn-add-service"
+                    (click)="resetServiceForm()">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+
+        <hr class="divider" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
+
+        <!-- Services List -->
+        <div class="table-container">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>NOMBRE</th>
+                        <th class="desktop-only text-muted">DESCRIPCIÓN</th>
+                        <th class="text-center desktop-only">ESTADO</th>
+                        <th class="text-center">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let s of services" [class.inactive-row]="!s.active">
+                        <td><strong>{{ s.name }}</strong></td>
+                        <td class="text-muted desktop-only">{{ s.description }}</td>
+                        <td class="text-center desktop-only">
+                            <label class="status-switch" *ngIf="can('UPDATE_SERVICE')" 
+                                appSafeClick (safeClick)="toggleServiceStatus(s)">
+                                <input type="checkbox" [checked]="s.active" 
+                                    [disabled]="!can('UPDATE_SERVICE')">
+                                <span class="slider round"></span>
+                            </label>
+                            <span *ngIf="!can('UPDATE_SERVICE')" class="status-badge" [class.active]="s.active">
+                                {{ s.active ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="actions-mini justify-center">
+                                <!-- Desktop Actions -->
+                                <div class="desktop-only desktop-actions">
+                                    <button class="action-btn-sm edit" (click)="editService(s)" title="Editar"
+                                        *ngIf="can('UPDATE_SERVICE')">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button class="action-btn-sm delete" (click)="deleteService(s.id)" title="Eliminar"
+                                        *ngIf="can('DELETE_SERVICE')">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Mobile Actions -->
+                                <div class="mobile-only mobile-actions-wrapper">
+                                    <button class="menu-trigger" (click)="toggleDropdown($event, s.id)">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+
+                                    <div class="action-dropdown" *ngIf="activeDropdownId === s.id" (click)="$event.stopPropagation()">
+                                        <div class="dropdown-header-mobile">
+                                            <span class="member-name-small">{{ s.name }}</span>
+                                        </div>
+                                        <div class="dropdown-item status-row">
+                                            <span class="dropdown-label">Estado</span>
+                                            <label class="status-switch" appSafeClick (safeClick)="toggleServiceStatus(s)">
+                                                <input type="checkbox" [checked]="s.active" [disabled]="!can('UPDATE_SERVICE')">
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <hr class="dropdown-divider">
+                                        <button class="dropdown-item" (click)="editService(s); closeDropdown()" *ngIf="can('UPDATE_SERVICE')">
+                                            <i class="fa-solid fa-pen text-primary"></i>
+                                            <span>Editar</span>
+                                        </button>
+                                        <button class="dropdown-item" (click)="deleteService(s.id); closeDropdown()" *ngIf="can('DELETE_SERVICE')">
+                                            <i class="fa-solid fa-trash text-danger"></i>
+                                            <span class="delete-text">Eliminar</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="services.length === 0">
+                        <td colspan="4" class="empty-state">No hay servicios registrados</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Service Form Modal (Mobile Only) -->
+<div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
+    <div class="modal-content service-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isEditingService ? 'Editar Servicio' : 'Nuevo Servicio' }}</h2>
+            <button class="close-btn" (click)="closeFormModal()" [disabled]="isSavingService">&times;</button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="modal-loading-overlay" *ngIf="isSavingService">
+            <div class="spinner-wrapper">
+                <div class="spinner-circle"></div>
+                <p>Procesando...</p>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <form (submit)="onServiceSubmit()" class="service-form-modal">
+                <div class="form-group">
+                    <label>Nombre del Servicio</label>
+                    <input type="text" [(ngModel)]="serviceForm.name" name="name"
+                        placeholder="Ej: Culto de Adoración" required class="premium-input">
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <input type="text" [(ngModel)]="serviceForm.description" name="description"
+                        placeholder="Breve descripción" required class="premium-input">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-muted" (click)="closeFormModal()" [disabled]="isSavingService">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isSavingService">
+                        <i class="fa-solid" [ngClass]="isSavingService ? 'fa-spinner fa-spin' : (isEditingService ? 'fa-save' : 'fa-plus')"></i>
+                        {{ isSavingService ? (isEditingService ? 'Actualizando...' : 'Agregando...') : (isEditingService ? 'Actualizar' : 'Agregar') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

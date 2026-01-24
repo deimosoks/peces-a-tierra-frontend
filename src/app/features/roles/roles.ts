@@ -29,6 +29,7 @@ export class Roles implements OnInit {
     // UI state
     isLoading = true;
     showModal = false;
+    isSaving = false;
     isEditing = false;
     errorMessage = '';
 
@@ -128,16 +129,15 @@ export class Roles implements OnInit {
             return;
         }
 
+        if (this.isSaving) return;
+        this.isSaving = true;
+
         const payload: RoleRequestDto = {
             name: this.currentRoleName,
             description: this.currentRoleDesc,
             color: this.currentRoleColor,
-            permissions: Array.from(this.currentRolePermissions).map(p => ({ namename: p, name: p }))
-            // Wait, backend expects Set<PermissionRequestDto> where DTO has 'name'.
+            permissions: Array.from(this.currentRolePermissions).map(pName => ({ name: pName }))
         };
-
-        // Correction: Map string array to object array
-        payload.permissions = Array.from(this.currentRolePermissions).map(pName => ({ name: pName }));
 
         const obs = this.isEditing && this.editingRoleId
             ? this.roleService.updateRole(this.editingRoleId, payload)
@@ -145,11 +145,13 @@ export class Roles implements OnInit {
 
         obs.subscribe({
             next: () => {
+                this.isSaving = false;
                 this.loadRoles();
                 this.notificationService.success(this.isEditing ? 'Rol actualizado correctamente' : 'Rol creado correctamente');
                 this.closeModal();
             },
             error: (err) => {
+                this.isSaving = false;
                 console.error('Error saving role', err);
                 this.errorMessage = 'Ocurrió un error al guardar el rol.';
             }

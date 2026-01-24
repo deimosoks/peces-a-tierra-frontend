@@ -32,7 +32,7 @@ export interface AttendanceResponseDto {
     registeredBy: string;
     invalidReason?: string;
     invalidAt?: string;
-    invalidatorId?: string;
+    invalidatedBy?: string;
 }
 
 export interface AttendancePagesResponseDto {

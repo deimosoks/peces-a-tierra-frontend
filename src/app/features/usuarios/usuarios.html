@@ -41,9 +41,9 @@
                 <thead>
                     <tr>
                         <th>USUARIO DEL SISTEMA</th>
-                        <th>PERSONA ENLAZADA</th>
-                        <th>ROLES</th>
-                        <th>ESTADO</th>
+                        <th class="desktop-only">PERSONA ENLAZADA</th>
+                        <th class="desktop-only">ROLES</th>
+                        <th class="desktop-only">ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
                 </thead>
@@ -58,10 +58,10 @@
                                 <span class="username">{{ user.username }}</span>
                             </div>
                         </td>
-                        <td>
+                        <td class="desktop-only">
                             <span class="member-name">{{ user.memberResponseDto.completeName }}</span>
                         </td>
-                        <td>
+                        <td class="desktop-only">
                             <div class="roles-badges">
                                 <span *ngFor="let role of user.roles" class="role-badge" [title]="role.name"
                                     [style.background-color]="role.color ? role.color + '20' : ''"
@@ -70,27 +70,66 @@
                                 </span>
                             </div>
                         </td>
-                        <td>
-                            <label class="status-switch">
+                        <td class="desktop-only text-center">
+                            <label class="status-switch" appSafeClick (safeClick)="toggleStatus(user)">
                                 <input type="checkbox" [checked]="user.active"
-                                    [disabled]="toggleProcessing.has(user.id) || !can('UPDATE_USER')"
-                                    (change)="toggleStatus(user)">
+                                    [disabled]="!can('UPDATE_USER')">
                                 <span class="slider round"></span>
                             </label>
                         </td>
                         <td>
-                            <div class="actions">
-                                <button class="action-btn view" (click)="viewDetails(user)" title="Ver Detalles">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <button class="action-btn edit" (click)="editUser(user)" title="Editar"
-                                    *ngIf="can('UPDATE_USER')">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="action-btn delete" (click)="deleteUser(user)" title="Eliminar"
-                                    *ngIf="can('DELETE_USER')">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
+                            <div class="actions-mini">
+                                <!-- Desktop Actions -->
+                                <div class="desktop-actions desktop-only">
+                                    <button class="action-btn view" (click)="viewDetails(user)" title="Ver Detalles">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn edit" (click)="editUser(user)" title="Editar"
+                                        *ngIf="can('UPDATE_USER')">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="action-btn delete" (click)="deleteUser(user)" title="Eliminar"
+                                        *ngIf="can('DELETE_USER')">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Mobile Actions Dropdown -->
+                                <div class="mobile-actions-wrapper mobile-only">
+                                    <button class="menu-trigger" (click)="toggleDropdown($event, user.id)">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+
+                                    <div class="action-dropdown" *ngIf="activeDropdownId === user.id"
+                                        (click)="$event.stopPropagation()">
+                                        <div class="dropdown-header-mobile">
+                                            <span class="member-name-small">{{ user.memberResponseDto.completeName }}</span>
+                                        </div>
+                                        <div class="dropdown-item status-row">
+                                            <span class="dropdown-label">Estado</span>
+                                            <label class="status-switch" appSafeClick (safeClick)="toggleStatus(user)">
+                                                <input type="checkbox" [checked]="user.active"
+                                                    [disabled]="!can('UPDATE_USER')">
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <hr class="dropdown-divider">
+                                        <button class="dropdown-item" (click)="viewDetails(user); closeDropdown()">
+                                            <i class="fa-solid fa-eye"></i>
+                                            <span>Ver Detalles</span>
+                                        </button>
+                                        <button class="dropdown-item" (click)="editUser(user); closeDropdown()"
+                                            *ngIf="can('UPDATE_USER')">
+                                            <i class="fa-solid fa-pen text-primary"></i>
+                                            <span>Editar</span>
+                                        </button>
+                                        <button class="dropdown-item delete-text" (click)="deleteUser(user); closeDropdown()"
+                                            *ngIf="can('DELETE_USER')">
+                                            <i class="fa-solid fa-trash-can text-danger"></i>
+                                            <span>Eliminar</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -129,8 +168,17 @@
     <div class="modal-content user-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
             <h2>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
-            <button class="close-btn" (click)="closeModal()">&times;</button>
+            <button class="close-btn" (click)="closeModal()" [disabled]="isSaving">&times;</button>
         </div>
+
+        <!-- Loading Overlay -->
+        <div class="modal-loading-overlay" *ngIf="isSaving">
+            <div class="spinner-wrapper">
+                <div class="spinner-circle"></div>
+                <p>Procesando...</p>
+            </div>
+        </div>
+
         <div class="modal-body">
             <div class="form-grid">
                 <!-- Member Selection -->
@@ -227,9 +275,10 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
-            <button class="btn-save" (click)="onSubmit()">
-                {{ isEditing ? 'Actualizar' : 'Crear Usuario' }}
+            <button class="btn-cancel" (click)="closeModal()" [disabled]="isSaving">Cancelar</button>
+            <button class="btn-save" (click)="onSubmit()" [disabled]="isSaving">
+                <i class="fa-solid" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                {{ isSaving ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Crear Usuario') }}
             </button>
         </div>
     </div>

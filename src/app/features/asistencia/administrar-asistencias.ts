@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AsistenciaService } from '../../core/services/asistencia';
@@ -55,6 +55,7 @@ export class AdministrarAsistencias implements OnInit {
   // Details Modal
   showDetailsModal = false;
   attendanceDetails?: AttendanceResponseDto;
+  activeDropdownId: string | null = null;
 
   ngOnInit() {
     this.loadServices();
@@ -212,5 +213,15 @@ export class AdministrarAsistencias implements OnInit {
       case 'NIÑOS': return 'badge-ninos';
       default: return '';
     }
+  }
+
+  toggleDropdown(event: Event, id: string) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
+  }
+
+  @HostListener('document:click')
+  closeDropdown() {
+    this.activeDropdownId = null;
   }
 }

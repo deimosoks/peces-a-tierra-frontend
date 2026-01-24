@@ -1,16 +1,17 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
 import { Integrante } from '../../core/models/integrante.model';
+import { SafeClickDirective } from '../../shared/directives/safe-click.directive';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-integrantes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SafeClickDirective],
   templateUrl: './integrantes.html',
   styleUrl: './integrantes.css',
 })
@@ -20,6 +21,7 @@ export class Integrantes implements OnInit {
   private authService = inject(AuthService);
   private confirmationService = inject(ConfirmationService);
   private notificationService = inject(NotificationService);
+  private cdr = inject(ChangeDetectorRef);
 
   members: Integrante[] = [];
   totalPages = 0;
@@ -27,6 +29,7 @@ export class Integrantes implements OnInit {
   onlyActive = true;
   searchQuery = '';
   isLoading = false;
+  activeDropdownId: string | null = null;
 
   selectedMember?: Integrante;
   showModal = false; // For details
@@ -34,6 +37,7 @@ export class Integrantes implements OnInit {
 
   integranteForm!: FormGroup;
   isEditing = false;
+  isSaving = false;
   currentId?: string;
 
   tipos = ['INICIANTE', 'VISITANTE', 'MIEMBRO', 'SIMPATIZANTE'];
@@ -113,23 +117,13 @@ export class Integrantes implements OnInit {
     }
   }
 
-  togglingIds = new Set<string>();
-
   toggleMemberStatus(member: Integrante) {
-    if (this.togglingIds.has(member.id)) return;
-
-    this.togglingIds.add(member.id);
     const newStatus = !member.active;
 
     this.integranteService.toggleStatus(member.id, newStatus).subscribe({
       next: (currentStatus) => {
         member.active = currentStatus;
         this.notificationService.success(`Integrante ${currentStatus ? 'activado' : 'desactivado'} correctamente`);
-        // Small delay before allowing another toggle
-        setTimeout(() => this.togglingIds.delete(member.id), 500);
-      },
-      error: () => {
-        this.togglingIds.delete(member.id);
       }
     });
   }
@@ -144,6 +138,16 @@ export class Integrantes implements OnInit {
     this.selectedMember = undefined;
   }
 
+  toggleDropdown(event: Event, id: string) {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
+  }
+
+  @HostListener('document:click')
+  closeDropdown() {
+    this.activeDropdownId = null;
+  }
+
   openFormModal() {
     this.resetForm();
     this.showFormModal = true;
@@ -155,7 +159,8 @@ export class Integrantes implements OnInit {
   }
 
   onSubmit() {
-    if (this.integranteForm.valid) {
+    if (this.integranteForm.valid && !this.isSaving) {
+      this.isSaving = true;
       const formData = new FormData();
       const formValue = this.integranteForm.value;
 
@@ -170,16 +175,24 @@ export class Integrantes implements OnInit {
       }
 
       if (this.isEditing && this.currentId) {
-        this.integranteService.updateIntegrante(this.currentId, formData).subscribe(() => {
-          this.closeFormModal();
-          this.loadMembers();
-          this.notificationService.success('Integrante actualizado correctamente');
+        this.integranteService.updateIntegrante(this.currentId, formData).subscribe({
+          next: () => {
+            this.isSaving = false;
+            this.closeFormModal();
+            this.loadMembers();
+            this.notificationService.success('Integrante actualizado correctamente');
+          },
+          error: () => this.isSaving = false
         });
       } else {
-        this.integranteService.addIntegrante(formData).subscribe(() => {
-          this.closeFormModal();
-          this.loadMembers();
-          this.notificationService.success('Integrante creado correctamente');
+        this.integranteService.addIntegrante(formData).subscribe({
+          next: () => {
+            this.isSaving = false;
+            this.closeFormModal();
+            this.loadMembers();
+            this.notificationService.success('Integrante creado correctamente');
+          },
+          error: () => this.isSaving = false
         });
       }
     }
