@@ -6,7 +6,7 @@ import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { IglesiaService, AttendanceCreateDto } from '../../core/models/asistencia.model';
-import { Integrante } from '../../core/models/integrante.model';
+import { Integrante, MemberFilterRequestDto, MemberPagesResponseDto } from '../../core/models/integrante.model';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 
 @Component({
@@ -81,12 +81,14 @@ export class Asistencia implements OnInit {
 
   loadMembers() {
     this.isLoading = true;
-    const obs = this.searchQuery
-      ? this.integranteService.searchMembers(this.searchQuery, this.currentPage, true)
-      : this.integranteService.getMembers(this.currentPage, true);
+    
+    const filterRequest: MemberFilterRequestDto = {
+      onlyActive: true,
+      query: this.searchQuery.trim() || undefined
+    };
 
-    obs.subscribe({
-      next: (res) => {
+    this.integranteService.searchMembers(filterRequest, this.currentPage).subscribe({
+      next: (res: MemberPagesResponseDto) => {
         this.members = res.members;
         this.totalPages = res.pages;
         this.isLoading = false;

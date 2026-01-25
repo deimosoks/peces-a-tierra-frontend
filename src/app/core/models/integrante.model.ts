@@ -17,3 +17,10 @@ export interface MemberPagesResponseDto {
     members: Integrante[];
     pages: number;
 }
+
+export interface MemberFilterRequestDto {
+    memberType?: string[];
+    memberCategory?: string[];
+    onlyActive: boolean;
+    query?: string;
+}

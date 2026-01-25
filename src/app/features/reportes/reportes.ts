@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IntegranteService } from '../../core/services/integrante';
+import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
 import { AsistenciaService } from '../../core/services/asistencia';
 import { ReporteService } from '../../core/services/reporte';
 import { ReportFilters, ReportData } from '../../core/models/reporte.model';
@@ -112,8 +113,21 @@ export class Reportes implements OnInit {
   public chartOptions: any;
 
   ngOnInit() {
+    this.adjustPageSize();
     this.chartOptions = this.getPremiumChartOptions([], []);
     this.loadServices();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.adjustPageSize();
+    if (this.reportData.length > 0) {
+      this.updateChart();
+    }
+  }
+
+  adjustPageSize() {
+    this.pageSize = window.innerWidth <= 768 ? 5 : 15;
   }
 
   loadServices() {
@@ -129,7 +143,7 @@ export class Reportes implements OnInit {
     return {
       series: safeSeries,
       chart: {
-        height: 300,
+        height: 450,
         type: "bar",
         stacked: true,
         toolbar: {
@@ -180,12 +194,15 @@ export class Reportes implements OnInit {
         categories: safeCategories,
         labels: {
           show: true,
-          rotate: -45,
+          rotate: -90,
           rotateAlways: true,
           style: {
-            fontSize: '10px'
+            fontSize: '11px',
+            cssClass: 'chart-xaxis-label'
           },
           trim: false,
+          minHeight: 100,
+          maxHeight: 180,
           hideOverlappingLabels: false
         },
         axisBorder: { show: true },
@@ -246,7 +263,11 @@ export class Reportes implements OnInit {
     }
 
     this.isSearchingMembers = true;
-    this.integranteService.searchMembers(this.memberSearchQuery, 0, true).subscribe({
+    const filterRequest: MemberFilterRequestDto = {
+      onlyActive: true,
+      query: this.memberSearchQuery
+    };
+    this.integranteService.searchMembers(filterRequest, 0).subscribe({
       next: (res) => {
         this.memberResults = res.members;
         this.isSearchingMembers = false;

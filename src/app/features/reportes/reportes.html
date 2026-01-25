@@ -1,7 +1,4 @@
 <div class="reportes-container">
-    <header class="page-header">
-        <p>Visualiza métricas y estadísticas clave de la congregación.</p>
-    </header>
     <div class="card main-report-card">
         <div class="card-header spread justify-end">
             <div class="header-right buttons">
@@ -161,7 +158,7 @@
                 </div>
 
                 <div class="form-group premium-group search-member-group">
-                    <label><i class="fa-solid fa-user-magnifying-glass"></i> Filtrar por Integrante (Opcional)</label>
+                    <label><i class="fa-solid fa-user-magnifying-glass"></i> Filtrar por Integrante</label>
                     <div class="search-input-container">
                         <!-- Selected Member Badge -->
                         <div class="selected-member-chip" *ngIf="filters.userId">
@@ -216,6 +213,14 @@
             <button class="btn btn-primary" (click)="applyFilters()" [disabled]="isLoading">
                 {{ isLoading ? 'Generando...' : 'Generar Reporte' }}
             </button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="modal-loading-overlay" *ngIf="isLoading">
+            <div class="spinner-wrapper">
+                <div class="spinner-circle"></div>
+                <p>Generando reporte...</p>
+            </div>
         </div>
     </div>
 </div>

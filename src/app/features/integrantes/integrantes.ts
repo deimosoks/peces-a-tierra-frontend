@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
-import { Integrante } from '../../core/models/integrante.model';
+import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
 import { SafeClickDirective } from '../../shared/directives/safe-click.directive';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -30,6 +30,22 @@ export class Integrantes implements OnInit {
   searchQuery = '';
   isLoading = false;
   activeDropdownId: string | null = null;
+
+  // Filter state
+  selectedTypes: string[] = [];
+  selectedCategories: string[] = [];
+  showTypeDropdown = false;
+  showCategoryDropdown = false;
+  showMobileFiltersModal = false;
+
+  // Available options
+  availableTypes = ['INICIANTE', 'VISITANTE', 'MIEMBRO', 'SIMPATIZANTE'];
+  availableCategories = ['DAMAS', 'CABALLEROS', 'JOVENES', 'NIÑOS'];
+
+  // Mobile temporary filter state
+  tempSelectedTypes: string[] = [];
+  tempSelectedCategories: string[] = [];
+  tempOnlyActive = true;
 
   selectedMember?: Integrante;
   showModal = false; // For details
@@ -79,17 +95,25 @@ export class Integrantes implements OnInit {
 
   loadMembers() {
     this.isLoading = true;
-    const obs = this.searchQuery
-      ? this.integranteService.searchMembers(this.searchQuery, this.currentPage, this.onlyActive)
-      : this.integranteService.getMembers(this.currentPage, this.onlyActive);
+    
+    const filterRequest: MemberFilterRequestDto = {
+      memberType: this.selectedTypes.length > 0 ? this.selectedTypes : undefined,
+      memberCategory: this.selectedCategories.length > 0 ? this.selectedCategories : undefined,
+      onlyActive: this.onlyActive,
+      query: this.searchQuery.trim() || undefined
+    };
 
-    obs.subscribe({
+    this.integranteService.searchMembers(filterRequest, this.currentPage).subscribe({
       next: (res) => {
         this.members = res.members;
         this.totalPages = res.pages;
         this.isLoading = false;
       },
-      error: () => this.isLoading = false
+      error: (error) => {
+        console.error('Error loading members:', error);
+        this.notificationService.error('Error al cargar los integrantes');
+        this.isLoading = false;
+      }
     });
   }
 
@@ -138,14 +162,108 @@ export class Integrantes implements OnInit {
     this.selectedMember = undefined;
   }
 
-  toggleDropdown(event: Event, id: string) {
-    event.stopPropagation();
-    this.activeDropdownId = this.activeDropdownId === id ? null : id;
+  // Filter dropdown management
+  toggleTypeDropdown() {
+    this.showTypeDropdown = !this.showTypeDropdown;
+    if (this.showTypeDropdown) this.showCategoryDropdown = false;
   }
 
-  @HostListener('document:click')
-  closeDropdown() {
-    this.activeDropdownId = null;
+  toggleCategoryDropdown() {
+    this.showCategoryDropdown = !this.showCategoryDropdown;
+    if (this.showCategoryDropdown) this.showTypeDropdown = false;
+  }
+
+  toggleTypeSelection(type: string) {
+    const index = this.selectedTypes.indexOf(type);
+    if (index > -1) {
+      this.selectedTypes.splice(index, 1);
+    } else {
+      this.selectedTypes.push(type);
+    }
+    this.currentPage = 0;
+    this.loadMembers();
+  }
+
+  toggleCategorySelection(category: string) {
+    const index = this.selectedCategories.indexOf(category);
+    if (index > -1) {
+      this.selectedCategories.splice(index, 1);
+    } else {
+      this.selectedCategories.push(category);
+    }
+    this.currentPage = 0;
+    this.loadMembers();
+  }
+
+  isTypeSelected(type: string): boolean {
+    return this.selectedTypes.includes(type);
+  }
+
+  isCategorySelected(category: string): boolean {
+    return this.selectedCategories.includes(category);
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeFilterDropdowns(event: Event) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.filter-dropdown-container')) {
+      this.showTypeDropdown = false;
+      this.showCategoryDropdown = false;
+    }
+    // Keep existing dropdown logic
+    if (!target.closest('.action-dropdown')) {
+      this.activeDropdownId = null;
+    }
+  }
+
+  // Mobile filter modal logic
+  openMobileFilters() {
+    // Copy current state to temp state
+    this.tempSelectedTypes = [...this.selectedTypes];
+    this.tempSelectedCategories = [...this.selectedCategories];
+    this.tempOnlyActive = this.onlyActive;
+    this.showMobileFiltersModal = true;
+  }
+
+  closeMobileFilters() {
+    this.showMobileFiltersModal = false;
+  }
+
+  toggleMobileTypeSelection(type: string) {
+    const index = this.tempSelectedTypes.indexOf(type);
+    if (index > -1) {
+      this.tempSelectedTypes.splice(index, 1);
+    } else {
+      this.tempSelectedTypes.push(type);
+    }
+  }
+
+  toggleMobileCategorySelection(category: string) {
+    const index = this.tempSelectedCategories.indexOf(category);
+    if (index > -1) {
+      this.tempSelectedCategories.splice(index, 1);
+    } else {
+      this.tempSelectedCategories.push(category);
+    }
+  }
+
+  isMobileTypeSelected(type: string): boolean {
+    return this.tempSelectedTypes.includes(type);
+  }
+
+  isMobileCategorySelected(category: string): boolean {
+    return this.tempSelectedCategories.includes(category);
+  }
+
+  applyMobileFilters() {
+    // Apply temp state to active state
+    this.selectedTypes = [...this.tempSelectedTypes];
+    this.selectedCategories = [...this.tempSelectedCategories];
+    this.onlyActive = this.tempOnlyActive;
+    
+    this.currentPage = 0;
+    this.loadMembers();
+    this.closeMobileFilters();
   }
 
   openFormModal() {

@@ -8,7 +8,7 @@ import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
 import { User, UserRequestDto } from '../../core/models/user.model';
 import { Role } from '../../core/models/role.model';
-import { Integrante } from '../../core/models/integrante.model';
+import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
 
@@ -187,7 +187,11 @@ export class Usuarios implements OnInit {
         }
 
         this.isSearchingMembers = true;
-        this.integranteService.searchMembers(this.memberSearchQuery, 0, true).subscribe({
+        const filterRequest: MemberFilterRequestDto = {
+            onlyActive: true,
+            query: this.memberSearchQuery
+        };
+        this.integranteService.searchMembers(filterRequest, 0).subscribe({
             next: (res) => {
                 this.availableMembers = res.members;
                 this.isSearchingMembers = false;

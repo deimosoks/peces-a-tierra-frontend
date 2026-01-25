@@ -13,6 +13,11 @@
     transition: transform 0.3s ease;
 }
 
+/* .sidebar-header .logo img{
+    width: 100%;
+    border-radius: 9px;
+} */
+
 @media (max-width: 767px) {
     .sidebar {
         transform: translateX(-100%);

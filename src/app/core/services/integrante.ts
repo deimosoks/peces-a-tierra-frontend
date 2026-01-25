@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Integrante, MemberPagesResponseDto } from '../models/integrante.model';
+import { Integrante, MemberPagesResponseDto, MemberFilterRequestDto } from '../models/integrante.model';
 import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
@@ -11,21 +11,13 @@ export class IntegranteService {
   private http = inject(HttpClient);
   private baseUrl = API_CONFIG.baseUrl;
 
-  getMembers(page: number, onlyActive: boolean): Observable<MemberPagesResponseDto> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('onlyActive', onlyActive.toString());
-
-    return this.http.get<MemberPagesResponseDto>(`${this.baseUrl}/members`, { params });
-  }
-
-  searchMembers(query: string, page: number, onlyActive: boolean): Observable<MemberPagesResponseDto> {
-    const params = new HttpParams()
-      .set('query', query)
-      .set('page', page.toString())
-      .set('onlyActive', onlyActive.toString());
-
-    return this.http.get<MemberPagesResponseDto>(`${this.baseUrl}/members`, { params });
+  searchMembers(filterRequest: MemberFilterRequestDto, page: number): Observable<MemberPagesResponseDto> {
+    const params = new HttpParams().set('page', page.toString());
+    return this.http.post<MemberPagesResponseDto>(
+      `${this.baseUrl}/members/search`, 
+      filterRequest, 
+      { params }
+    );
   }
 
   toggleStatus(id: string, active: boolean): Observable<boolean> {

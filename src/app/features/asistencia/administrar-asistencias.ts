@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { IntegranteService } from '../../core/services/integrante'; // Corrected path
 import { NotificationService } from '../../core/services/notification.service';
 import { AttendanceResponseDto, AttendanceFiltersRequestDto, IglesiaService } from '../../core/models/asistencia.model';
-import { Integrante } from '../../core/models/integrante.model';
+import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
@@ -69,7 +69,11 @@ export class AdministrarAsistencias implements OnInit {
       distinctUntilChanged(),
       switchMap(query => {
         if (query.length < 2) return [{ members: [], pages: 0 }];
-        return this.integranteService.searchMembers(query, 0, true);
+        const filterRequest: MemberFilterRequestDto = {
+          onlyActive: true,
+          query: query
+        };
+        return this.integranteService.searchMembers(filterRequest, 0);
       })
     ).subscribe(res => {
       this.memberSearchResults = res.members;

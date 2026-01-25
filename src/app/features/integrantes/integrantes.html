@@ -1,18 +1,60 @@
 <div class="integrantes-container full-width">
-    <header class="page-header">
-        <p>Administra la información detallada de todos los miembros y asistentes de la congregación.</p>
-    </header>
     <div class="card full-card">
         <div class="card-header spread justify-end">
             <div class="header-actions">
-                <div class="toggle-filter">
-                    <label class="status-switch">
-                        <input type="checkbox" [(ngModel)]="onlyActive" (change)="onToggleOnlyActive()">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="toggle-label">{{ onlyActive ? 'Activos' : 'Todos' }}</span>
+                <!-- Mobile Filter Button -->
+                <button class="btn btn-filter mobile-only" (click)="openMobileFilters()">
+                    <i class="fa-solid fa-filter"></i>
+                    <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length > 0">
+                        {{ selectedTypes.length + selectedCategories.length }}
+                    </span>
+                </button>
+
+                <!-- Desktop Filters -->
+                <div class="desktop-only filter-group">
+                    <!-- Type Filter -->
+                    <div class="filter-dropdown-container">
+                        <button class="btn btn-filter" (click)="toggleTypeDropdown()">
+                            <i class="fa-solid fa-user-tag"></i>
+                            <span>Tipo</span>
+                            <span class="filter-badge" *ngIf="selectedTypes.length > 0">{{ selectedTypes.length }}</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="filter-dropdown" *ngIf="showTypeDropdown">
+                            <div class="filter-option" *ngFor="let type of availableTypes" (click)="toggleTypeSelection(type)">
+                                <input type="checkbox" [checked]="isTypeSelected(type)" readonly>
+                                <span>{{ type }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="filter-dropdown-container">
+                        <button class="btn btn-filter" (click)="toggleCategoryDropdown()">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>Categoría</span>
+                            <span class="filter-badge" *ngIf="selectedCategories.length > 0">{{ selectedCategories.length }}</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="filter-dropdown" *ngIf="showCategoryDropdown">
+                            <div class="filter-option" *ngFor="let category of availableCategories" (click)="toggleCategorySelection(category)">
+                                <input type="checkbox" [checked]="isCategorySelected(category)" readonly>
+                                <span>{{ category }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Toggle -->
+                    <div class="toggle-filter">
+                        <label class="status-switch">
+                            <input type="checkbox" [(ngModel)]="onlyActive" (change)="onToggleOnlyActive()">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label">{{ onlyActive ? 'Activos' : 'Todos' }}</span>
+                    </div>
                 </div>
 
+                <!-- Search -->
                 <div class="search-box-mini">
                     <button class="search-icon-btn" (click)="onSearch()" title="Buscar">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -21,6 +63,7 @@
                         placeholder="Buscar integrantes...">
                 </div>
 
+                <!-- New Button -->
                 <button class="btn btn-primary btn-sm btn-new" (click)="openFormModal()" *ngIf="can('CREATE_MEMBER')">
                     <i class="fa-solid fa-user-plus"></i>
                     <span>Nuevo</span>
@@ -71,7 +114,7 @@
 
                             <!-- Mobile Actions Dropdown -->
                             <div class="mobile-actions-wrapper mobile-only">
-                                <button class="action-btn-sm menu-trigger" (click)="toggleDropdown($event, member.id)">
+                                <button class="action-btn-sm menu-trigger" (click)="activeDropdownId = activeDropdownId === member.id ? null : member.id; $event.stopPropagation()">
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
                                 
@@ -88,15 +131,15 @@
                                         </label>
                                     </div>
                                     <hr class="dropdown-divider">
-                                    <button class="dropdown-item" (click)="viewMember(member); closeDropdown()">
+                                    <button class="dropdown-item" (click)="viewMember(member); activeDropdownId = null">
                                         <i class="fa-solid fa-eye"></i>
                                         <span>Ver Detalles</span>
                                     </button>
-                                    <button class="dropdown-item" (click)="editIntegrante(member); closeDropdown()" *ngIf="can('UPDATE_MEMBER')">
+                                    <button class="dropdown-item" (click)="editIntegrante(member); activeDropdownId = null" *ngIf="can('UPDATE_MEMBER')">
                                         <i class="fa-solid fa-pencil text-primary"></i>
                                         <span>Editar</span>
                                     </button>
-                                    <button class="dropdown-item" (click)="deleteIntegrante(member.id); closeDropdown()" *ngIf="can('DELETE_MEMBER')">
+                                    <button class="dropdown-item" (click)="deleteIntegrante(member.id); activeDropdownId = null" *ngIf="can('DELETE_MEMBER')">
                                         <i class="fa-solid fa-trash text-danger"></i>
                                         <span class="delete-text">Eliminar</span>
                                     </button>
@@ -262,6 +305,59 @@
                     </span>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Filters Modal -->
+<div class="modal-overlay" *ngIf="showMobileFiltersModal" (click)="closeMobileFilters()">
+    <div class="modal-content mobile-filters-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-filter"></i> Filtros</h2>
+            <button class="close-btn" (click)="closeMobileFilters()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Type Filter Section -->
+            <div class="filter-section">
+                <h3>Tipo de Integrante</h3>
+                <div class="filter-options-grid">
+                    <div class="filter-option-card" *ngFor="let type of availableTypes" 
+                         [class.selected]="isMobileTypeSelected(type)"
+                         (click)="toggleMobileTypeSelection(type)">
+                        <input type="checkbox" [checked]="isMobileTypeSelected(type)" readonly>
+                        <span>{{ type }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Filter Section -->
+            <div class="filter-section">
+                <h3>Categoría</h3>
+                <div class="filter-options-grid">
+                    <div class="filter-option-card" *ngFor="let category of availableCategories"
+                         [class.selected]="isMobileCategorySelected(category)"
+                         (click)="toggleMobileCategorySelection(category)">
+                        <input type="checkbox" [checked]="isMobileCategorySelected(category)" readonly>
+                        <span>{{ category }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Toggle Section -->
+            <div class="filter-section">
+                <h3>Estado</h3>
+                <div class="toggle-filter-mobile">
+                    <label class="status-switch">
+                        <input type="checkbox" [(ngModel)]="tempOnlyActive">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-label">{{ tempOnlyActive ? 'Solo Activos' : 'Todos' }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeMobileFilters()">Cancelar</button>
+            <button class="btn btn-primary" (click)="applyMobileFilters()">Aplicar Filtros</button>
         </div>
     </div>
 </div>
