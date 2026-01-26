@@ -103,8 +103,14 @@
                             </div>
                         </td>
                     </tr>
-                    <tr *ngIf="services.length === 0">
+                    <tr *ngIf="services.length === 0 && !isLoading">
                         <td colspan="4" class="empty-state">No hay servicios registrados</td>
+                    </tr>
+                    <tr *ngIf="isLoading">
+                        <td colspan="4" class="loading-state">
+                            <div class="spinner"></div>
+                            Cargando servicios...
+                        </td>
                     </tr>
                 </tbody>
             </table>

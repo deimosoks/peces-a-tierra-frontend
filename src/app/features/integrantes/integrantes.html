@@ -75,7 +75,7 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>NOMBRE</th>
+                        <th>NOMBRE COMPLETO</th>
                         <th class="desktop-only">CATEGORÍA</th>
                         <th class="desktop-only">TIPO</th>
                         <th class="desktop-only text-center">ESTADO</th>
@@ -147,19 +147,30 @@
                             </div>
                         </td>
                     </tr>
+                    <tr *ngIf="members.length === 0 && !isLoading">
+                        <td colspan="5" class="empty-state">No se encontraron integrantes</td>
+                    </tr>
+                    <tr *ngIf="isLoading">
+                        <td colspan="5" class="loading-state">
+                            <div class="spinner"></div>
+                            Cargando integrantes...
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="pagination-mini">
-            <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
-            <div class="pagination-buttons">
-                <button class="btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <button class="btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
+        <div class="integrantes-footer">
+            <div class="pagination-mini">
+                <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
+                <div class="pagination-buttons">
+                    <button class="btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

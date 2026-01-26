@@ -29,6 +29,7 @@ export class Servicios implements OnInit {
   isSavingService = false;
   showFormModal = false; // For mobile modal
   activeDropdownId: string | null = null;
+  isLoading = false;
 
   ngOnInit() {
     this.loadServices();
@@ -48,8 +49,15 @@ export class Servicios implements OnInit {
   }
 
   loadServices() {
-    this.asistenciaService.getServices(false).subscribe(data => {
-      this.services = data;
+    this.isLoading = true;
+    this.asistenciaService.getServices(false).subscribe({
+      next: (data) => {
+        this.services = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      }
     });
   }
 
