@@ -210,7 +210,7 @@
 }
 
 .users-table th {
-    text-align: left;
+    text-align: center;
     padding: 0.65rem 1rem;
     font-size: 0.7rem;
     font-weight: 700;
@@ -1057,4 +1057,28 @@ input:checked+.slider:before {
 .menu-trigger:hover {
     background: #e2e8f0;
     color: var(--text-main);
+}
+
+/* Table Loading and Empty States */
+.empty-state,
+.loading-state {
+    padding: 4rem !important;
+    text-align: center;
+    color: #94a3b8;
+    border: none !important;
+}
+
+.loading-state .spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin-usuarios 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin-usuarios {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

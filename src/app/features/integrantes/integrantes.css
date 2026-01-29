@@ -108,7 +108,7 @@
   font-size: 0.7rem;
   font-weight: 700;
   border-bottom: 2px solid var(--border-color);
-  text-align: left;
+  text-align: center;
   color: var(--text-muted);
   text-transform: uppercase;
 }
@@ -206,9 +206,10 @@
 }
 
 .data-table td {
-  padding: 0.75rem 0.5rem;
+  padding: 0.75rem 1.0rem;
   font-size: 0.85rem;
   border-bottom: 1px solid var(--border-color);
+  text-align: center;  
 }
 
 .user-cell-mini {
@@ -282,6 +283,7 @@
 .actions-mini {
   display: flex;
   gap: 0.15rem;
+  justify-content: center;
 }
 
 .desktop-actions {

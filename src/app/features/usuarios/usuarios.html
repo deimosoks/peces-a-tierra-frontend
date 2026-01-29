@@ -29,7 +29,7 @@
                 </div>
             </div>
         </div>
-        <div class="table-container" *ngIf="!isLoading">
+        <div class="table-container">
             <table class="users-table">
                 <thead>
                     <tr>
@@ -126,9 +126,15 @@
                             </div>
                         </td>
                     </tr>
-                    <tr *ngIf="users.length === 0">
+                    <tr *ngIf="users.length === 0 && !isLoading">
                         <td colspan="5" class="text-center p-4 text-muted">No se encontraron usuarios.</td>
                     </tr>
+                    <tr *ngIf="isLoading">
+                         <td colspan="5" class="loading-state">
+                             <div class="spinner"></div>
+                             Cargando usuarios...
+                         </td>
+                     </tr>
                 </tbody>
             </table>
         </div>
@@ -146,12 +152,6 @@
                     </button>
                 </div>
             </div>
-        </div>
-
-        <!-- Loading State -->
-        <div class="loading-overlay" *ngIf="isLoading">
-            <div class="spinner"></div>
-            <p>Cargando usuarios...</p>
         </div>
     </div>
 <!-- </div> -->
