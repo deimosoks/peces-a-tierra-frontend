@@ -12,46 +12,14 @@
 
                 <!-- Desktop Filters -->
                 <div class="desktop-only filter-group">
-                    <!-- Type Filter -->
-                    <div class="filter-dropdown-container">
-                        <button class="btn btn-filter" (click)="toggleTypeDropdown()">
-                            <i class="fa-solid fa-user-tag"></i>
-                            <span>Tipo</span>
-                            <span class="filter-badge" *ngIf="selectedTypes.length > 0">{{ selectedTypes.length }}</span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <div class="filter-dropdown" *ngIf="showTypeDropdown">
-                            <div class="filter-option" *ngFor="let type of availableTypes" (click)="toggleTypeSelection(type)">
-                                <input type="checkbox" [checked]="isTypeSelected(type)" readonly>
-                                <span>{{ type }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Category Filter -->
-                    <div class="filter-dropdown-container">
-                        <button class="btn btn-filter" (click)="toggleCategoryDropdown()">
-                            <i class="fa-solid fa-layer-group"></i>
-                            <span>Categoría</span>
-                            <span class="filter-badge" *ngIf="selectedCategories.length > 0">{{ selectedCategories.length }}</span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <div class="filter-dropdown" *ngIf="showCategoryDropdown">
-                            <div class="filter-option" *ngFor="let category of availableCategories" (click)="toggleCategorySelection(category)">
-                                <input type="checkbox" [checked]="isCategorySelected(category)" readonly>
-                                <span>{{ category }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Active Toggle -->
-                    <div class="toggle-filter">
-                        <label class="status-switch">
-                            <input type="checkbox" [(ngModel)]="onlyActive" (change)="onToggleOnlyActive()">
-                            <span class="slider round"></span>
-                        </label>
-                        <span class="toggle-label">{{ onlyActive ? 'Activos' : 'Todos' }}</span>
-                    </div>
+                    <!-- Advanced Filters Button -->
+                    <button class="btn btn-filter" (click)="openAdvancedFilters()">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Filtros Avanzados</span>
+                        <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0">
+                            {{ selectedTypes.length + selectedCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
+                        </span>
+                    </button>
                 </div>
 
                 <!-- Search -->
@@ -61,6 +29,25 @@
                     </button>
                     <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
                         placeholder="Buscar integrantes...">
+                </div>
+
+                <!-- Export Button -->
+                <div class="filter-dropdown-container export-dropdown-container">
+                    <button class="btn btn-muted btn-sm" (click)="toggleExportDropdown()">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="desktop-only">Exportar</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-dropdown export-menu" *ngIf="showExportDropdown">
+                        <button class="dropdown-item" (click)="exportData('excel')">
+                            <i class="fa-solid fa-file-excel text-success"></i>
+                            <span>Excel</span>
+                        </button>
+                        <button class="dropdown-item" (click)="exportData('pdf')">
+                            <i class="fa-solid fa-file-pdf text-danger"></i>
+                            <span>PDF</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- New Button -->
@@ -76,9 +63,10 @@
                 <thead>
                     <tr>
                         <th>NOMBRE COMPLETO</th>
+                        <th class="desktop-only text-center">TELÉFONO</th>
+                        <th class="desktop-only">DIRECCIÓN</th>
                         <th class="desktop-only">CATEGORÍA</th>
                         <th class="desktop-only">TIPO</th>
-                        <th class="desktop-only text-center">ESTADO</th>
                         <th>ACCIONES</th>
                     </tr>
                 </thead>
@@ -88,61 +76,81 @@
                             <div class="user-cell-mini">
                                 <img [src]="member.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + member.completeName + '&background=random'"
                                     alt="Avatar">
-                                <span class="user-name">{{ member.completeName }}</span>
+                                <div class="name-column">
+                                    <span class="user-name">{{ member.completeName }}</span>
+                                    <span class="user-age" *ngIf="member.age > 0">{{ member.age }} años</span>
+                                </div>
                             </div>
                         </td>
-                        <td class="desktop-only"><span class="badge badge-sm" [ngClass]="getBadgeClass(member.category)">{{
-                                member.category }}</span></td>
-                        <td class="desktop-only">{{ member.type }}</td>
-                        <td class="desktop-only text-center">
-                            <label class="status-switch" appSafeClick (safeClick)="toggleMemberStatus(member)">
-                                <input type="checkbox" [checked]="member.active"
-                                    [disabled]="!can('UPDATE_MEMBER')">
-                                <span class="slider round"></span>
-                            </label>
-                        </td>
-                        <td class="actions-mini">
-                            <!-- Desktop Actions -->
-                            <div class="desktop-actions desktop-only">
-                                <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver"><i
-                                        class="fa-solid fa-eye"></i></button>
-                                <button class="action-btn-sm edit" (click)="editIntegrante(member)" title="Editar"
-                                    *ngIf="can('UPDATE_MEMBER')"><i class="fa-solid fa-pencil"></i></button>
-                                <button class="action-btn-sm delete" (click)="deleteIntegrante(member.id)" title="Eliminar"
-                                    *ngIf="can('DELETE_MEMBER')"><i class="fa-solid fa-trash"></i></button>
+                        <td class="desktop-only text-center">{{ member.cellphone || '---' }}</td>
+                        <td class="desktop-only">
+                            <div class="address-cell" [title]="member.address">
+                                {{ member.address || '---' }}
                             </div>
-
-                            <!-- Mobile Actions Dropdown -->
-                            <div class="mobile-actions-wrapper mobile-only">
-                                <button class="action-btn-sm menu-trigger" (click)="activeDropdownId = activeDropdownId === member.id ? null : member.id; $event.stopPropagation()">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
-                                
-                                <div class="action-dropdown" *ngIf="activeDropdownId === member.id" (click)="$event.stopPropagation()">
-                                    <div class="dropdown-header-mobile">
-                                        <span class="member-name-small">{{ member.completeName }}</span>
-                                    </div>
-                                    <div class="dropdown-item status-row">
-                                        <span class="dropdown-label">Estado</span>
-                                        <label class="status-switch" appSafeClick (safeClick)="toggleMemberStatus(member)">
-                                            <input type="checkbox" [checked]="member.active"
-                                                [disabled]="!can('UPDATE_MEMBER')">
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
-                                    <hr class="dropdown-divider">
-                                    <button class="dropdown-item" (click)="viewMember(member); activeDropdownId = null">
+                        </td>
+                        <td class="desktop-only">
+                            <span class="badge badge-sm" [ngClass]="getBadgeClass(member.category)">
+                                {{ member.category }}
+                            </span>
+                        </td>
+                        <td class="desktop-only">{{ formatType(member.type) }}</td>
+                        <td class="text-center">
+                            <div class="actions-mini">
+                                <!-- Desktop Actions -->
+                                <div class="desktop-actions desktop-only">
+                                    <label class="status-switch-mini" appSafeClick (safeClick)="toggleMemberStatus(member)" title="Cambiar Estado">
+                                        <input type="checkbox" [checked]="member.active" [disabled]="!can('UPDATE_MEMBER')">
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver">
                                         <i class="fa-solid fa-eye"></i>
-                                        <span>Ver Detalles</span>
                                     </button>
-                                    <button class="dropdown-item" (click)="editIntegrante(member); activeDropdownId = null" *ngIf="can('UPDATE_MEMBER')">
-                                        <i class="fa-solid fa-pencil text-primary"></i>
-                                        <span>Editar</span>
+                                    <button class="action-btn-sm edit" (click)="editIntegrante(member)" title="Editar" *ngIf="can('UPDATE_MEMBER')">
+                                        <i class="fa-solid fa-pencil"></i>
                                     </button>
-                                    <button class="dropdown-item" (click)="deleteIntegrante(member.id); activeDropdownId = null" *ngIf="can('DELETE_MEMBER')">
-                                        <i class="fa-solid fa-trash text-danger"></i>
-                                        <span class="delete-text">Eliminar</span>
+                                    <button class="action-btn-sm view" (click)="openNoteModal(member)" title="Agregar Nota" *ngIf="can('CREATE_NOTE')">
+                                        <i class="fa-solid fa-sticky-note text-primary"></i>
                                     </button>
+                                    <button class="action-btn-sm delete" (click)="deleteIntegrante(member.id)" title="Eliminar" *ngIf="can('DELETE_MEMBER')">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Mobile Actions Dropdown -->
+                                <div class="mobile-actions-wrapper mobile-only">
+                                    <button class="action-btn-sm menu-trigger" (click)="activeDropdownId = activeDropdownId === member.id ? null : member.id; $event.stopPropagation()">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    
+                                    <div class="action-dropdown" *ngIf="activeDropdownId === member.id" (click)="$event.stopPropagation()">
+                                        <div class="dropdown-header-mobile">
+                                            <span class="member-name-small">{{ member.completeName }}</span>
+                                        </div>
+                                        <div class="dropdown-item status-row">
+                                            <span class="dropdown-label">Estado</span>
+                                            <label class="status-switch" appSafeClick (safeClick)="toggleMemberStatus(member)">
+                                                <input type="checkbox" [checked]="member.active" [disabled]="!can('UPDATE_MEMBER')">
+                                                <span class="slider round"></span>
+                                            </label>
+                                        </div>
+                                        <hr class="dropdown-divider">
+                                        <button class="dropdown-item" (click)="viewMember(member); activeDropdownId = null">
+                                            <i class="fa-solid fa-eye"></i>
+                                            <span>Ver Detalles</span>
+                                        </button>
+                                        <button class="dropdown-item" (click)="editIntegrante(member); activeDropdownId = null" *ngIf="can('UPDATE_MEMBER')">
+                                            <i class="fa-solid fa-pencil text-primary"></i>
+                                            <span>Editar</span>
+                                        </button>
+                                        <button class="dropdown-item" (click)="openNoteModal(member); activeDropdownId = null" *ngIf="can('CREATE_NOTE')">
+                                            <i class="fa-solid fa-sticky-note text-primary"></i>
+                                            <span>Agregar Nota</span>
+                                        </button>
+                                        <button class="dropdown-item" (click)="deleteIntegrante(member.id); activeDropdownId = null" *ngIf="can('DELETE_MEMBER')">
+                                            <i class="fa-solid fa-trash text-danger"></i>
+                                            <span class="delete-text">Eliminar</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -218,7 +226,7 @@
                     <div class="form-group">
                         <label for="type">Tipo *</label>
                         <select id="type" formControlName="type">
-                            <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+                            <option *ngFor="let t of tipos" [value]="t">{{ formatType(t) }}</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -241,8 +249,21 @@
                     </div>
                     <div class="form-group full">
                         <label for="address">Dirección</label>
-                        <textarea id="address" formControlName="address" rows="2"
-                            placeholder="Dirección completa del integrante"></textarea>
+                        <!-- Mapbox Geocoder Container -->
+                        <input id="googleAddress" type="text" formControlName="address" class="form-control" placeholder="Buscar dirección..." (keydown.enter)="$event.preventDefault()">
+                        
+                        <!-- Hidden fields or Read-only display of captured data (optional debug) -->
+                        <div *ngIf="integranteForm.get('address')?.value" class="address-preview">
+                            <small class="text-muted"><i class="fa-solid fa-location-dot"></i> {{ integranteForm.get('address')?.value }}</small>
+                            <small *ngIf="integranteForm.get('neighborhood')?.value" class="text-primary d-block">Barrio: {{ integranteForm.get('neighborhood')?.value }}</small>
+                        </div>
+
+                        <!-- Hidden Inputs to bind to form (though patchValue handles it, keeping them in DOM is not strictly needed for ReactiveForms but good for structure if we reverted to template driven) -->
+                        <input type="hidden" formControlName="address">
+                        <input type="hidden" formControlName="neighborhood">
+                        <input type="hidden" formControlName="city">
+                        <input type="hidden" formControlName="latitude">
+                        <input type="hidden" formControlName="longitude">
                     </div>
                 </div>
 
@@ -287,7 +308,7 @@
                 </div>
                 <div class="detail-item">
                     <label>Tipo:</label>
-                    <span>{{ selectedMember.type }}</span>
+                    <span>{{ formatType(selectedMember.type) }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Teléfono:</label>
@@ -296,6 +317,10 @@
                 <div class="detail-item">
                     <label>Nacimiento:</label>
                     <span>{{ selectedMember.birthdate }}</span>
+                </div>
+                <div class="detail-item" *ngIf="selectedMember.age > 0">
+                    <label>Edad:</label>
+                    <span>{{ selectedMember.age }} años</span>
                 </div>
                 <div class="detail-item full">
                     <label>Dirección:</label>
@@ -316,6 +341,77 @@
                     </span>
                 </div>
             </div>
+
+            <!-- Notes Section -->
+            <div class="notes-container">
+                <div class="notes-header-flex">
+                    <h4><i class="fa-solid fa-notes"></i> Notas</h4>
+                    <button class="btn btn-primary btn-xs" (click)="openNoteModal(selectedMember)" *ngIf="can('CREATE_NOTE')">
+                        <i class="fa-solid fa-plus"></i> Nueva Nota
+                    </button>
+                </div>
+
+                <div class="notes-scroll-area" *ngIf="selectedMember.notes && selectedMember.notes.length > 0">
+                    <div class="note-item" *ngFor="let note of selectedMember.notes">
+                        <div class="note-top">
+                            <div class="note-info">
+                                <span class="note-author">{{ note.createdBy }}</span>
+                                <span class="note-date">{{ note.createdAt | date:'medium' }}</span>
+                            </div>
+                            <button class="btn-delete-note" *ngIf="can('DELETE_NOTE')" (click)="deleteNote(note.id)" title="Eliminar nota">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                        <div class="note-body">{{ note.note }}</div>
+                    </div>
+                </div>
+
+                <div class="empty-notes" *ngIf="!selectedMember.notes || selectedMember.notes.length === 0">
+                    <i class="fa-solid fa-note-sticky"></i>
+                    No hay notas registradas para este integrante.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-overlay" *ngIf="showNoteModal" (click)="closeNoteModal()">
+    <div class="modal-content note-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Agregar Nota</h2>
+            <button class="close-btn" (click)="closeNoteModal()" [disabled]="isAddingNote">&times;</button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="modal-loading-overlay" *ngIf="isAddingNote">
+            <div class="spinner-wrapper">
+                <div class="spinner-circle"></div>
+                <p>Guardando nota...</p>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <form [formGroup]="noteForm" (ngSubmit)="onSubmitNote()" class="note-form">
+                <div class="form-group">
+                    <div class="label-spread">
+                        <label for="noteContent">Contenido de la nota *</label>
+                        <span class="char-counter" [class.danger]="noteForm.get('note')?.value?.length > 254">
+                            {{ noteForm.get('note')?.value?.length || 0 }}/254
+                        </span>
+                    </div>
+                    <textarea id="noteContent" formControlName="note" rows="5" maxlength="254"
+                        placeholder="Escribe aquí la información relevante..."></textarea>
+                </div>
+
+                <div class="form-footer">
+                    <button type="button" class="btn btn-muted" (click)="closeNoteModal()" [disabled]="isAddingNote">Cancelar</button>
+                    <button type="submit" class="btn btn-primary note-submit-btn" [disabled]="noteForm.invalid || isAddingNote">
+                        <i class="fa-solid" [ngClass]="isAddingNote ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+                        {{ isAddingNote ? 'Guardando...' : 'Guardar Nota' }}
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -336,7 +432,7 @@
                          [class.selected]="isMobileTypeSelected(type)"
                          (click)="toggleMobileTypeSelection(type)">
                         <input type="checkbox" [checked]="isMobileTypeSelected(type)" readonly>
-                        <span>{{ type }}</span>
+                        <span>{{ formatType(type) }}</span>
                     </div>
                 </div>
             </div>
@@ -356,6 +452,54 @@
 
             <!-- Active Toggle Section -->
             <div class="filter-section">
+                <h3>Datos Disponibles</h3>
+                <div class="boolean-filters-mobile">
+                    <div class="boolean-filter-item-mobile">
+                        <span>Cédula:</span>
+                        <div class="trip-switch">
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasCc', null)" (click)="setMobileFilterValue('tempHasCc', null)">Todos</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasCc', true)" (click)="setMobileFilterValue('tempHasCc', true)">Con</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasCc', false)" (click)="setMobileFilterValue('tempHasCc', false)">Sin</button>
+                        </div>
+                    </div>
+                    <div class="boolean-filter-item-mobile">
+                        <span>Teléfono:</span>
+                        <div class="trip-switch">
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasCellphone', null)" (click)="setMobileFilterValue('tempHasCellphone', null)">Todos</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasCellphone', true)" (click)="setMobileFilterValue('tempHasCellphone', true)">Con</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasCellphone', false)" (click)="setMobileFilterValue('tempHasCellphone', false)">Sin</button>
+                        </div>
+                    </div>
+                    <div class="boolean-filter-item-mobile">
+                        <span>Dirección:</span>
+                        <div class="trip-switch">
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasAddress', null)" (click)="setMobileFilterValue('tempHasAddress', null)">Todos</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasAddress', true)" (click)="setMobileFilterValue('tempHasAddress', true)">Con</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasAddress', false)" (click)="setMobileFilterValue('tempHasAddress', false)">Sin</button>
+                        </div>
+                    </div>
+                    <div class="boolean-filter-item-mobile">
+                        <span>Nacimiento:</span>
+                        <div class="trip-switch">
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasBirthdate', null)" (click)="setMobileFilterValue('tempHasBirthdate', null)">Todos</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasBirthdate', true)" (click)="setMobileFilterValue('tempHasBirthdate', true)">Con</button>
+                            <button type="button" [class.active]="isMobileFilterActive('tempHasBirthdate', false)" (click)="setMobileFilterValue('tempHasBirthdate', false)">Sin</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Rango de Edad</h3>
+                <div class="range-inputs-mobile">
+                    <input type="number" [(ngModel)]="tempAgeRange1" placeholder="Mínima" min="0">
+                    <span class="range-sep">a</span>
+                    <input type="number" [(ngModel)]="tempAgeRange2" placeholder="Máxima" min="0">
+                </div>
+            </div>
+
+            <!-- Active Toggle Section -->
+            <div class="filter-section">
                 <h3>Estado</h3>
                 <div class="toggle-filter-mobile">
                     <label class="status-switch">
@@ -367,8 +511,119 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-muted" (click)="closeMobileFilters()">Cancelar</button>
-            <button class="btn btn-primary" (click)="applyMobileFilters()">Aplicar Filtros</button>
+            <button class="btn btn-muted btn-outline btn-sm" (click)="resetMobileFilters()">Limpiar</button>
+            <div class="footer-actions-right">
+                <button class="btn btn-muted btn-sm" (click)="closeMobileFilters()">Cancelar</button>
+                <button class="btn btn-primary btn-sm" (click)="applyMobileFilters()">Filtrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Filters Modal -->
+<div class="modal-overlay" *ngIf="showAdvancedFiltersModal" (click)="closeAdvancedFilters()">
+    <div class="modal-content filters-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Filtros Avanzados</h2>
+            <button class="close-btn" (click)="closeAdvancedFilters()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="filters-grid">
+                <!-- Type & Category -->
+                <div class="filter-section">
+                    <h3>Tipo</h3>
+                    <div class="checkbox-group">
+                        <label *ngFor="let type of availableTypes" class="checkbox-label">
+                            <input type="checkbox" [checked]="isAdvancedTypeSelected(type)" (change)="toggleAdvancedTypeSelection(type)">
+                            <span>{{ formatType(type) }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Categoría</h3>
+                    <div class="checkbox-group">
+                        <label *ngFor="let category of availableCategories" class="checkbox-label">
+                            <input type="checkbox" [checked]="isAdvancedCategorySelected(category)" (change)="toggleAdvancedCategorySelection(category)">
+                            <span>{{ category }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Data Availability -->
+                <div class="filter-section full-width">
+                    <h3>Datos Disponibles</h3>
+                    <div class="data-filters-grid">
+                        <div class="data-filter-item">
+                            <span>Cédula:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCc', null)" (click)="setAdvancedFilterValue('tempHasCc', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCc', true)" (click)="setAdvancedFilterValue('tempHasCc', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCc', false)" (click)="setAdvancedFilterValue('tempHasCc', false)">Sin</button>
+                            </div>
+                        </div>
+
+                        <div class="data-filter-item">
+                            <span>Teléfono:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCellphone', null)" (click)="setAdvancedFilterValue('tempHasCellphone', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCellphone', true)" (click)="setAdvancedFilterValue('tempHasCellphone', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCellphone', false)" (click)="setAdvancedFilterValue('tempHasCellphone', false)">Sin</button>
+                            </div>
+                        </div>
+
+                        <div class="data-filter-item">
+                            <span>Dirección:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasAddress', null)" (click)="setAdvancedFilterValue('tempHasAddress', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasAddress', true)" (click)="setAdvancedFilterValue('tempHasAddress', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasAddress', false)" (click)="setAdvancedFilterValue('tempHasAddress', false)">Sin</button>
+                            </div>
+                        </div>
+
+                        <div class="data-filter-item">
+                            <span>Nacimiento:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasBirthdate', null)" (click)="setAdvancedFilterValue('tempHasBirthdate', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasBirthdate', true)" (click)="setAdvancedFilterValue('tempHasBirthdate', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasBirthdate', false)" (click)="setAdvancedFilterValue('tempHasBirthdate', false)">Sin</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Age Range -->
+                <div class="filter-section">
+                    <h3>Rango de Edad</h3>
+                    <div class="age-range-inputs">
+                        <input type="number" [(ngModel)]="tempAgeRange1" placeholder="Mín" min="0" max="120">
+                        <span>-</span>
+                        <input type="number" [(ngModel)]="tempAgeRange2" placeholder="Máx" min="0" max="120">
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="filter-section">
+                    <h3>Ubicación</h3>
+                    <input type="text" [(ngModel)]="tempLocation" placeholder="Barrio, ciudad, dirección..." class="full-width-input">
+                </div>
+
+                <!-- Only Active Toggle -->
+                <div class="filter-section">
+                    <h3>Estado</h3>
+                    <label class="status-switch">
+                        <input type="checkbox" [(ngModel)]="tempOnlyActive">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-label">{{ tempOnlyActive ? 'Solo Activos' : 'Todos' }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="clearFilters(); closeAdvancedFilters()">Limpiar Filtros</button>
+            <button class="btn btn-primary" (click)="applyAdvancedFilters()">
+                <i class="fa-solid fa-filter"></i> Aplicar Filtros
+            </button>
         </div>
     </div>
 </div>

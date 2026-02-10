@@ -91,8 +91,9 @@ export class AuthService {
         const user = this.currentUserSig();
         if (!user || !user.permissions) return false;
 
-        // Superadmin bypass? Or strict permission check? 
-        // Assuming strict for now, or if 'SUPERADMIN' role implies all (backend usually handles logic, frontend just checks list)
+        // Superadmin bypass
+        if (user.permissions.includes('ADMINISTRATOR')) return true;
+
         return user.permissions.includes(permissionName);
     }
 

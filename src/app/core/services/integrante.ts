@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Integrante, MemberPagesResponseDto, MemberFilterRequestDto } from '../models/integrante.model';
+import { Integrante, MemberPagesResponseDto, MemberFilterRequestDto, MemberExportDto, MemberNoteRequestDto, MemberNoteResponseDto } from '../models/integrante.model';
 import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
@@ -40,5 +40,17 @@ export class IntegranteService {
 
   deleteIntegrante(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/members/${id}`);
+  }
+
+  exportMembers(filterRequest: MemberFilterRequestDto): Observable<MemberExportDto[]> {
+    return this.http.post<MemberExportDto[]>(`${this.baseUrl}/members/export`, filterRequest);
+  }
+
+  createNote(noteRequest: MemberNoteRequestDto): Observable<MemberNoteResponseDto> {
+    return this.http.post<MemberNoteResponseDto>(`${this.baseUrl}/members/notes`, noteRequest);
+  }
+
+  deleteNote(noteId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/members/notes/${noteId}`);
   }
 }

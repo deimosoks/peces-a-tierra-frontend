@@ -230,6 +230,10 @@
     font-size: 0.85rem;
 }
 
+.text-center {
+    text-align: center !important;
+}
+
 /* Pagination */
 .pagination-footer {
     border-top: 1px solid var(--border-color);
@@ -303,6 +307,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
+    justify-content: center;
 }
 
 .role-badge {
@@ -369,6 +374,7 @@ input:checked+.slider:before {
 .actions-mini {
     display: flex;
     gap: 0.35rem;
+    justify-content: center;
 }
 
 .desktop-actions {

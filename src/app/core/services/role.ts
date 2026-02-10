@@ -66,7 +66,14 @@ export class RoleService {
             { id: 'MANAGE_REPORT', name: 'Gestionar Reportes', description: 'Acceso total a la generación de reportes', category: 'REPORT' },
 
             // DASHBOARD
-            { id: 'MANAGE_DASHBOARD', name: 'Gestionar Dashboard', description: 'Acceso al panel de control principal', category: 'DASHBOARD' }
+            { id: 'MANAGE_DASHBOARD', name: 'Gestionar Dashboard', description: 'Acceso al panel de control principal', category: 'DASHBOARD' },
+
+            // NOTES
+            { id: 'CREATE_NOTE', name: 'Crear Nota', description: 'Permite agregar notas a los integrantes', category: 'MEMBER' },
+            { id: 'DELETE_NOTE', name: 'Eliminar Nota', description: 'Permite borrar notas de los integrantes', category: 'MEMBER' },
+
+            // ADMIN
+            { id: 'ADMINISTRATOR', name: 'Administrador Total', description: 'Acceso total a todas las funciones del sistema', category: 'ADMIN' }
         ]);
     }
 }

@@ -265,7 +265,7 @@
     font-size: 0.8rem;
     /* Smaller text */
     color: var(--text-main);
-    text-align: center;
+    text-align: left;
 }
 
 .user-info-cell {
