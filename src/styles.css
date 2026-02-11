@@ -40,6 +40,290 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.text-success {
+  color: #10b981;
+}
+
+.text-danger {
+  color: #ef4444;
+}
+
+.text-warning {
+  color: #f59e0b;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Google Maps Autocomplete Dropdown Styles - GLOBAL */
+/* These styles must be global because Google Maps injects the dropdown outside Angular components */
+.pac-container {
+  background-color: #fff;
+  position: absolute !important;
+  z-index: 10000 !important;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
+}
+
+.pac-container:after {
+  background-image: none !important;
+  height: 0;
+}
+
+.pac-item {
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.pac-item:first-child {
+  border-top: none;
+}
+
+.pac-item:hover {
+  background-color: #f8fafc;
+}
+
+.pac-item-selected {
+  background-color: #f1f5f9;
+}
+
+.pac-matched {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* =========================================
+   SOFT UI DESIGN SYSTEM (GLOBAL)
+   ========================================= */
+
+/* Header Layout Standard */
+.header-section {
+  display: flex;
+  align-items: flex-end; /* Align to bottom so inputs align despite labels */
+  gap: 1rem; /* Reduced gap */
+  margin-bottom: 1rem; /* Reduced margin */
+  background: white;
+  padding: 0.75rem; /* Reduced padding */
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Header Sections */
+.filters-left {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.search-center {
+    flex: 1;
+    min-width: 0;
+}
+
+.actions-right {
+    flex-shrink: 0;
+}
+
+/* Soft UI Input Styles */
+.soft-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    position: relative;
+    justify-content: flex-end;
+}
+
+.soft-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.02em;
+    margin-left: 0.25rem;
+    margin-bottom: 0;
+}
+
+.soft-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.soft-input-icon {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--primary);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.soft-input {
+    width: 100%;
+    background: #f1f5f9;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem 0.5rem 2rem; /* Left padding for icon */
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #334155;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    height: 36px;
+}
+
+.soft-input:focus {
+    background: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.soft-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+input[type="date"].soft-input,
+input[type="datetime-local"].soft-input {
+    padding-right: 0.5rem;
+}
+
+select.soft-input {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+/* Toggle Styling */
+.toggle-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    height: 100%;
+    justify-content: flex-end;
+    padding-bottom: 0;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 0 0.75rem;
+    border-radius: 8px;
+    height: 36px;
+    box-sizing: border-box;
+}
+
+.status-switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.status-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
+.toggle-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Helper Classes for Soft UI */
+.btn-square-soft {
+    height: 36px;
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.btn-action-soft {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+}
+
+.toggle-label-soft {
+    font-size: 0.75rem; 
+    font-weight: 600; 
+    color: #475569;
+}
+
+.invisible-label {
+    opacity: 0;
+    user-select: none;
+}
+
+.pac-item-query {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.pac-icon {
+  display: none;
+}
+
+.pac-logo:after {
+  display: none;
+}
+
 html,
 body {
   height: 100%;

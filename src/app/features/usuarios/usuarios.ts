@@ -269,9 +269,14 @@ export class Usuarios implements OnInit {
         if (this.isSaving) return;
         this.isSaving = true;
 
+        const payload = { ...this.currentUser };
+        if (this.isEditing && !payload.password) {
+            delete payload.password;
+        }
+
         const obs = this.isEditing && this.selectedMember
-            ? this.userService.updateUser(this.editingUserId, this.currentUser)
-            : this.userService.createUser(this.currentUser);
+            ? this.userService.updateUser(this.editingUserId, payload)
+            : this.userService.createUser(payload);
 
         obs.subscribe({
             next: () => {

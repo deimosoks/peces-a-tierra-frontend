@@ -57,6 +57,14 @@ export class Asistencia implements OnInit {
     return this.authService.can(permission);
   }
 
+  formatAddress(member: Integrante): string {
+    const parts = [];
+    if (member.neighborhood) parts.push(member.neighborhood);
+    if (member.city) parts.push(member.city);
+    if (member.municipality) parts.push(member.municipality);
+    return parts.length > 0 ? parts.join(', ') : '---';
+  }
+
   openFilterModal() {
     this.showFilterModal = true;
   }

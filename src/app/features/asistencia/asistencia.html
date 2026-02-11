@@ -2,9 +2,11 @@
 <div class="asistencia-container">
     <div class="card premium-card">
         <!-- Header Filters -->
-        <div class="asistencia-header">
-            <!-- Mobile Configuration Summary trigger -->
-            <button class="mobile-config-trigger" (click)="openFilterModal()">
+        <!-- Header Filters (Soft UI) -->
+        <div class="header-section" style="align-items: flex-end; flex-wrap: wrap;">
+            
+            <!-- Mobile Configuration Summary trigger (Keep existing behavior) -->
+            <button class="mobile-config-trigger mobile-only" (click)="openFilterModal()" style="margin-bottom: 0.5rem; width: 100%;">
                 <div class="config-info">
                     <span class="service-name">{{ getSelectedServiceName() }}</span>
                     <span class="service-date">{{ serviceDate | date:'d MMM, h:mm a' }}</span>
@@ -12,52 +14,57 @@
                 <i class="fa-solid fa-chevron-down"></i>
             </button>
 
-            <!-- Desktop Filters (Hidden on Mobile) -->
-            <div class="filter-group registration-grid">
-                <div class="input-with-label desktop-only">
-                    <label>Fecha del Servicio (Inicio)</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-calendar-alt"></i>
-                        <input type="datetime-local" [(ngModel)]="serviceDate" class="premium-input">
+            <!-- Left: Settings (Desktop Only) -->
+            <div class="filters-left desktop-only" style="gap: 1rem;">
+                <!-- Service Date -->
+                <div class="soft-input-group">
+                    <label class="soft-label">Fecha Servicio (Inicio)</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-calendar-alt soft-input-icon"></i>
+                        <input type="datetime-local" [(ngModel)]="serviceDate" class="soft-input">
                     </div>
                 </div>
 
-                <div class="input-with-label desktop-only">
-                    <div class="label-with-toggle">
-                        <label>Hora de Llegada</label>
-                        <div class="toggle-wrapper" title="Modo Automático/Manual">
-                            <span class="toggle-label">{{ isManualAttendanceTime ? 'Manual' : 'Auto' }}</span>
-                            <label class="switch-xs">
+                <!-- Arrival Time -->
+                <div class="soft-input-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <label class="soft-label">Hora Llegada</label>
+                        <div class="toggle-wrapper" style="flex-direction: row; height: auto; gap: 0.5rem; padding: 0;">
+                             <span class="toggle-label-soft" style="font-size: 0.65rem;">{{ isManualAttendanceTime ? 'Manual' : 'Auto' }}</span>
+                             <label class="status-switch" style="width: 28px; height: 16px;">
                                 <input type="checkbox" [(ngModel)]="isManualAttendanceTime">
                                 <span class="slider round"></span>
                             </label>
                         </div>
                     </div>
-                    <div class="input-icon-wrapper" [class.disabled]="!isManualAttendanceTime">
-                        <i class="fa-solid fa-clock"></i>
-                        <input type="datetime-local" [(ngModel)]="attendanceDate" class="premium-input"
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-clock soft-input-icon"></i>
+                        <input type="datetime-local" [(ngModel)]="attendanceDate" class="soft-input"
                             [disabled]="!isManualAttendanceTime">
                     </div>
                 </div>
 
-                <div class="input-with-label desktop-only">
-                    <label>Tipo de Servicio</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-church"></i>
-                        <select [(ngModel)]="selectedServiceId" class="premium-input">
+                <!-- Service Type -->
+                <div class="soft-input-group">
+                    <label class="soft-label">Tipo Servicio</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-church soft-input-icon"></i>
+                        <select [(ngModel)]="selectedServiceId" class="soft-input">
                             <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
                         </select>
+                        <i class="fa-solid fa-chevron-down" style="position: absolute; right: 0.75rem; font-size: 0.75rem; color: #64748b; pointer-events: none;"></i>
                     </div>
                 </div>
+            </div>
 
-                <div class="input-with-label search-group">
-                    <label>Buscar Integrante</label>
-                    <div class="input-icon-wrapper search-wrapper">
-                        <button class="search-icon-btn" (click)="onSearch()" title="Buscar">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </button>
+            <!-- Center: Search (Main Action) -->
+            <div class="search-center" style="min-width: 250px;">
+                <div class="soft-input-group">
+                    <label class="soft-label">Registrar Asistencia</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
                         <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                            placeholder="Buscar por nombre..." class="premium-input">
+                            placeholder="Buscar por nombre..." class="soft-input">
                     </div>
                 </div>
             </div>
@@ -188,7 +195,7 @@
                 </div>
                 <div class="detail-item full">
                     <label>Dirección:</label>
-                    <span>{{ selectedMember.address }}</span>
+                    <span>{{ selectedMember.address || '---' }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Registrado:</label>

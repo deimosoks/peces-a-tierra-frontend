@@ -11,20 +11,49 @@ export interface MemberNoteRequestDto {
 }
 
 export interface Integrante {
-    id: string;
-    completeName: string;
-    type: string;
-    category: string;
-    cellphone: string;
-    address: string;
-    birthdate: string;
-    cc: string;
-    createdAt?: string;
-    updatedAt?: string;
-    pictureProfileUrl?: string;
-    age: number;
-    active: boolean;
-    notes: MemberNoteResponseDto[];
+  id: string;
+  completeName: string;
+  type: string;
+  category: string;
+  cellphone?: string;
+  birthdate?: Date;
+  cc?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  pictureProfileUrl?: string;
+  age?: number;
+  active: boolean;
+  notes?: MemberNoteResponseDto[];
+  
+  // Address fields
+  address?: string;  // Full formatted address from Google Maps
+  neighborhood?: string;
+  city?: string;
+  municipality?: string;
+  district?: string;
+  postalCode?: string;
+  latitude?: string;
+  longitude?: string;
+}
+
+export interface IntegranteRequestDto {
+  completeName: string;
+  type: string;
+  category: string;
+  cellphone?: string;
+  address?: string;
+  birthdate?: Date;
+  cc?: string;
+  pictureProfile?: File;
+  
+  // Address fields
+  neighborhood?: string;
+  city?: string;
+  municipality?: string;
+  district?: string;
+  postalCode?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export interface MemberPagesResponseDto {

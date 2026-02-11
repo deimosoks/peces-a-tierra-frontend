@@ -99,6 +99,14 @@ export class Integrantes implements OnInit {
     return this.authService.can(permission);
   }
 
+  formatAddress(member: Integrante): string {
+    const parts = [];
+    if (member.neighborhood) parts.push(member.neighborhood);
+    if (member.city) parts.push(member.city);
+    if (member.municipality) parts.push(member.municipality);
+    return parts.length > 0 ? parts.join(', ') : '---';
+  }
+
   initForm() {
     this.integranteForm = this.fb.group({
       completeName: ['', [Validators.required]],
@@ -571,24 +579,58 @@ export class Integrantes implements OnInit {
     let district = '';
     let postalCode = '';
 
+    // Detailed logging for debugging
+    console.log('Google Maps components:', components);
+    components.forEach((comp: any, index: number) => {
+      console.log(`Component ${index}: ${comp.long_name} - Types:`, comp.types);
+    });
+
     for (const component of components) {
         const types = component.types;
-        if (types.includes('neighborhood') || types.includes('sublocality_level_1')) {
-            neighborhood = component.long_name;
+        const longName = component.long_name;
+        
+        // Neighborhood: try multiple types including establishment and natural_feature
+        if (!neighborhood && (types.includes('neighborhood') || types.includes('sublocality') || 
+            types.includes('sublocality_level_1') || types.includes('sublocality_level_2') ||
+            types.includes('sublocality_level_3') || types.includes('route') || 
+            types.includes('point_of_interest') || types.includes('establishment') ||
+            types.includes('natural_feature'))) {
+            neighborhood = longName;
+            console.log('✅ Neighborhood found:', longName, 'from types:', types);
         }
-        if (types.includes('locality')) {
-            city = component.long_name;
+        
+        // City: locality (preferred)
+        if (!city && types.includes('locality')) {
+            city = longName;
+            console.log('✅ City found:', longName);
         }
-        if (types.includes('administrative_area_level_2')) {
-            municipality = component.long_name;
+        
+        // Municipality: administrative_area_level_2
+        if (!municipality && types.includes('administrative_area_level_2')) {
+            municipality = longName;
+            console.log('✅ Municipality found:', longName);
         }
-        if (types.includes('administrative_area_level_1')) {
-            district = component.long_name;
+        
+        // District/State: administrative_area_level_1
+        if (!district && types.includes('administrative_area_level_1')) {
+            district = longName;
+            console.log('✅ District found:', longName);
         }
-        if (types.includes('postal_code')) {
-            postalCode = component.long_name;
+        
+        // Postal Code
+        if (!postalCode && types.includes('postal_code')) {
+            postalCode = longName;
+            console.log('✅ Postal Code found:', longName);
         }
     }
+
+    // Fallback: if city is empty but municipality exists, use municipality as city
+    if (!city && municipality) {
+        city = municipality;
+        console.log('ℹ️ Using municipality as city (fallback):', city);
+    }
+
+    console.log('📍 Final parsed address:', { neighborhood, city, municipality, district, postalCode });
 
     this.integranteForm.patchValue({
         address: fullAddress,
@@ -738,7 +780,7 @@ export class Integrantes implements OnInit {
     if (confirmed && this.selectedMember) {
       this.integranteService.deleteNote(noteId).subscribe({
         next: () => {
-          if (this.selectedMember) {
+          if (this.selectedMember && this.selectedMember.notes) {
             this.selectedMember.notes = this.selectedMember.notes.filter(n => n.id !== noteId);
           }
           this.notificationService.success('Nota eliminada correctamente');

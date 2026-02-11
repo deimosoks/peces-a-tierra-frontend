@@ -32,6 +32,10 @@
                 <i class="fa-solid fa-users"></i>
                 <span>Integrantes</span>
             </a>
+            <a routerLink="/bautismos" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_BAPTISM_PANEL')" (click)="close()">
+                <i class="fa-solid fa-water"></i>
+                <span>Bautismos</span>
+            </a>
             <a routerLink="/asistencia" routerLinkActive="active" class="nav-item" *ngIf="can('REGISTER_ATTENDANCE')" (click)="close()">
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>Pasar Asistencia</span>

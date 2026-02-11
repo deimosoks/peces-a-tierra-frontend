@@ -1,60 +1,75 @@
 <div class="integrantes-container full-width">
     <div class="card full-card">
-        <div class="card-header spread justify-end">
-            <div class="header-actions">
-                <!-- Mobile Filter Button -->
-                <button class="btn btn-filter mobile-only" (click)="openMobileFilters()">
-                    <i class="fa-solid fa-filter"></i>
-                    <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length > 0">
-                        {{ selectedTypes.length + selectedCategories.length }}
-                    </span>
-                </button>
+        <div class="header-section">
+            <!-- Left: Filters -->
+            <div class="filters-left">
+                 <!-- Mobile Filter Button (Visible only on mobile) -->
+                 <div class="soft-input-group mobile-only">
+                    <label class="soft-label">Filtros</label>
+                    <button class="btn btn-square-soft" (click)="openMobileFilters()" style="background: #f1f5f9; color: #334155;">
+                        <i class="fa-solid fa-filter"></i>
+                        <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length > 0" style="position: absolute; top: -5px; right: -5px;">
+                            {{ selectedTypes.length + selectedCategories.length }}
+                        </span>
+                    </button>
+                </div>
 
-                <!-- Desktop Filters -->
-                <div class="desktop-only filter-group">
-                    <!-- Advanced Filters Button -->
-                    <button class="btn btn-filter" (click)="openAdvancedFilters()">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span>Filtros Avanzados</span>
+                <!-- Desktop Advanced Filters -->
+                <div class="soft-input-group desktop-only">
+                    <label class="soft-label">Filtros</label>
+                    <button class="btn btn-action-soft" (click)="openAdvancedFilters()" style="background: #f1f5f9; border: 1px solid transparent; color: #334155; font-weight: 500; font-size: 0.85rem; padding: 0 1rem; justify-content: space-between; min-width: 140px;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-sliders" style="color: var(--primary);"></i>
+                            <span>Avanzados</span>
+                        </div>
                         <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0">
                             {{ selectedTypes.length + selectedCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
                         </span>
                     </button>
                 </div>
+            </div>
 
-                <!-- Search -->
-                <div class="search-box-mini">
-                    <button class="search-icon-btn" (click)="onSearch()" title="Buscar">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                        placeholder="Buscar integrantes...">
+            <!-- Center: Search -->
+            <div class="search-center">
+                <div class="soft-input-group">
+                    <label class="soft-label">Buscar Integrante</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                            placeholder="Buscar por nombre, documento, celular..." class="soft-input">
+                    </div>
                 </div>
+            </div>
 
+            <!-- Right: Actions -->
+            <div class="actions-right" style="display: flex; gap: 0.75rem; align-items: flex-end;">
                 <!-- Export Button -->
-                <div class="filter-dropdown-container export-dropdown-container">
-                    <button class="btn btn-muted btn-sm" (click)="toggleExportDropdown()">
-                        <i class="fa-solid fa-download"></i>
-                        <span class="desktop-only">Exportar</span>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </button>
-                    <div class="filter-dropdown export-menu" *ngIf="showExportDropdown">
-                        <button class="dropdown-item" (click)="exportData('excel')">
-                            <i class="fa-solid fa-file-excel text-success"></i>
-                            <span>Excel</span>
+                <div class="soft-input-group">
+                    <label class="soft-label invisible-label">Exportar</label>
+                    <div class="filter-dropdown-container export-dropdown-container">
+                        <button class="btn btn-muted btn-action-soft" (click)="toggleExportDropdown()" title="Exportar" style="background: #f1f5f9;">
+                            <i class="fa-solid fa-download"></i> <span class="desktop-only" style="font-weight: 500;">Exportar</span>
                         </button>
-                        <button class="dropdown-item" (click)="exportData('pdf')">
-                            <i class="fa-solid fa-file-pdf text-danger"></i>
-                            <span>PDF</span>
-                        </button>
+                        <div class="filter-dropdown export-menu" *ngIf="showExportDropdown" style="right: 0; left: auto;">
+                            <button class="dropdown-item" (click)="exportData('excel')">
+                                <i class="fa-solid fa-file-excel text-success"></i>
+                                <span>Excel</span>
+                            </button>
+                            <button class="dropdown-item" (click)="exportData('pdf')">
+                                <i class="fa-solid fa-file-pdf text-danger"></i>
+                                <span>PDF</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- New Button -->
-                <button class="btn btn-primary btn-sm btn-new" (click)="openFormModal()" *ngIf="can('CREATE_MEMBER')">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <span>Nuevo</span>
-                </button>
+                <div class="soft-input-group">
+                    <label class="soft-label invisible-label">Nuevo</label>
+                    <button class="btn btn-primary btn-action-soft" (click)="openFormModal()" *ngIf="can('CREATE_MEMBER')">
+                        <i class="fa-solid fa-user-plus"></i> <span class="desktop-only">Nuevo</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -78,13 +93,13 @@
                                     alt="Avatar">
                                 <div class="name-column">
                                     <span class="user-name">{{ member.completeName }}</span>
-                                    <span class="user-age" *ngIf="member.age > 0">{{ member.age }} años</span>
+                                    <span class="user-age" *ngIf="member.age && member.age > 0">{{ member.age }} años</span>
                                 </div>
                             </div>
                         </td>
                         <td class="desktop-only text-center">{{ member.cellphone || '---' }}</td>
                         <td class="desktop-only">
-                            <div class="address-cell" [title]="member.address">
+                            <div class="address-cell" [title]="member.address || '---'">
                                 {{ member.address || '---' }}
                             </div>
                         </td>
@@ -249,19 +264,23 @@
                     </div>
                     <div class="form-group full">
                         <label for="address">Dirección</label>
-                        <!-- Mapbox Geocoder Container -->
-                        <input id="googleAddress" type="text" formControlName="address" class="form-control" placeholder="Buscar dirección..." (keydown.enter)="$event.preventDefault()">
+                        <!-- Google Maps Geocoder Input -->
+                        <input id="googleAddress" type="text" class="form-control" placeholder="Buscar dirección..." (keydown.enter)="$event.preventDefault()">
                         
-                        <!-- Hidden fields or Read-only display of captured data (optional debug) -->
-                        <div *ngIf="integranteForm.get('address')?.value" class="address-preview">
-                            <small class="text-muted"><i class="fa-solid fa-location-dot"></i> {{ integranteForm.get('address')?.value }}</small>
+                        <!-- Display captured address components -->
+                        <div *ngIf="integranteForm.get('neighborhood')?.value || integranteForm.get('city')?.value" class="address-preview">
+                            <small class="text-muted"><i class="fa-solid fa-location-dot"></i> Dirección capturada:</small>
                             <small *ngIf="integranteForm.get('neighborhood')?.value" class="text-primary d-block">Barrio: {{ integranteForm.get('neighborhood')?.value }}</small>
+                            <small *ngIf="integranteForm.get('city')?.value" class="text-primary d-block">Ciudad: {{ integranteForm.get('city')?.value }}</small>
+                            <small *ngIf="integranteForm.get('municipality')?.value" class="text-primary d-block">Municipio: {{ integranteForm.get('municipality')?.value }}</small>
                         </div>
 
-                        <!-- Hidden Inputs to bind to form (though patchValue handles it, keeping them in DOM is not strictly needed for ReactiveForms but good for structure if we reverted to template driven) -->
-                        <input type="hidden" formControlName="address">
+                        <!-- Hidden Inputs for address components -->
                         <input type="hidden" formControlName="neighborhood">
                         <input type="hidden" formControlName="city">
+                        <input type="hidden" formControlName="municipality">
+                        <input type="hidden" formControlName="district">
+                        <input type="hidden" formControlName="postalCode">
                         <input type="hidden" formControlName="latitude">
                         <input type="hidden" formControlName="longitude">
                     </div>
@@ -318,13 +337,13 @@
                     <label>Nacimiento:</label>
                     <span>{{ selectedMember.birthdate }}</span>
                 </div>
-                <div class="detail-item" *ngIf="selectedMember.age > 0">
+                <div class="detail-item" *ngIf="selectedMember.age && selectedMember.age > 0">
                     <label>Edad:</label>
                     <span>{{ selectedMember.age }} años</span>
                 </div>
                 <div class="detail-item full">
                     <label>Dirección:</label>
-                    <span>{{ selectedMember.address }}</span>
+                    <span>{{ selectedMember.address || '---' }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Registrado:</label>

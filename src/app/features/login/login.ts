@@ -44,7 +44,8 @@ export class Login {
             password: this.loginData.password
         }).subscribe({
             next: () => {
-                this.router.navigate(['/dashboard']);
+                const redirectUrl = this.getRedirectUrl();
+                this.router.navigate([redirectUrl]);
                 this.isLoading = false;
             },
             error: (err) => {
@@ -57,5 +58,22 @@ export class Login {
                 }
             }
         });
+    }
+
+    private getRedirectUrl(): string {
+        if (this.authService.can('MANAGE_DASHBOARD')) return '/dashboard';
+        if (this.authService.can('VIEW_MEMBER_PANEL')) return '/integrantes';
+        if (this.authService.can('VIEW_BAPTISM_PANEL')) return '/bautismos';
+        if (this.authService.can('REGISTER_ATTENDANCE')) return '/asistencia';
+        if (this.authService.can('MANAGE_ATTENDANCE')) return '/asistencias/administrar';
+        if (this.authService.can('MANAGE_REPORT')) return '/reportes';
+        if (this.authService.can('VIEW_ROLE_PANEL')) return '/roles';
+        if (this.authService.can('VIEW_USER_PANEL')) return '/usuarios';
+        if (this.authService.can('VIEW_SERVICE_PANEL')) return '/servicios';
+
+        // Default specific for BAPTISM special case if no dashboard access
+        if (this.authService.can('VIEW_BAPTISM_PANEL')) return '/bautismos';
+        
+        return '/dashboard';
     }
 }

@@ -3,6 +3,7 @@ import { Integrantes } from './features/integrantes/integrantes';
 import { Asistencia } from './features/asistencia/asistencia';
 import { AdministrarAsistencias } from './features/asistencia/administrar-asistencias';
 import { Reportes } from './features/reportes/reportes';
+import { Bautismos } from './features/bautismos/bautismos';
 
 import { Dashboard } from './features/dashboard/dashboard';
 import { Roles } from './features/roles/roles';
@@ -27,6 +28,7 @@ export const routes: Routes = [
         children: [
             { path: 'dashboard', component: Dashboard, canActivate: [permissionGuard], data: { permission: 'MANAGE_DASHBOARD' } },
             { path: 'integrantes', component: Integrantes, canActivate: [permissionGuard], data: { permission: 'VIEW_MEMBER_PANEL' } },
+            { path: 'bautismos', component: Bautismos, canActivate: [permissionGuard], data: { permission: 'VIEW_BAPTISM_PANEL' } },
             { path: 'asistencia', component: Asistencia, canActivate: [permissionGuard], data: { permission: 'REGISTER_ATTENDANCE' } },
             { path: 'asistencias/administrar', component: AdministrarAsistencias, canActivate: [permissionGuard], data: { permission: 'MANAGE_ATTENDANCE' } },
             { path: 'reportes', component: Reportes, canActivate: [permissionGuard], data: { permission: 'MANAGE_REPORT' } },

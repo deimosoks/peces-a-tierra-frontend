@@ -6,31 +6,46 @@
 
 <div class="servicios-container">
     <div class="card premium-card">
-        <!-- Service Form - Desktop Inline -->
-        <form (submit)="onServiceSubmit()" class="service-form service-form-desktop" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nombre del Servicio</label>
-                    <input type="text" [(ngModel)]="serviceForm.name" name="name"
-                        placeholder="Ej: Culto de Adoración" required class="premium-input">
+        <!-- Service Form - Desktop Inline (Soft UI) -->
+        <form (submit)="onServiceSubmit()" class="header-section desktop-only" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')" style="align-items: flex-end;">
+            <!-- Left: Inputs -->
+             <div class="search-center desktop-only" style="display: flex; gap: 1rem; flex: 1;">
+                <div class="soft-input-group" style="flex: 1;">
+                    <label class="soft-label">Nombre del Servicio</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-church soft-input-icon"></i>
+                        <input type="text" [(ngModel)]="serviceForm.name" name="name"
+                            placeholder="Ej: Culto de Adoración" required class="soft-input">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <input type="text" [(ngModel)]="serviceForm.description" name="description"
-                        placeholder="Breve descripción" required class="premium-input">
+                <div class="soft-input-group" style="flex: 2;">
+                    <label class="soft-label">Descripción</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-align-left soft-input-icon"></i>
+                        <input type="text" [(ngModel)]="serviceForm.description" name="description"
+                            placeholder="Breve descripción" required class="soft-input">
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-add-service" [disabled]="isSavingService">
-                    <i class="fa-solid" [ngClass]="isSavingService ? 'fa-spinner fa-spin' : (isEditingService ? 'fa-save' : 'fa-plus')"></i>
-                    {{ isSavingService ? (isEditingService ? 'Actualizando...' : 'Agregando...') : (isEditingService ? 'Actualizar' : 'Agregar') }}
-                </button>
-                <button type="button" *ngIf="isEditingService" class="btn btn-muted btn-add-service"
-                    (click)="resetServiceForm()">
-                    Cancelar
-                </button>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="actions-right desktop-only">
+                <div class="soft-input-group">
+                    <label class="soft-label invisible-label">Acciones</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary btn-action-soft" [disabled]="isSavingService">
+                            <i class="fa-solid" [ngClass]="isSavingService ? 'fa-spinner fa-spin' : (isEditingService ? 'fa-save' : 'fa-plus')"></i>
+                            <span class="desktop-only">{{ isSavingService ? (isEditingService ? 'Actualizando...' : 'Agregando...') : (isEditingService ? 'Actualizar' : 'Agregar') }}</span>
+                        </button>
+                        <button type="button" *ngIf="isEditingService" class="btn btn-muted btn-action-soft" (click)="resetServiceForm()">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
             </div>
         </form>
 
-        <hr class="divider" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
+        <hr class="divider desktop-only" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
 
         <!-- Services List -->
         <div class="table-container">

@@ -150,6 +150,14 @@ export class Dashboard implements OnInit {
         this.selectedMember = null;
     }
 
+    formatAddress(member: Integrante): string {
+        const parts = [];
+        if (member.neighborhood) parts.push(member.neighborhood);
+        if (member.city) parts.push(member.city);
+        if (member.municipality) parts.push(member.municipality);
+        return parts.length > 0 ? parts.join(', ') : '---';
+    }
+
     getBadgeClass(categoria: string): string {
         switch (categoria) {
             case 'DAMAS': return 'badge-damas';

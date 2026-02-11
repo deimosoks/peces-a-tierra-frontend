@@ -183,7 +183,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding: 1.25rem;
     flex: 1;
     /* Stretch to fill container */
     min-height: 0;

@@ -1,0 +1,383 @@
+<div class="bautismos-container full-width">
+    <div class="full-card">
+    <!-- <div class="full-card"> -->
+        <!-- Header -->
+        <!-- Header -->
+        <div class="header-section">
+            <!-- Left: Filters (Desktop Only) -->
+            <div class="filters-left desktop-only">
+                <!-- Start Date -->
+                <div class="soft-input-group">
+                    <label class="soft-label">Fecha (Desde)</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-regular fa-calendar soft-input-icon"></i>
+                        <input type="date" [(ngModel)]="filterStartDate" (change)="onSearch()" class="soft-input">
+                    </div>
+                </div>
+
+                <!-- End Date -->
+                <div class="soft-input-group">
+                    <label class="soft-label">Fecha (Hasta)</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-regular fa-calendar soft-input-icon"></i>
+                        <input type="date" [(ngModel)]="filterEndDate" (change)="onSearch()" class="soft-input">
+                    </div>
+                </div>
+
+                <!-- Toggle -->
+                <div class="toggle-wrapper">
+                    <!-- <label class="soft-label">Estado</label> -->
+                    <div class="toggle-container">
+                        <label class="status-switch">
+                            <input type="checkbox" [(ngModel)]="filterActive" (change)="onSearch()">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label toggle-label-soft">
+                            {{ filterActive ? 'Solo Válidos' : 'Todos' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Clear Filters (Small icon button) -->
+                <div class="toggle-wrapper" *ngIf="filterStartDate || filterEndDate || filterQuery">
+                     <button class="btn btn-muted btn-sm btn-square-soft" (click)="clearFilters()" title="Limpiar Filtros">
+                        <i class="fa-solid fa-filter-circle-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Left: Filters Trigger (Mobile Only) -->
+            <div class="mobile-only" style="margin-right: 0.5rem;">
+                 <div class="soft-input-group">
+                    <label class="soft-label invisible-label">Filtros</label>
+                     <button class="btn btn-square-soft" (click)="openMobileFilterModal()" style="background: #f1f5f9; color: var(--primary);">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                 </div>
+            </div>
+
+            <!-- Center: Search -->
+            <div class="search-center">
+                <div class="soft-input-group">
+                    <label class="soft-label">Buscar Bautismo</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                        <input type="text" [(ngModel)]="filterQuery" (keyup.enter)="onSearch()"
+                            placeholder="Buscar por nombre, cedula..." class="soft-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="actions-right">
+                <div class="soft-input-group">
+                     <!-- Empty label to align with inputs -->
+                    <label class="soft-label invisible-label">Acciones</label>
+                    <button class="btn btn-primary btn-action-soft" (click)="openCreateModal()" *ngIf="can('BAPTISM_CREATE')">
+                        <i class="fa-solid fa-plus"></i> <span class="desktop-only">Nuevo Bautismo</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Miembro</th>
+                        <th class="desktop-only">Fecha</th>
+                        <th class="desktop-only">Ubicación</th>
+                        <th class="desktop-only">Registrado Por</th>
+                        <th class="desktop-only">Estado</th>
+                        <th class="actions-col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="isLoading">
+                        <td colspan="6" class="text-center">Cargando...</td>
+                    </tr>
+                    <tr *ngIf="!isLoading && baptisms.length === 0">
+                        <td colspan="6" class="text-center">No se encontraron bautismos</td>
+                    </tr>
+                    <tr *ngFor="let baptism of baptisms" [class.inactive-row]="baptism.invalid">
+                        <td (click)="openDetailsModal(baptism)" style="cursor: pointer;">
+                            <span style="font-weight: 600; color: var(--primary);">{{ baptism.memberName }}</span>
+                        </td>
+                        <td class="desktop-only">{{ formatDate(baptism.date) }}</td>
+                        <td class="desktop-only">{{ baptism.address || baptism.city || baptism.neighborhood || '---' }}</td>
+                        <td class="desktop-only">{{ baptism.registeredBy }}</td>
+                        <td class="desktop-only">
+                            <span class="badge" [class.badge-success]="!baptism.invalid" [class.badge-danger]="baptism.invalid">
+                                {{ baptism.invalid ? 'Invalidado' : 'Válido' }}
+                            </span>
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-dropdown">
+                                <button class="action-btn" (click)="toggleDropdown(baptism.id)">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+                                <div class="action-menu" *ngIf="activeDropdownId === baptism.id">
+                                    <button (click)="openDetailsModal(baptism); toggleDropdown(baptism.id)">
+                                        <i class="fa-solid fa-eye"></i> Ver Detalles
+                                    </button>
+                                    <button *ngIf="!baptism.invalid" (click)="downloadCertificate(baptism); toggleDropdown(baptism.id)">
+                                        <i class="fa-solid fa-file-pdf"></i> Certificado
+                                    </button>
+                                    <button *ngIf="!baptism.invalid && can('BAPTISM_INVALIDATE')" 
+                                            (click)="openInvalidateModal(baptism); toggleDropdown(baptism.id)" safeClick>
+                                        <i class="fa-solid fa-ban"></i> Invalidar
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bautismos-footer">
+            <div class="pagination-mini">
+                <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
+                <div class="pagination-buttons">
+                    <button class="btn-icon-sm" (click)="previousPage()" [disabled]="currentPage === 0">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn-icon-sm" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Filter Modal -->
+<div class="modal-overlay" *ngIf="showMobileFilterModal" (click)="closeMobileFilterModal()">
+    <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Filtros</h2>
+            <button class="close-btn" (click)="closeMobileFilterModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Start Date -->
+                <div class="soft-input-group">
+                    <label class="soft-label">Fecha (Desde)</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-regular fa-calendar soft-input-icon"></i>
+                        <input type="date" [(ngModel)]="filterStartDate" (change)="onSearch()" class="soft-input">
+                    </div>
+                </div>
+
+                <!-- End Date -->
+                <div class="soft-input-group">
+                    <label class="soft-label">Fecha (Hasta)</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-regular fa-calendar soft-input-icon"></i>
+                        <input type="date" [(ngModel)]="filterEndDate" (change)="onSearch()" class="soft-input">
+                    </div>
+                </div>
+
+                <!-- Toggle -->
+                <div class="toggle-wrapper" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <span class="toggle-label toggle-label-soft">Estado</span>
+                    <div class="toggle-container" style="width: auto;">
+                        <label class="status-switch">
+                            <input type="checkbox" [(ngModel)]="filterActive" (change)="onSearch()">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label toggle-label-soft" style="margin-left: 0.5rem;">
+                            {{ filterActive ? 'Solo Válidos' : 'Todos' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="clearFilters(); closeMobileFilterModal()" *ngIf="filterStartDate || filterEndDate">
+                Limpiar
+            </button>
+            <button class="btn btn-primary" (click)="closeMobileFilterModal()">
+                Aplicar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Create Baptism Modal -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Registrar Bautismo</h2>
+            <button class="close-btn" (click)="closeCreateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="baptismForm">
+                <!-- Member Search -->
+                <div class="form-group">
+                    <label>Miembro Bautizado *</label>
+                    <div class="member-search-container">
+                        <input type="text" 
+                               [(ngModel)]="memberSearchQuery" 
+                               [ngModelOptions]="{standalone: true}"
+                               (input)="searchMembers()"
+                               placeholder="Buscar miembro..."
+                               class="form-control">
+                        <div class="member-search-dropdown" *ngIf="showMemberSearchDropdown && memberSearchResults.length > 0">
+                            <div *ngFor="let member of memberSearchResults" 
+                                 class="member-search-item"
+                                 (click)="selectMember(member)">
+                                <strong>{{ member.completeName }}</strong>
+                                <span class="member-type">{{ member.type }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="selectedMember" class="selected-member">
+                        <i class="fa-solid fa-check-circle"></i> {{ selectedMember.completeName }}
+                        <button type="button" (click)="clearMemberSelection()" class="clear-btn">&times;</button>
+                    </div>
+                </div>
+
+                <!-- Date -->
+                <div class="form-group">
+                    <label for="date">Fecha del Bautismo *</label>
+                    <input id="date" type="date" formControlName="date" class="form-control">
+                </div>
+
+                <!-- Location (Google Maps) -->
+                <div class="form-group">
+                    <label for="googleAddress">Ubicación del Bautismo</label>
+                    <input id="googleAddress" type="text" placeholder="Buscar dirección..." class="form-control" (keydown.enter)="$event.preventDefault()">
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="note">Notas</label>
+                    <textarea id="note" formControlName="note" rows="3" class="form-control" placeholder="Notas adicionales..."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeCreateModal()">Cancelar</button>
+            <button class="btn btn-primary" (click)="saveBaptism()" [disabled]="isSaving" safeClick>
+                <i class="fa-solid fa-save"></i> {{ isSaving ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Invalidate Modal -->
+<div class="modal-overlay" *ngIf="showInvalidateModal" (click)="closeInvalidateModal()">
+    <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Invalidar Bautismo</h2>
+            <button class="close-btn" (click)="closeInvalidateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>¿Está seguro que desea invalidar el bautismo de <strong>{{ selectedBaptism?.memberName }}</strong>?</p>
+            <form [formGroup]="invalidateForm">
+                <div class="form-group">
+                    <label for="invalidReason">Razón de Invalidación *</label>
+                    <textarea id="invalidReason" formControlName="invalidReason" rows="3" class="form-control" 
+                              placeholder="Ingrese la razón..." maxlength="255"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeInvalidateModal()">Cancelar</button>
+            <button class="btn btn-danger" (click)="invalidateBaptism()" [disabled]="isSaving || invalidateForm.invalid" safeClick>
+                <i class="fa-solid fa-ban"></i> {{ isSaving ? 'Invalidando...' : 'Invalidar' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Detalles del Bautismo</h2>
+            <button class="close-btn" (click)="closeDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body" *ngIf="selectedBaptism">
+            <div class="details-grid">
+                <div class="detail-item">
+                    <label>Miembro:</label>
+                    <span>{{ selectedBaptism.memberName }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Fecha:</label>
+                    <span>{{ formatDate(selectedBaptism.date) }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Registrado Por:</label>
+                    <span>{{ selectedBaptism.registeredBy }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Fecha de Registro:</label>
+                    <span>{{ formatDate(selectedBaptism.createdAt) }}</span>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedBaptism.note">
+                    <label>Notas:</label>
+                    <span>{{ selectedBaptism.note }}</span>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedBaptism.address">
+                    <label>Ubicación:</label>
+                    <span>{{ selectedBaptism.address }}</span>
+                </div>
+                <!-- Status Field -->
+                <div class="detail-item full-width">
+                    <label>Estado:</label>
+                    <div>
+                         <span class="badge" [class.badge-success]="!selectedBaptism.invalid" [class.badge-danger]="selectedBaptism.invalid">
+                            {{ selectedBaptism.invalid ? 'Invalidado' : 'Válido' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="detail-item full-width invalid-section" *ngIf="selectedBaptism.invalid">
+                    <div class="invalid-details">
+                        <p><strong>Razón:</strong> {{ selectedBaptism.invalidReason }}</p>
+                        <p><strong>Invalidado por:</strong> {{ selectedBaptism.invalidatedBy }}</p>
+                        <p><strong>Fecha:</strong> {{ formatDate(selectedBaptism.invalidAt!) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeDetailsModal()">Cerrar</button>
+            <button class="btn btn-primary" (click)="downloadCertificate(selectedBaptism!)" *ngIf="!selectedBaptism?.invalid">
+                <i class="fa-solid fa-file-pdf"></i> Descargar Certificado
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Certificate Input Modal -->
+<div class="modal-overlay" *ngIf="showCertificateModal" (click)="closeCertificateModal()">
+    <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Generar Certificado</h2>
+            <button class="close-btn" (click)="closeCertificateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 1rem; color: #64748b;">Por favor ingrese los datos faltantes para completar el certificado de <strong>{{ selectedBaptism?.memberName }}</strong>.</p>
+            
+            <div class="form-group">
+                <label>No. Cédula *</label>
+                <input type="text" [(ngModel)]="certCedula" class="form-control" placeholder="Ej: 1.234.567.890">
+            </div>
+
+            <div class="form-group">
+                <label>Lugar de Expedición *</label>
+                <input type="text" [(ngModel)]="certExpedition" class="form-control" placeholder="Ej: Barranquilla, Atlántico">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="closeCertificateModal()">Cancelar</button>
+            <button class="btn btn-primary" (click)="confirmDownloadCertificate()" [disabled]="!certCedula || !certExpedition">
+                <i class="fa-solid fa-file-pdf"></i> Generar PDF
+            </button>
+        </div>
+    </div>
+</div>

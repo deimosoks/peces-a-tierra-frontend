@@ -71,6 +71,11 @@ export class RoleService {
             // NOTES
             { id: 'CREATE_NOTE', name: 'Crear Nota', description: 'Permite agregar notas a los integrantes', category: 'MEMBER' },
             { id: 'DELETE_NOTE', name: 'Eliminar Nota', description: 'Permite borrar notas de los integrantes', category: 'MEMBER' },
+            
+            // BAPTISM
+            { id: 'VIEW_BAPTISM_PANEL', name: 'Ver Panel de Bautismos', description: 'Acceso a la gestión de bautismos', category: 'BAPTISM' },
+            { id: 'BAPTISM_CREATE', name: 'Registrar Bautismo', description: 'Permite registrar nuevos bautismos', category: 'BAPTISM' },
+            { id: 'BAPTISM_INVALIDATE', name: 'Invalidar Bautismo', description: 'Permite invalidar registros de bautismo', category: 'BAPTISM' },
 
             // ADMIN
             { id: 'ADMINISTRATOR', name: 'Administrador Total', description: 'Acceso total a todas las funciones del sistema', category: 'ADMIN' }

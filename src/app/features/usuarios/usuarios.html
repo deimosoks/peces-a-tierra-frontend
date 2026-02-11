@@ -2,30 +2,50 @@
     <!-- Users Table Card -->
     <div class="users-card">
         <!-- New Card Header for Search & Actions -->
-        <div class="card-header-actions">
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                    placeholder="Buscar por usuario...">
+        <div class="header-section">
+            <!-- Left: Stats -->
+            <div class="filters-left desktop-only" style="align-items: flex-end;">
+                 <!-- Total Users Badge -->
+                 <div class="soft-input-group">
+                    <label class="soft-label">Totales</label>
+                    <div class="soft-input-wrapper">
+                         <div class="soft-input" style="width: auto; padding: 0 1rem; display: flex; gap: 0.5rem; align-items: center; color: var(--primary); font-weight: 600;">
+                            <i class="fa-solid fa-users"></i>
+                            <span>{{ totalUsers }}</span>
+                        </div>
+                    </div>
+                 </div>
+                 <!-- Active Users Badge -->
+                 <div class="soft-input-group">
+                    <label class="soft-label">Activos</label>
+                     <div class="soft-input-wrapper">
+                        <div class="soft-input" style="width: auto; padding: 0 1rem; display: flex; gap: 0.5rem; align-items: center; color: #10b981; font-weight: 600;">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>{{ activeUsers }}</span>
+                        </div>
+                    </div>
+                 </div>
             </div>
-            <button class="btn-new-user" (click)="openNewModal()" *ngIf="can('CREATE_USER')">
-                <i class="fa-solid fa-user-plus"></i>
-                <span>Nuevo Usuario</span>
-            </button>
-            <div class="stats-mini-group">
-                <div class="stat-pill">
-                    <i class="fa-solid fa-users"></i>
-                    <div class="pill-info">
-                        <span class="value">{{ totalUsers }}</span>
-                        <span class="label">Totales</span>
+
+            <!-- Center: Search -->
+            <div class="search-center">
+                <div class="soft-input-group">
+                    <label class="soft-label">Buscar Usuario</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                            placeholder="Buscar por usuario..." class="soft-input">
                     </div>
                 </div>
-                <div class="stat-pill active">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <div class="pill-info">
-                        <span class="value">{{ activeUsers }}</span>
-                        <span class="label">Activos</span>
-                    </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="actions-right">
+                <div class="soft-input-group">
+                    <label class="soft-label invisible-label">Nuevo</label>
+                    <button class="btn btn-primary btn-action-soft" (click)="openNewModal()" *ngIf="can('CREATE_USER')">
+                        <i class="fa-solid fa-user-plus"></i> <span class="desktop-only">Nuevo Usuario</span>
+                    </button>
                 </div>
             </div>
         </div>
