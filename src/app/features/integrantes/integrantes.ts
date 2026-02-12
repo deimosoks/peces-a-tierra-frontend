@@ -9,6 +9,8 @@ import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ReportService, ReportColumn } from '../../core/services/report.service';
 import { API_CONFIG } from '../../core/config/api.config';
+import { MemberConfigService } from '../../core/services/member-config.service';
+import { MemberCategoryResponseDto, MemberTypeResponseDto } from '../../core/models/member-config.model';
 
 declare var google: any;
 
@@ -27,6 +29,7 @@ export class Integrantes implements OnInit {
   private notificationService = inject(NotificationService);
   private reportService = inject(ReportService);
   private cdr = inject(ChangeDetectorRef);
+  private memberConfigService = inject(MemberConfigService);
 
   members: Integrante[] = [];
   totalPages = 0;
@@ -54,9 +57,9 @@ export class Integrantes implements OnInit {
   ageFilterRange1: number | null = null;
   ageFilterRange2: number | null = null;
 
-  // Available options
-  availableTypes = ['INICIANTE', 'VISITANTE', 'MIEMBRO', 'SIMPATIZANTE', 'OTRA_IGLESIA'];
-  availableCategories = ['DAMAS', 'CABALLEROS', 'JOVENES', 'NIÑOS'];
+  // Dynamic available options (fetched from API)
+  availableTypes: MemberTypeResponseDto[] = [];
+  availableCategories: MemberCategoryResponseDto[] = [];
 
   // Mobile temporary filter state
   tempSelectedTypes: string[] = [];
@@ -85,14 +88,26 @@ export class Integrantes implements OnInit {
   isSaving = false;
   currentId?: string;
 
-  tipos = ['INICIANTE', 'VISITANTE', 'MIEMBRO', 'SIMPATIZANTE', 'OTRA_IGLESIA'];
-  categorias = ['DAMAS', 'CABALLEROS', 'JOVENES', 'NIÑOS'];
+  // Remove hardcoded arrays - now using availableTypes and availableCategories
   selectedFile: File | null = null;
   imagePreview: string | null = null;
 
   ngOnInit() {
     this.initForm();
+    this.loadCategoriesAndTypes();
     this.loadMembers();
+  }
+
+  loadCategoriesAndTypes() {
+    this.memberConfigService.getCategories().subscribe({
+      next: (data) => this.availableCategories = data,
+      error: () => this.notificationService.error('Error al cargar categorías')
+    });
+
+    this.memberConfigService.getTypes().subscribe({
+      next: (data) => this.availableTypes = data,
+      error: () => this.notificationService.error('Error al cargar tipos')
+    });
   }
 
   can(permission: string): boolean {
@@ -110,8 +125,8 @@ export class Integrantes implements OnInit {
   initForm() {
     this.integranteForm = this.fb.group({
       completeName: ['', [Validators.required]],
-      type: ['VISITANTE', [Validators.required]],
-      category: ['JOVENES', [Validators.required]],
+      typeId: ['', [Validators.required]],
+      categoryId: ['', [Validators.required]],
       cellphone: [''],
       address: [''],
       neighborhood: [''],
@@ -344,11 +359,8 @@ export class Integrantes implements OnInit {
 
     this.integranteService.exportMembers(filterRequest).subscribe({
       next: (data) => {
-        // Format types for the report
-        const formattedData = data.map(item => ({
-          ...item,
-          type: this.formatType(item.type)
-        }));
+        // No additional formatting needed if backend sends names in MemberExportDto
+        const formattedData = data;
 
         const columns: ReportColumn[] = [
           { id: 'completeName', label: 'Nombre Completo', visible: true, order: 1 },
@@ -689,7 +701,15 @@ export class Integrantes implements OnInit {
   editIntegrante(integrante: Integrante) {
     this.isEditing = true;
     this.currentId = integrante.id;
-    this.integranteForm.patchValue(integrante);
+    
+    // Convert objects to IDs for the form
+    const formValue = {
+      ...integrante,
+      typeId: integrante.type.id,
+      categoryId: integrante.category.id
+    };
+    
+    this.integranteForm.patchValue(formValue);
     this.imagePreview = integrante.pictureProfileUrl || null;
     this.showFormModal = true;
     this.cdr.detectChanges();
@@ -717,17 +737,17 @@ export class Integrantes implements OnInit {
     this.currentId = undefined;
     this.selectedFile = null;
     this.imagePreview = null;
-    this.integranteForm.reset({ active: true, type: 'VISITANTE', category: 'JOVENES' });
+    this.integranteForm.reset({ 
+      active: true, 
+      typeId: this.availableTypes.length > 0 ? this.availableTypes[0].id : '', 
+      categoryId: this.availableCategories.length > 0 ? this.availableCategories[0].id : '' 
+    });
   }
 
   getBadgeClass(categoria: string): string {
-    switch (categoria) {
-      case 'DAMAS': return 'badge-damas';
-      case 'CABALLEROS': return 'badge-caballeros';
-      case 'JOVENES': return 'badge-jovenes';
-      case 'NIÑOS': return 'badge-ninos';
-      default: return '';
-    }
+    // This method is now less relevant since we'll use dynamic colors, 
+    // but keeping it with a neutral fallback to avoid breaking HTML.
+    return '';
   }
 
   // NOTE METHODS
@@ -793,8 +813,15 @@ export class Integrantes implements OnInit {
     }
   }
 
-  formatType(type: string): string {
+  formatType(type: any): string {
     if (!type) return '';
-    return type.replace(/_/g, ' ');
+    if (typeof type === 'string') return type.replace(/_/g, ' ');
+    return type.name || '';
+  }
+
+  formatCategory(category: any): string {
+    if (!category) return '';
+    if (typeof category === 'string') return category;
+    return category.name || '';
   }
 }

@@ -427,6 +427,7 @@ textarea.form-control {
   flex-direction: column;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   animation: slideUp 0.3s ease-out;
+  position: relative; /* For loading overlay */
 }
 
 .modal-content.modal-sm {
@@ -567,4 +568,46 @@ textarea.form-control {
 .modal-sm {
     max-width: 400px;
     width: 90%;
+}
+
+/* Full Viewport Loading Overlay */
+.full-viewport-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999; /* Above everything */
+    animation: fadeInBautismos 0.2s ease-out;
+    backdrop-filter: blur(2px);
+}
+
+.spinner-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.spinner-circle {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin-bautismos 1s linear infinite;
+}
+
+@keyframes spin-bautismos {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInBautismos {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

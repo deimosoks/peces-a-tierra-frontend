@@ -1,3 +1,5 @@
+import { MemberCategoryResponseDto, MemberTypeResponseDto } from './member-config.model';
+
 export interface MemberNoteResponseDto {
     id: string;
     note: string;
@@ -13,8 +15,8 @@ export interface MemberNoteRequestDto {
 export interface Integrante {
   id: string;
   completeName: string;
-  type: string;
-  category: string;
+  type: MemberTypeResponseDto;
+  category: MemberCategoryResponseDto;
   cellphone?: string;
   birthdate?: Date;
   cc?: string;
@@ -38,8 +40,8 @@ export interface Integrante {
 
 export interface IntegranteRequestDto {
   completeName: string;
-  type: string;
-  category: string;
+  typeId: string;
+  categoryId: string;
   cellphone?: string;
   address?: string;
   birthdate?: Date;

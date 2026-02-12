@@ -179,14 +179,27 @@ export class Asistencia implements OnInit {
     });
   }
 
-  getBadgeClass(categoria: string): string {
-    switch (categoria) {
+  getBadgeClass(categoria: any): string {
+    const name = typeof categoria === 'string' ? categoria : categoria?.name;
+    switch (name) {
       case 'DAMAS': return 'badge-damas';
       case 'CABALLEROS': return 'badge-caballeros';
       case 'JOVENES': return 'badge-jovenes';
       case 'NIÑOS': return 'badge-ninos';
       default: return '';
     }
+  }
+
+  formatType(type: any): string {
+    if (!type) return '';
+    if (typeof type === 'string') return type.replace(/_/g, ' ');
+    return type.name || '';
+  }
+
+  formatCategory(category: any): string {
+    if (!category) return '';
+    if (typeof category === 'string') return category;
+    return category.name || '';
   }
 
   nextPage() {

@@ -96,9 +96,15 @@
                         </td>
                         <td class="mobile-hide">{{ member.cc }}</td>
                         <td class="mobile-hide">
-                            <span class="badge" [ngClass]="getBadgeClass(member.category)">{{ member.category }}</span>
+                            <span class="badge" [style.background-color]="member.category.color" [ngClass]="getBadgeClass(member.category)">
+                                {{ formatCategory(member.category) }}
+                            </span>
                         </td>
-                        <td class="mobile-hide">{{ member.type }}</td>
+                        <td class="mobile-hide">
+                            <span class="badge badge-outline" [style.border-color]="member.type.color" [style.color]="member.type.color">
+                                {{ formatType(member.type) }}
+                            </span>
+                        </td>
                         <td class="mobile-hide">{{ member.cellphone }}</td>
                         <td class="text-center">
                             <div class="actions-mini justify-center">
@@ -167,8 +173,12 @@
                     alt="Avatar Grande">
                 <div class="profile-title">
                     <h3>{{ selectedMember.completeName }}</h3>
-                    <span class="badge" [ngClass]="getBadgeClass(selectedMember.category)">{{ selectedMember.category
-                        }}</span>
+                    <span class="badge" [style.background-color]="selectedMember.category.color" [ngClass]="getBadgeClass(selectedMember.category)">
+                        {{ formatCategory(selectedMember.category) }}
+                    </span>
+                    <span class="badge badge-outline ms-2" [style.border-color]="selectedMember.type.color" [style.color]="selectedMember.type.color">
+                        {{ formatType(selectedMember.type) }}
+                    </span>
                 </div>
             </div>
 
@@ -183,7 +193,7 @@
                 </div>
                 <div class="detail-item">
                     <label>Tipo:</label>
-                    <span>{{ selectedMember.type }}</span>
+                    <span>{{ formatType(selectedMember.type) }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Teléfono:</label>

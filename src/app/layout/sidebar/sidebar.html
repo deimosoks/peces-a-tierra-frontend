@@ -61,6 +61,10 @@
                 <i class="fa-solid fa-clipboard-list"></i>
                 <span>Administrar Asistencias</span>
             </a>
+            <a routerLink="/configuracion" routerLinkActive="active" class="nav-item" *ngIf="can('ADMINISTRATOR')" (click)="close()">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
         </div>
     </nav>
 

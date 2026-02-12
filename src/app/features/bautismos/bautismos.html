@@ -1,3 +1,11 @@
+<!-- Full Viewport Loading Overlay -->
+<div class="full-viewport-loading" *ngIf="isSaving">
+    <div class="spinner-wrapper">
+        <div class="spinner-circle"></div>
+        <p>Procesando...</p>
+    </div>
+</div>
+
 <div class="bautismos-container full-width">
     <div class="full-card">
     <!-- <div class="full-card"> -->
@@ -212,6 +220,7 @@
             <h2>Registrar Bautismo</h2>
             <button class="close-btn" (click)="closeCreateModal()">&times;</button>
         </div>
+
         <div class="modal-body">
             <form [formGroup]="baptismForm">
                 <!-- Member Search -->
@@ -229,7 +238,7 @@
                                  class="member-search-item"
                                  (click)="selectMember(member)">
                                 <strong>{{ member.completeName }}</strong>
-                                <span class="member-type">{{ member.type }}</span>
+                                <span class="member-type">{{ formatType(member.type) }}</span>
                             </div>
                         </div>
                     </div>
@@ -274,6 +283,7 @@
             <h2>Invalidar Bautismo</h2>
             <button class="close-btn" (click)="closeInvalidateModal()">&times;</button>
         </div>
+
         <div class="modal-body">
             <p>¿Está seguro que desea invalidar el bautismo de <strong>{{ selectedBaptism?.memberName }}</strong>?</p>
             <form [formGroup]="invalidateForm">

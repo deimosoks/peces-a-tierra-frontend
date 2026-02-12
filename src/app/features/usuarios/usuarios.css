@@ -1088,3 +1088,28 @@ input:checked+.slider:before {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+@media (max-width: 768px) {
+    /* Override global header layout for Usuarios to keep side-by-side */
+    .header-section {
+        flex-wrap: nowrap !important;
+        gap: 0.5rem !important;
+    }
+
+    .header-section .search-center {
+        width: auto !important;
+        order: unset !important;
+        flex: 1 !important;
+        margin-top: 0 !important;
+    }
+
+    .header-section .actions-right {
+        order: unset !important;
+        margin-left: 0 !important;
+    }
+    
+    /* Hide label in mobile for better fit */
+    .search-center .soft-label {
+        display: none;
+    }
+}

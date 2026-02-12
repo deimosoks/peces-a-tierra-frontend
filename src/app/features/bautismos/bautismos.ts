@@ -472,6 +472,18 @@ export class Bautismos implements OnInit {
     return d.toLocaleDateString('es-CO');
   }
 
+  formatType(type: any): string {
+    if (!type) return '';
+    if (typeof type === 'string') return type.replace(/_/g, ' ');
+    return type.name || '';
+  }
+
+  formatCategory(category: any): string {
+    if (!category) return '';
+    if (typeof category === 'string') return category;
+    return category.name || '';
+  }
+
   openMobileFilterModal() {
     this.showMobileFilterModal = true;
   }

@@ -4,6 +4,7 @@ import { Asistencia } from './features/asistencia/asistencia';
 import { AdministrarAsistencias } from './features/asistencia/administrar-asistencias';
 import { Reportes } from './features/reportes/reportes';
 import { Bautismos } from './features/bautismos/bautismos';
+import { Configuracion } from './features/configuracion/configuracion';
 
 import { Dashboard } from './features/dashboard/dashboard';
 import { Roles } from './features/roles/roles';
@@ -35,6 +36,7 @@ export const routes: Routes = [
             { path: 'roles', component: Roles, canActivate: [permissionGuard], data: { permission: 'VIEW_ROLE_PANEL' } },
             { path: 'usuarios', component: Usuarios, canActivate: [permissionGuard], data: { permission: 'VIEW_USER_PANEL' } },
             { path: 'servicios', component: Servicios, canActivate: [permissionGuard], data: { permission: 'VIEW_SERVICE_PANEL' } },
+            { path: 'configuracion', component: Configuracion, canActivate: [permissionGuard], data: { permission: 'ADMINISTRATOR' } },
         ]
     },
     { path: '**', canActivate: [permissionRedirectGuard], component: MainLayout } // Component doesn't matter, guard redirects
