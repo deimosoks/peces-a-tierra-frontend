@@ -6,6 +6,11 @@
     </div>
 
     <div class="topbar-right">
+        <!-- Theme Toggle -->
+        <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" [title]="themeService.isDarkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
+            <i class="fa-solid" [ngClass]="themeService.isDarkMode() ? 'fa-sun' : 'fa-moon'"></i>
+        </button>
+
         <div class="user-info" *ngIf="authService.currentUser() as user">
             <div class="user-text">
                 <span class="complete-name">{{ user.completeName }}</span>

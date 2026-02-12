@@ -6,7 +6,7 @@
                  <!-- Mobile Filter Button (Visible only on mobile) -->
                  <div class="soft-input-group mobile-only">
                     <label class="soft-label">Filtros</label>
-                    <button class="btn btn-square-soft" (click)="openMobileFilters()" style="background: #f1f5f9; color: #334155;">
+                    <button class="btn btn-square-soft" (click)="openMobileFilters()">
                         <i class="fa-solid fa-filter"></i>
                         <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length > 0" style="position: absolute; top: -5px; right: -5px;">
                             {{ selectedTypes.length + selectedCategories.length }}
@@ -17,7 +17,7 @@
                 <!-- Desktop Advanced Filters -->
                 <div class="soft-input-group desktop-only">
                     <label class="soft-label">Filtros</label>
-                    <button class="btn btn-action-soft" (click)="openAdvancedFilters()" style="background: #f1f5f9; border: 1px solid transparent; color: #334155; font-weight: 500; font-size: 0.85rem; padding: 0 1rem; justify-content: space-between; min-width: 140px;">
+                    <button class="btn btn-action-soft" (click)="openAdvancedFilters()" style="justify-content: space-between; min-width: 140px;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fa-solid fa-sliders" style="color: var(--primary);"></i>
                             <span>Avanzados</span>
@@ -47,7 +47,7 @@
                 <div class="soft-input-group">
                     <label class="soft-label invisible-label">Exportar</label>
                     <div class="filter-dropdown-container export-dropdown-container">
-                        <button class="btn btn-muted btn-action-soft" (click)="toggleExportDropdown()" title="Exportar" style="background: #f1f5f9;">
+                        <button class="btn btn-muted btn-action-soft" (click)="toggleExportDropdown()" title="Exportar">
                             <i class="fa-solid fa-download"></i> <span class="desktop-only" style="font-weight: 500;">Exportar</span>
                         </button>
                         <div class="filter-dropdown export-menu" *ngIf="showExportDropdown" style="right: 0; left: auto;">

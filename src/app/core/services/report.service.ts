@@ -161,19 +161,24 @@ export class ReportService {
     }
 
     private resolveValue(item: any, path: string): any {
+        let val: any;
+
         // Basic formatting for dates or nested objects if needed
         if (path === 'attendanceDate' || path === 'serviceDate') {
-            return new Date(item[path] || item.id?.[path]).toLocaleString();
+            val = new Date(item[path] || item.id?.[path]).toLocaleString();
+        } else if (path === 'date' && item.serviceTime) {
+            val = new Date(item.serviceTime).toLocaleString();
+        } else if (path.includes('.')) {
+            val = path.split('.').reduce((obj, key) => obj?.[key], item);
+        } else {
+            val = item[path];
         }
 
-        if (path === 'date' && item.serviceTime) {
-            return new Date(item.serviceTime).toLocaleString();
+        // If the value is an object with a name property (like Category or Type), return the name
+        if (val && typeof val === 'object' && 'name' in val) {
+            return val.name;
         }
 
-        if (path.includes('.')) {
-            return path.split('.').reduce((obj, key) => obj?.[key], item);
-        }
-
-        return item[path];
+        return val;
     }
 }

@@ -203,7 +203,7 @@
                             alt="">
                         <div class="member-info">
                             <strong>{{ selectedMember.completeName }}</strong>
-                            <span>{{ selectedMember.category }} • {{ selectedMember.type }}</span>
+                            <span>{{ formatCategory(selectedMember.category) }} • {{ formatType(selectedMember.type) }}</span>
                         </div>
                         <button class="btn-icon-remove" (click)="clearSelectedMember()" title="Cambiar Persona">
                             <i class="fa-solid fa-times"></i>
@@ -225,7 +225,7 @@
                                 </div>
                                 <div class="result-text">
                                     <div class="name">{{ m.completeName }}</div>
-                                    <div class="meta">{{ m.category }} - {{ m.cc || 'Sin CC' }}</div>
+                                    <div class="meta">{{ formatCategory(m.category) }} - {{ m.cc || 'Sin CC' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -334,10 +334,16 @@
                 <div class="detail-section">
                     <h4>Información de Membresía</h4>
                     <div class="info-row">
-                        <label>Categoría:</label> <span>{{ selectedUser.memberResponseDto.category }}</span>
+                        <label>Categoría:</label> 
+                        <span class="badge badge-sm" [style.background-color]="selectedUser.memberResponseDto.category.color" [ngClass]="getBadgeClass(selectedUser.memberResponseDto.category)">
+                            {{ formatCategory(selectedUser.memberResponseDto.category) }}
+                        </span>
                     </div>
                     <div class="info-row">
-                        <label>Tipo:</label> <span>{{ selectedUser.memberResponseDto.type }}</span>
+                        <label>Tipo:</label> 
+                        <span class="badge badge-sm badge-outline" [style.border-color]="selectedUser.memberResponseDto.type.color" [style.color]="selectedUser.memberResponseDto.type.color">
+                            {{ formatType(selectedUser.memberResponseDto.type) }}
+                        </span>
                     </div>
                     <div class="info-row">
                         <label>Cédula:</label> <span>{{ selectedUser.memberResponseDto.cc || 'N/A' }}</span>

@@ -145,12 +145,15 @@
                 </div>
                 <div class="detail-item">
                     <label>Categoría:</label>
-                    <span class="badge" [ngClass]="getBadgeClass(attendanceDetails.memberCategory)">{{
-                        attendanceDetails.memberCategory }}</span>
+                    <span class="badge badge-sm" [style.background-color]="attendanceDetails.memberCategory.color" [ngClass]="getBadgeClass(attendanceDetails.memberCategory)">
+                        {{ formatCategory(attendanceDetails.memberCategory) }}
+                    </span>
                 </div>
                 <div class="detail-item">
                     <label>Tipo:</label>
-                    <span>{{ attendanceDetails.memberType }}</span>
+                    <span class="badge badge-sm badge-outline" [style.border-color]="attendanceDetails.memberType.color" [style.color]="attendanceDetails.memberType.color">
+                        {{ formatType(attendanceDetails.memberType) }}
+                    </span>
                 </div>
                 <div class="detail-item">
                     <label>Fecha del Servicio:</label>

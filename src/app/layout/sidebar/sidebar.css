@@ -33,7 +33,7 @@
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: #f1f5f9;
+    background: var(--bg-input);
     border: none;
     width: 32px;
     height: 32px;
@@ -48,7 +48,7 @@
 }
 
 .mobile-close-btn:hover {
-    background: #e2e8f0;
+    background: var(--border-color);
     color: var(--text-main);
 }
 
@@ -142,7 +142,7 @@
 }
 
 .nav-item:hover {
-    background-color: #f1f5f9;
+    background-color: var(--bg-input);
     color: var(--primary);
 }
 
@@ -151,7 +151,7 @@
 }
 
 .nav-item.active {
-    background-color: #eff6ff;
+    background-color: var(--bg-main);
     color: var(--primary);
     border-right: 3px solid var(--primary);
     font-weight: 600;
@@ -180,10 +180,25 @@
 }
 
 .logout-btn:hover {
-    background-color: #fef2f2;
+    background-color: var(--danger-bg);
     color: #ef4444;
 }
 
 .logout-btn:hover i {
     color: #ef4444;
+}
+
+.btn-install-app {
+    color: var(--primary) !important;
+    background: var(--bg-main) !important;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    width: calc(100% - 1rem);
+    justify-content: center;
+}
+
+.btn-install-app:hover {
+    background: var(--bg-input) !important;
 }

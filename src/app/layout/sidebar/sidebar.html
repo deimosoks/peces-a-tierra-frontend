@@ -69,7 +69,7 @@
     </nav>
 
     <div class="sidebar-footer">
-        <button class="nav-item" *ngIf="pwaService.showInstallButton" (click)="installApp()" style="color: #4f46e5; background: #e0e7ff; margin-bottom: 0.5rem;">
+        <button class="nav-item btn-install-app" *ngIf="pwaService.showInstallButton" (click)="installApp()">
             <i class="fa-solid fa-download"></i>
             <span>Instalar App</span>
         </button>

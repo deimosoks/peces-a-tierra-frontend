@@ -6,10 +6,25 @@
   --primary-dark: #2563eb;
   --bg-main: #eff6ff;
   --bg-sidebar: #ffffff;
+  --bg-card: #ffffff; /* New for components */
+  --bg-input: #f1f5f9; /* New for inputs */
   --text-main: #1e293b;
+  --text-secondary: #475569;
   --text-muted: #64748b;
   --border-color: #e2e8f0;
+  --border-soft: #f1f5f9;
   --white: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  --success: #10b981;
+  --danger: #ef4444;
+  --success-bg: #d1fae5;
+  --success-text: #065f46;
+  --danger-bg: #fee2e2;
+  --danger-text: #991b1b;
+  --bg-card-tp: rgba(255, 255, 255, 0.7);
 
   /* Categories */
   --cat-damas: #f9a8d4;
@@ -24,6 +39,38 @@
   --sidebar-width: 230px;
   --header-height: 70px;
   --transition-speed: 0.3s;
+}
+
+[data-theme='dark'] {
+  --bg-main: #0f172a;
+  --bg-sidebar: #1e293b;
+  --bg-card: #1e293b;
+  --bg-input: #334155;
+  --text-main: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --border-soft: #1e293b;
+  --white: #1e293b;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  
+  --success-bg: rgba(16, 185, 129, 0.2);
+  --success-text: #34d399;
+  --danger-bg: rgba(239, 68, 68, 0.2);
+  --danger-text: #f87171;
+  --bg-card-tp: rgba(30, 41, 59, 0.7);
+  
+  /* Badges need adjusted opacity or brightness for dark mode if they are too intense */
+  --cat-damas: #4a1d33;
+  --cat-damas-text: #f9a8d4;
+  --cat-caballeros: #1e3a5f;
+  --cat-caballeros-text: #93c5fd;
+  --cat-jovenes: #453613;
+  --cat-jovenes-text: #fde68a;
+  --cat-ninos: #064e3b;
+  --cat-ninos-text: #6ee7b7;
 }
 
 * {
@@ -59,12 +106,12 @@ body {
 /* Google Maps Autocomplete Dropdown Styles - GLOBAL */
 /* These styles must be global because Google Maps injects the dropdown outside Angular components */
 .pac-container {
-  background-color: #fff;
+  background-color: var(--bg-card);
   position: absolute !important;
   z-index: 10000 !important;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
   margin-top: 4px;
   font-family: 'Inter', sans-serif;
 }
@@ -87,11 +134,11 @@ body {
 }
 
 .pac-item:hover {
-  background-color: #f8fafc;
+  background-color: var(--bg-input);
 }
 
 .pac-item-selected {
-  background-color: #f1f5f9;
+  background-color: var(--border-soft);
 }
 
 .pac-matched {
@@ -109,10 +156,10 @@ body {
   align-items: flex-end; /* Align to bottom so inputs align despite labels */
   gap: 1rem; /* Reduced gap */
   margin-bottom: 1rem; /* Reduced margin */
-  background: white;
+  background: var(--bg-card);
   padding: 0.75rem; /* Reduced padding */
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Header Sections */
@@ -145,7 +192,7 @@ body {
     font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: #64748b;
+    color: var(--text-muted);
     letter-spacing: 0.02em;
     margin-left: 0.25rem;
     margin-bottom: 0;
@@ -167,13 +214,13 @@ body {
 
 .soft-input {
     width: 100%;
-    background: #f1f5f9;
+    background: var(--bg-input);
     border: 1px solid transparent;
     border-radius: 8px;
     padding: 0.5rem 0.75rem 0.5rem 2rem; /* Left padding for icon */
     font-size: 0.85rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-main);
     transition: all 0.2s ease;
     outline: none;
     font-family: 'Inter', sans-serif;
@@ -181,7 +228,7 @@ body {
 }
 
 .soft-input:focus {
-    background: white;
+    background: var(--bg-card);
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
@@ -220,7 +267,7 @@ select.soft-input {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: #f1f5f9;
+    background: var(--bg-input);
     padding: 0 0.75rem;
     border-radius: 8px;
     height: 36px;
@@ -250,7 +297,7 @@ select.soft-input {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #cbd5e1;
+  background-color: var(--border-color);
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -289,6 +336,14 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     padding: 0;
+    background: var(--bg-input);
+    color: var(--text-main);
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.btn-square-soft:hover {
+    background: var(--border-color);
 }
 
 .btn-action-soft {
@@ -297,12 +352,22 @@ input:checked + .slider:before {
     align-items: center;
     gap: 0.5rem;
     padding: 0 1rem;
+    background: var(--bg-input);
+    color: var(--text-main);
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.btn-action-soft:hover {
+    background: var(--border-color);
 }
 
 .toggle-label-soft {
     font-size: 0.75rem; 
     font-weight: 600; 
-    color: #475569;
+    color: var(--text-secondary);
 }
 
 .invisible-label {
@@ -346,9 +411,9 @@ button {
 }
 
 .card {
-  background: var(--white);
+  background: var(--bg-card);
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-md);
   padding: 1.5rem;
 }
 
@@ -365,19 +430,57 @@ button {
 
 .btn-primary {
   background-color: var(--primary);
-  color: var(--white);
+  color: var(--white) !important;
 }
 
 .btn-primary:hover {
   background-color: var(--primary-dark);
 }
 
+.btn-secondary {
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
+  color: var(--primary);
+}
+
+[data-theme='dark'] .btn-secondary {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-main);
+}
+
+[data-theme='dark'] .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--white-inverse, #ffffff);
+}
+
 .badge {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.badge-solid {
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Ensure badges are readable inside cards/modals */
+.badge-sm {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
 }
 
 .badge-damas {
@@ -406,13 +509,13 @@ button {
 }
 
 ::-webkit-scrollbar-track {
-  background: #3b83f650;
+  background: var(--bg-input);
   margin: 0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #fdfdfd;
-  border: 1px solid #3b83f650;
+  background-color: var(--border-color);
+  border: 1px solid var(--bg-input);
   border-radius: 10px;
 }
 
@@ -441,7 +544,7 @@ button {
   border-radius: 9999px;
   /* Fully rounded as requested */
   border: 1px solid var(--border-color);
-  background: white;
+  background: var(--bg-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -454,7 +557,7 @@ button {
 }
 
 .btn-icon-sm:hover:not(:disabled) {
-  background-color: #f1f5f9;
+  background-color: var(--bg-input);
   color: var(--primary);
   border-color: var(--primary);
 }

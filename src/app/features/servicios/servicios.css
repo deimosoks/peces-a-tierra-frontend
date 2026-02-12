@@ -12,9 +12,9 @@
 }
 
 .premium-card {
-    background: var(--white);
+    background: var(--bg-card);
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
     padding: 1.5rem;
     height: 100%;
     display: flex;
@@ -23,7 +23,7 @@
 }
 
 .service-form {
-    background: #f8fafc;
+    background: var(--bg-main);
     padding: 0.75rem;
     border-radius: 12px;
     border: 1px dashed var(--border-color);
@@ -53,10 +53,11 @@
 
 .premium-input {
     padding: 0.65rem 1rem;
-    border: 1.5px solid #e2e8f0;
+    border: 1.5px solid var(--border-color);
     border-radius: 8px;
     font-size: 0.9rem;
-    background: white;
+    background: var(--bg-card);
+    color: var(--text-main);
     transition: all 0.2s;
 }
 
@@ -89,7 +90,7 @@
     overflow: auto;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background: #f8fafc;
+    background: var(--bg-main);
 }
 
 .premium-table {
@@ -101,7 +102,7 @@
 .premium-table th {
     position: sticky;
     top: 0;
-    background: #f1f5f9;
+    background: var(--bg-main);
     padding: 0.75rem 1rem;
     font-size: 0.7rem;
     font-weight: 700;
@@ -134,7 +135,8 @@
 }
 
 .inactive-row {
-    background-color: #f9fafb;
+    background-color: var(--bg-main);
+    opacity: 0.7;
 }
 
 /* Standardized Status Switch (Sync with Usuarios) */
@@ -201,8 +203,8 @@
     height: 28px;
     border-radius: 8px;
     border: none;
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--bg-main);
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -238,8 +240,8 @@
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 600;
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--bg-main);
+    color: var(--text-muted);
 }
 
 .status-badge.active {
@@ -313,10 +315,10 @@
     top: 100%;
     right: 0;
     z-index: 1000;
-    background: white;
+    background: var(--bg-card);
     min-width: 190px;
     border-radius: 12px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
     padding: 0.5rem 0;
     margin-top: 0.5rem;
@@ -336,7 +338,7 @@
 
 .dropdown-header-mobile {
     padding: 0.5rem 1rem;
-    background: #f8fafc;
+    background: var(--bg-main);
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 0.4rem;
     margin-top: -0.5rem;
@@ -409,7 +411,7 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    background: #f1f5f9;
+    background: var(--bg-main);
     color: var(--text-muted);
     display: flex;
     align-items: center;
@@ -440,13 +442,13 @@
 }
 
 .modal-content {
-    background: white;
+    background: var(--bg-card);
     border-radius: 16px;
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg);
     animation: modalSlideIn 0.3s ease;
 }
 
@@ -467,7 +469,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #f8fafc;
+    background: var(--bg-main);
 }
 
 .modal-header h2 {
@@ -545,7 +547,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--bg-card-tp);
     display: flex;
     align-items: center;
     justify-content: center;

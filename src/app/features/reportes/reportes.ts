@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, HostListener } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ViewChild, HostListener, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IntegranteService } from '../../core/services/integrante';
@@ -11,6 +11,10 @@ import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
 import { ReportService, ReportColumn } from '../../core/services/report.service';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { NotificationService } from '../../core/services/notification.service';
+import { MemberConfigService } from '../../core/services/member-config.service';
+import { ThemeService } from '../../core/services/theme.service';
+import { MemberCategoryResponseDto, MemberTypeResponseDto } from '../../core/models/member-config.model';
+import { forkJoin } from 'rxjs';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -51,6 +55,8 @@ export class Reportes implements OnInit {
   private datePipe = inject(DatePipe);
   private cdr = inject(ChangeDetectorRef);
   private notificationService = inject(NotificationService);
+  private memberConfigService = inject(MemberConfigService);
+  private themeService = inject(ThemeService);
 
   @ViewChild("chart") chart!: ChartComponent;
 
@@ -105,17 +111,56 @@ export class Reportes implements OnInit {
   ];
   groupBy: string = '';
 
-  // Enums
-  tipos = ['INICIANTE', 'VISITANTE', 'MIEMBRO', 'SIMPATIZANTE'];
-  categorias = ['DAMAS', 'CABALLEROS', 'JOVENES', 'NIÑOS'];
+  // Enums (Now dynamic)
+  tipos: MemberTypeResponseDto[] = [];
+  categorias: MemberCategoryResponseDto[] = [];
 
   // Chart
   public chartOptions: any;
 
   ngOnInit() {
     this.adjustPageSize();
-    this.chartOptions = this.getPremiumChartOptions([], []);
+    this.chartOptions = this.getPremiumChartOptions([], [], this.themeService.isDarkMode());
     this.loadServices();
+    this.loadMemberConfigs();
+
+    // Recover cached data if any
+    if (this.reporteService.lastReportData) {
+      this.reportData = this.reporteService.lastReportData;
+      this.filters = { ...this.reporteService.lastFilters };
+      this.stats = { ...this.reporteService.lastStats };
+      if (this.reporteService.lastMemberSelection) {
+        this.selectedMemberName = this.reporteService.lastMemberSelection.name;
+      }
+      this.updateChart();
+    }
+
+    // Effect to react to theme changes
+    effect(() => {
+      const isDark = this.themeService.isDarkMode();
+      if (this.reportData.length > 0) {
+        this.updateChart();
+      } else {
+        this.chartOptions = this.getPremiumChartOptions([], [], isDark);
+      }
+    });
+  }
+
+  loadMemberConfigs() {
+    forkJoin({
+      categories: this.memberConfigService.getCategories(),
+      types: this.memberConfigService.getTypes()
+    }).subscribe({
+      next: (res) => {
+        this.categorias = res.categories;
+        this.tipos = res.types;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading member configurations:', err);
+        this.notificationService.error('Error al cargar las categorías y tipos.');
+      }
+    });
   }
 
   @HostListener('window:resize', ['$event'])
@@ -136,7 +181,7 @@ export class Reportes implements OnInit {
     });
   }
 
-  private getPremiumChartOptions(series: any[], categories: string[]): any {
+  private getPremiumChartOptions(series: any[], categories: string[], isDark: boolean): any {
     const safeSeries = (series && series.length > 0) ? series : [{ name: 'Sin Datos', data: [] }];
     const safeCategories = (categories && categories.length > 0) ? categories : ['-'];
 
@@ -165,6 +210,9 @@ export class Reportes implements OnInit {
         },
         fontFamily: 'Inter, sans-serif'
       },
+      theme: {
+        mode: isDark ? 'dark' : 'light'
+      },
       plotOptions: {
         bar: {
           horizontal: false,
@@ -182,7 +230,15 @@ export class Reportes implements OnInit {
         style: {
           fontSize: '10px',
           fontWeight: 'bold',
-          colors: ['#fff']
+          colors: ['#ffffff']
+        },
+        dropShadow: {
+            enabled: true,
+            top: 1,
+            left: 1,
+            blur: 1,
+            color: '#000',
+            opacity: 0.45
         },
         formatter: function (val: number) {
           return val > 0 ? val : '';
@@ -205,11 +261,18 @@ export class Reportes implements OnInit {
           maxHeight: 180,
           hideOverlappingLabels: false
         },
-        axisBorder: { show: true },
+        axisBorder: { show: true, color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+        axisTicks: { show: true, color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
         tooltip: { enabled: false }
       },
       yaxis: {
-        title: { text: 'Asistencia' },
+        title: { 
+          text: 'Asistencia',
+          style: { color: isDark ? '#f8fafc' : '#1e293b' }
+        },
+        labels: {
+          style: { fontSize: '11px' }
+        },
         min: 0,
         forceNiceScale: true
       },
@@ -221,15 +284,18 @@ export class Reportes implements OnInit {
         horizontalAlign: 'left',
         fontSize: '13px',
         fontWeight: 600,
+        labels: {
+          fontSize: '13px'
+        },
         markers: { radius: 12 }
       },
       grid: {
-        borderColor: '#f1f5f9',
+        borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#f1f5f9',
         strokeDashArray: 4,
         xaxis: { lines: { show: false } }
       },
       tooltip: {
-        theme: 'light',
+        theme: isDark ? 'dark' : 'light',
         shared: true,
         intersect: false,
         x: {
@@ -282,6 +348,7 @@ export class Reportes implements OnInit {
   selectMember(member: any) {
     this.filters.userId = member.id;
     this.selectedMemberName = member.completeName;
+    this.reporteService.lastMemberSelection = { id: member.id, name: member.completeName };
     this.memberResults = [];
     this.memberSearchQuery = '';
   }
@@ -289,6 +356,7 @@ export class Reportes implements OnInit {
   clearMemberSelection() {
     this.filters.userId = '';
     this.selectedMemberName = '';
+    this.reporteService.lastMemberSelection = null;
     this.memberResults = [];
     this.memberSearchQuery = '';
   }
@@ -317,6 +385,13 @@ export class Reportes implements OnInit {
     this.reporteService.generateReport(reportFilters).subscribe({
       next: (data) => {
         this.reportData = data;
+        this.calculateStats();
+        
+        // Save to persistence
+        this.reporteService.lastReportData = data;
+        this.reporteService.lastFilters = { ...this.filters };
+        this.reporteService.lastStats = { ...this.stats };
+        
         this.updateChart();
         this.isLoading = false;
         this.closeFilterModal();
@@ -353,12 +428,13 @@ export class Reportes implements OnInit {
 
     const sortedKeys = Array.from(serviceMap.keys()).sort();
     this.allXLabels = sortedKeys.map(key => serviceMap.get(key)!);
-    const seriesCategories = Array.from(new Set(this.reportData.map(d => d.category))).sort();
+    const getCatName = (d: any) => typeof d.category === 'string' ? d.category : d.category?.name;
+    const seriesCategories = Array.from(new Set(this.reportData.map(d => getCatName(d)))).sort();
 
     this.allSeries = seriesCategories.map(cat => {
       const dataPoints = sortedKeys.map(key => {
         const matches = this.reportData.filter(d =>
-          (d.serviceTime === key || `${d.date}_${d.serviceName}` === key) && d.category === cat
+          (d.serviceTime === key || `${d.date}_${d.serviceName}` === key) && getCatName(d) === cat
         );
         return matches.reduce((sum, item) => sum + (item.total || 0), 0);
       });
@@ -382,7 +458,7 @@ export class Reportes implements OnInit {
     }));
 
     setTimeout(() => {
-      this.chartOptions = this.getPremiumChartOptions(pagedSeries, pagedLabels);
+      this.chartOptions = this.getPremiumChartOptions(pagedSeries, pagedLabels, this.themeService.isDarkMode());
       this.renderChart = true;
       this.cdr.detectChanges();
     }, 50);
@@ -414,7 +490,8 @@ export class Reportes implements OnInit {
     this.reportData.forEach(d => {
       const sKey = d.serviceTime || `${d.date}_${d.serviceName}`;
       serviceTotals.set(sKey, (serviceTotals.get(sKey) || 0) + (d.total || 0));
-      catTotals.set(d.category, (catTotals.get(d.category) || 0) + (d.total || 0));
+      const catName = typeof d.category === 'string' ? d.category : (d.category as any)?.name;
+      catTotals.set(catName, (catTotals.get(catName) || 0) + (d.total || 0));
     });
 
     const peaks = Array.from(serviceTotals.values());

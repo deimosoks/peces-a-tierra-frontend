@@ -1,3 +1,5 @@
+import { MemberCategoryResponseDto, MemberTypeResponseDto } from './member-config.model';
+
 export interface ReportFilters {
     typePeoples?: string[];
     categories?: string[];
@@ -12,7 +14,7 @@ export interface ReportData {
     date: string;
     serviceTime: string;
     serviceName: string;
-    category: string;
-    typePeople: string;
+    category: MemberCategoryResponseDto;
+    typePeople: MemberTypeResponseDto;
     total: number;
 }
