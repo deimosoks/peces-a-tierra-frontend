@@ -5,8 +5,8 @@
         <!-- Header Filters (Soft UI) -->
         <div class="header-section" style="align-items: flex-end; flex-wrap: wrap;">
             
-            <!-- Mobile Configuration Summary trigger (Keep existing behavior) -->
-            <button class="mobile-config-trigger mobile-only" (click)="openFilterModal()" style="margin-bottom: 0.5rem; width: 100%;">
+            <!-- Mobile Configuration Summary trigger (Renamed to openConfigModal) -->
+            <button class="mobile-config-trigger mobile-only" (click)="showConfigModal = true" style="margin-bottom: 0.5rem; width: 100%;">
                 <div class="config-info">
                     <span class="service-name">{{ getSelectedServiceName() }}</span>
                     <span class="service-date">{{ serviceDate | date:'d MMM, h:mm a' }}</span>
@@ -55,16 +55,36 @@
                         <i class="fa-solid fa-chevron-down" style="position: absolute; right: 0.75rem; font-size: 0.75rem; color: #64748b; pointer-events: none;"></i>
                     </div>
                 </div>
+
+                <!-- Advanced Filters Button (New) -->
+                <div class="soft-input-group">
+                    <label class="soft-label">Filtros</label>
+                    <button class="btn btn-action-soft" (click)="openAdvancedFilters()" style="justify-content: space-between; min-width: 140px;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-sliders" style="color: var(--primary);"></i>
+                            <span>Avanzados</span>
+                        </div>
+                        <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0">
+                            {{ selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
+                        </span>
+                    </button>
+                </div>
             </div>
 
             <!-- Center: Search (Main Action) -->
             <div class="search-center" style="min-width: 250px;">
                 <div class="soft-input-group">
                     <label class="soft-label">Registrar Asistencia</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                            placeholder="Buscar por nombre..." class="soft-input">
+                    <div style="display: flex; gap: 0.5rem; width: 100%;">
+                        <div class="soft-input-wrapper" style="flex: 1;">
+                            <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                                placeholder="Buscar por nombre..." class="soft-input">
+                        </div>
+                        <!-- Mobile Filter Button -->
+                        <button class="btn-icon-soft mobile-only" (click)="openAdvancedFilters()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px;">
+                            <i class="fa-solid fa-sliders"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -76,10 +96,10 @@
                 <thead>
                     <tr>
                         <th>NOMBRE COMPLETO</th>
-                        <th class="mobile-hide">CEDULA</th>
-                        <th class="mobile-hide">CATEGORIA</th>
-                        <th class="mobile-hide">TIPOS DE USUARIOS</th>
-                        <th class="mobile-hide">TELEFONO</th>
+                        <th class="mobile-hide">TELÉFONO</th>
+                        <th class="mobile-hide">DIRECCIÓN</th>
+                        <th class="mobile-hide">CATEGORÍA</th>
+                        <th class="mobile-hide">TIPO</th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
@@ -91,21 +111,33 @@
                                     <img [src]="member.pictureProfileUrl || 'https://ui-avatars.com/api/?name=' + member.completeName + '&background=random'"
                                         alt="Avatar">
                                 </div>
-                                <span class="user-fullname">{{ member.completeName }}</span>
+                                <div class="user-details">
+                                    <span class="user-fullname">{{ member.completeName }}</span>
+                                    <span class="user-age-small" *ngIf="getMemberAge(member) !== '---'">{{ getMemberAge(member) }} años</span>
+                                </div>
                             </div>
                         </td>
-                        <td class="mobile-hide">{{ member.cc }}</td>
+                        <td class="mobile-hide">{{ member.cellphone || '---' }}</td>
+                        <td class="mobile-hide text-sm text-muted" style="max-width: 200px; white-space: normal;">{{ formatAddress(member) }}</td>
                         <td class="mobile-hide">
-                            <span class="badge" [style.background-color]="member.category.color" [ngClass]="getBadgeClass(member.category)">
-                                {{ formatCategory(member.category) }}
-                            </span>
+                            <div class="category-cell" style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                <span class="badge" [style.background-color]="member.category.color" [ngClass]="getBadgeClass(member.category)">
+                                    {{ formatCategory(member.category) }}
+                                </span>
+                                <span class="badge badge-outline" *ngIf="member.subCategory" 
+                                      [style.border-color]="member.category.color" 
+                                      [style.color]="member.category.color">
+                                    {{ member.subCategory.name }}
+                                </span>
+                            </div>
                         </td>
                         <td class="mobile-hide">
-                            <span class="badge badge-outline" [style.border-color]="member.type.color" [style.color]="member.type.color">
-                                {{ formatType(member.type) }}
-                            </span>
+                            <div class="types-cell">
+                                <span class="badge badge-outline" [style.border-color]="member.type.color" [style.color]="member.type.color">
+                                    {{ member.type.name }}
+                                </span>
+                            </div>
                         </td>
-                        <td class="mobile-hide">{{ member.cellphone }}</td>
                         <td class="text-center">
                             <div class="actions-mini justify-center">
                                 <button class="action-btn-sm view" (click)="viewMember(member)" title="Ver detalles">
@@ -180,6 +212,11 @@
                         <span class="badge badge-sm badge-outline" [style.border-color]="selectedMember.type.color" [style.color]="selectedMember.type.color">
                             {{ formatType(selectedMember.type) }}
                         </span>
+                        <span class="badge badge-sm badge-outline" *ngIf="selectedMember.subCategory" 
+                              [style.border-color]="selectedMember.category.color" 
+                              [style.color]="selectedMember.category.color">
+                            {{ selectedMember.subCategory.name }}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -249,12 +286,12 @@
     </div>
 </div>
 
-<!-- Mobile Filter Configuration Modal -->
-<div class="modal-overlay" *ngIf="showFilterModal" (click)="closeFilterModal()">
+<!-- Mobile Configuration Modal (Renamed from filter-modal) -->
+<div class="modal-overlay" *ngIf="showConfigModal" (click)="showConfigModal = false">
     <div class="modal-content filter-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
             <h2>Configuración de Asistencia</h2>
-            <button class="close-btn" (click)="closeFilterModal()">&times;</button>
+            <button class="close-btn" (click)="showConfigModal = false">&times;</button>
         </div>
         <div class="modal-body">
             <div class="filter-form-stack">
@@ -296,8 +333,133 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-primary full-width" (click)="closeFilterModal()">
+            <button class="btn btn-primary full-width" (click)="showConfigModal = false">
                 Listo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Filters Modal (New) -->
+<div class="modal-overlay" *ngIf="showAdvancedFiltersModal" (click)="closeAdvancedFilters()">
+    <div class="modal-content filters-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Filtros Avanzados</h2>
+            <button class="close-btn" (click)="closeAdvancedFilters()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="filters-grid">
+                <!-- Type & Category -->
+                <div class="filter-section">
+                    <h3>Tipo</h3>
+                    <div class="checkbox-group">
+                        <label *ngFor="let type of availableTypes" class="checkbox-label">
+                            <input type="checkbox" [checked]="isAdvancedTypeSelected(type.id)" (change)="toggleAdvancedTypeSelection(type.id)">
+                            <span>{{ type.name }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Categoría</h3>
+                    <div class="checkbox-group">
+                        <label *ngFor="let category of availableCategories" class="checkbox-label">
+                            <input type="checkbox" [checked]="isAdvancedCategorySelected(category.id)" (change)="toggleAdvancedCategorySelection(category.id)">
+                            <span>{{ category.name }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Sub-Categoría</h3>
+                    <div class="filters-grid-nested">
+                        <div *ngFor="let category of availableCategories">
+                            <ng-container *ngIf="category.subCategories && category.subCategories.length > 0">
+                                <h4 class="nested-category-title">{{ category.name }}</h4>
+                                <div class="checkbox-group">
+                                    <label *ngFor="let sub of category.subCategories" class="checkbox-label">
+                                        <input type="checkbox" [checked]="isAdvancedSubCategorySelected(sub.id)" (change)="toggleAdvancedSubCategorySelection(sub.id)">
+                                        <span>{{ sub.name }}</span>
+                                    </label>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Availability -->
+                <div class="filter-section full-width">
+                    <h3>Datos Disponibles</h3>
+                    <div class="data-filters-grid">
+                        <div class="data-filter-item">
+                            <span>Cédula:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCc', null)" (click)="setAdvancedFilterValue('tempHasCc', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCc', true)" (click)="setAdvancedFilterValue('tempHasCc', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCc', false)" (click)="setAdvancedFilterValue('tempHasCc', false)">Sin</button>
+                            </div>
+                        </div>
+
+                        <div class="data-filter-item">
+                            <span>Teléfono:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCellphone', null)" (click)="setAdvancedFilterValue('tempHasCellphone', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCellphone', true)" (click)="setAdvancedFilterValue('tempHasCellphone', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasCellphone', false)" (click)="setAdvancedFilterValue('tempHasCellphone', false)">Sin</button>
+                            </div>
+                        </div>
+
+                        <div class="data-filter-item">
+                            <span>Dirección:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasAddress', null)" (click)="setAdvancedFilterValue('tempHasAddress', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasAddress', true)" (click)="setAdvancedFilterValue('tempHasAddress', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasAddress', false)" (click)="setAdvancedFilterValue('tempHasAddress', false)">Sin</button>
+                            </div>
+                        </div>
+
+                        <div class="data-filter-item">
+                            <span>Nacimiento:</span>
+                            <div class="trip-switch">
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasBirthdate', null)" (click)="setAdvancedFilterValue('tempHasBirthdate', null)">Todos</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasBirthdate', true)" (click)="setAdvancedFilterValue('tempHasBirthdate', true)">Con</button>
+                                <button type="button" [class.active]="isAdvancedFilterActive('tempHasBirthdate', false)" (click)="setAdvancedFilterValue('tempHasBirthdate', false)">Sin</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Age Range -->
+                <div class="filter-section">
+                    <h3>Rango de Edad</h3>
+                    <div class="age-range-inputs">
+                        <input type="number" [(ngModel)]="tempAgeRange1" placeholder="Mín" min="0" max="120">
+                        <span>-</span>
+                        <input type="number" [(ngModel)]="tempAgeRange2" placeholder="Máx" min="0" max="120">
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="filter-section">
+                    <h3>Ubicación</h3>
+                    <input type="text" [(ngModel)]="tempLocation" placeholder="Barrio, ciudad, dirección..." class="full-width-input">
+                </div>
+
+                 <!-- Status -->
+                 <div class="filter-section">
+                    <h3>Estado</h3>
+                    <label class="status-switch">
+                        <input type="checkbox" [(ngModel)]="tempOnlyActive">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-label">{{ tempOnlyActive ? 'Solo Activos' : 'Todos' }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-muted" (click)="clearFilters(); closeAdvancedFilters()">Limpiar Filtros</button>
+            <button class="btn btn-primary" (click)="applyAdvancedFilters()">
+                <i class="fa-solid fa-filter"></i> Aplicar Filtros
             </button>
         </div>
     </div>

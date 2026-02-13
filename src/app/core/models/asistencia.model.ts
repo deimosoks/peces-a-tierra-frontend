@@ -1,4 +1,4 @@
-import { MemberCategoryResponseDto, MemberTypeResponseDto } from './member-config.model';
+import { MemberCategoryResponseDto, MemberTypeResponseDto, MemberSubCategoryResponseDto } from './member-config.model';
 
 export interface IglesiaService {
     id: string;
@@ -28,6 +28,7 @@ export interface AttendanceResponseDto {
     memberCompleteName: string;
     memberCategory: MemberCategoryResponseDto;
     memberType: MemberTypeResponseDto;
+    subCategory?: MemberSubCategoryResponseDto;
     attendanceDate: string;
     invalid: boolean;
     note: string;

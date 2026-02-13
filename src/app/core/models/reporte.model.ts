@@ -3,6 +3,7 @@ import { MemberCategoryResponseDto, MemberTypeResponseDto } from './member-confi
 export interface ReportFilters {
     typePeoples?: string[];
     categories?: string[];
+    subCategories?: string[]; // Added subCategories
     serviceIds?: string[];
     startDate?: string; // LocalDateTime ISO
     endDate?: string;   // LocalDateTime ISO
@@ -16,5 +17,6 @@ export interface ReportData {
     serviceName: string;
     category: MemberCategoryResponseDto;
     typePeople: MemberTypeResponseDto;
+    subCategory?: string;
     total: number;
 }

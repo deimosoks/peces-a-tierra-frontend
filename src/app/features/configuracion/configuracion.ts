@@ -7,6 +7,8 @@ import { ConfirmationService } from '../../core/services/confirmation.service';
 import { 
   MemberCategoryResponseDto, 
   MemberCategoryRequestDto,
+  MemberSubCategoryResponseDto,
+  MemberSubCategoryRequestDto,
   MemberTypeResponseDto,
   MemberTypeRequestDto 
 } from '../../core/models/member-config.model';
@@ -31,18 +33,26 @@ export class Configuracion implements OnInit {
   // Modal states
   showCategoryModal = false;
   showTypeModal = false;
+  showSubCategoryModal = false;
+  
   isEditingCategory = false;
   isEditingType = false;
+  isEditingSubCategory = false;
+  
   editingCategoryId?: string;
   editingTypeId?: string;
+  editingSubCategoryId?: string;
+  selectedCategoryIdForSub?: string;
 
   // Forms
   categoryForm!: FormGroup;
   typeForm!: FormGroup;
+  subCategoryForm!: FormGroup;
 
   // Loading states
   isSavingCategory = false;
   isSavingType = false;
+  isSavingSubCategory = false;
   isLoadingCategories = false;
   isLoadingTypes = false;
 
@@ -61,6 +71,12 @@ export class Configuracion implements OnInit {
     this.typeForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       color: ['#10b981', Validators.required]
+    });
+
+    this.subCategoryForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      color: ['#3b82f6', Validators.required],
+      categoryId: ['', Validators.required]
     });
   }
 
@@ -144,6 +160,83 @@ export class Configuracion implements OnInit {
         },
         error: () => {
           this.notificationService.error('Error al eliminar categoría');
+        }
+      });
+    }
+  }
+
+  // Sub-category methods
+  openSubCategoryModal(categoryId: string, subCategory?: MemberSubCategoryResponseDto) {
+    this.selectedCategoryIdForSub = categoryId;
+    if (subCategory) {
+      this.isEditingSubCategory = true;
+      this.editingSubCategoryId = subCategory.id;
+      this.subCategoryForm.patchValue({
+        name: subCategory.name,
+        color: subCategory.color,
+        categoryId: categoryId
+      });
+    } else {
+      this.isEditingSubCategory = false;
+      this.editingSubCategoryId = undefined;
+      this.subCategoryForm.reset({ 
+        color: '#3b82f6',
+        categoryId: categoryId
+      });
+    }
+    this.showSubCategoryModal = true;
+  }
+
+  closeSubCategoryModal() {
+    this.showSubCategoryModal = false;
+    this.subCategoryForm.reset();
+    this.isEditingSubCategory = false;
+    this.editingSubCategoryId = undefined;
+    this.selectedCategoryIdForSub = undefined;
+  }
+
+  saveSubCategory() {
+    if (this.subCategoryForm.invalid) return;
+
+    this.isSavingSubCategory = true;
+    const dto: MemberSubCategoryRequestDto = this.subCategoryForm.value;
+
+    const request = this.isEditingSubCategory && this.editingSubCategoryId
+      ? this.configService.updateSubCategory(this.editingSubCategoryId, dto)
+      : this.configService.createSubCategory(dto);
+
+    request.subscribe({
+      next: () => {
+        this.notificationService.success(
+          this.isEditingSubCategory ? 'Sub-categoría actualizada' : 'Sub-categoría creada'
+        );
+        this.loadCategories();
+        this.closeSubCategoryModal();
+        this.isSavingSubCategory = false;
+      },
+      error: () => {
+        this.notificationService.error('Error al guardar sub-categoría');
+        this.isSavingSubCategory = false;
+      }
+    });
+  }
+
+  async deleteSubCategory(subCategory: MemberSubCategoryResponseDto) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Eliminar Sub-categoría',
+      message: `¿Está seguro de eliminar la sub-categoría "${subCategory.name}"?`,
+      type: 'danger',
+      confirmText: 'Eliminar'
+    });
+
+    if (confirmed) {
+      this.configService.deleteSubCategory(subCategory.id).subscribe({
+        next: () => {
+          this.notificationService.success('Sub-categoría eliminada');
+          this.loadCategories();
+        },
+        error: () => {
+          this.notificationService.error('Error al eliminar sub-categoría');
         }
       });
     }

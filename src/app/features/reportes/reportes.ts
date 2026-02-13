@@ -87,6 +87,7 @@ export class Reportes implements OnInit {
     onlyActive: true,
     typeOfPeople: undefined,
     category: undefined,
+    subCategory: undefined,
     serviceId: undefined,
     startDate: '',
     endDate: '',
@@ -106,14 +107,21 @@ export class Reportes implements OnInit {
     { id: 'date', label: 'Fecha', visible: true, order: 0 },
     { id: 'serviceName', label: 'Servicio', visible: true, order: 1 },
     { id: 'category', label: 'Categoría', visible: true, order: 2 },
-    { id: 'typePeople', label: 'Tipo', visible: true, order: 3 },
-    { id: 'total', label: 'Total', visible: true, order: 4 }
+    { id: 'subCategory', label: 'Sub-categoría', visible: true, order: 3 },
+    { id: 'typePeople', label: 'Tipo', visible: true, order: 4 },
+    { id: 'total', label: 'Total', visible: true, order: 5 }
   ];
   groupBy: string = '';
 
   // Enums (Now dynamic)
   tipos: MemberTypeResponseDto[] = [];
   categorias: MemberCategoryResponseDto[] = [];
+
+  get availableSubCategories(): any[] {
+    if (!this.filters.category) return [];
+    const category = this.categorias.find(c => c.id === this.filters.category);
+    return category?.subCategories || [];
+  }
 
   // Chart
   public chartOptions: any;
@@ -369,6 +377,7 @@ export class Reportes implements OnInit {
       userId: this.filters.userId || undefined,
       typePeoples: this.filters.typeOfPeople ? [this.filters.typeOfPeople] : undefined,
       categories: this.filters.category ? [this.filters.category] : undefined,
+      subCategories: this.filters.subCategory ? [this.filters.subCategory] : undefined,
       serviceIds: this.filters.serviceId ? [this.filters.serviceId] : undefined,
     };
 
@@ -428,7 +437,10 @@ export class Reportes implements OnInit {
 
     const sortedKeys = Array.from(serviceMap.keys()).sort();
     this.allXLabels = sortedKeys.map(key => serviceMap.get(key)!);
-    const getCatName = (d: any) => typeof d.category === 'string' ? d.category : d.category?.name;
+    const getCatName = (d: any) => {
+      const catName = typeof d.category === 'string' ? d.category : d.category?.name;
+      return d.subCategory ? `${catName} • ${d.subCategory}` : catName;
+    };
     const seriesCategories = Array.from(new Set(this.reportData.map(d => getCatName(d)))).sort();
 
     this.allSeries = seriesCategories.map(cat => {
@@ -490,8 +502,11 @@ export class Reportes implements OnInit {
     this.reportData.forEach(d => {
       const sKey = d.serviceTime || `${d.date}_${d.serviceName}`;
       serviceTotals.set(sKey, (serviceTotals.get(sKey) || 0) + (d.total || 0));
+      
       const catName = typeof d.category === 'string' ? d.category : (d.category as any)?.name;
-      catTotals.set(catName, (catTotals.get(catName) || 0) + (d.total || 0));
+      const key = d.subCategory ? `${catName} • ${d.subCategory}` : catName;
+      
+      catTotals.set(key, (catTotals.get(key) || 0) + (d.total || 0));
     });
 
     const peaks = Array.from(serviceTotals.values());

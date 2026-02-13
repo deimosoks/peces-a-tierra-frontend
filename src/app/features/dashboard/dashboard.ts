@@ -6,6 +6,8 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { DashboardService } from '../../core/services/dashboard';
 import { DashboardData } from '../../core/models/dashboard.model';
 import { Integrante } from '../../core/models/integrante.model';
+import { ThemeService } from '../../core/services/theme.service';
+import { effect } from '@angular/core';
 
 @Component({
     selector: 'app-dashboard',
@@ -16,6 +18,7 @@ import { Integrante } from '../../core/models/integrante.model';
 })
 export class Dashboard implements OnInit {
     private dashboardService = inject(DashboardService);
+    private themeService = inject(ThemeService);
     private cdr = inject(ChangeDetectorRef);
 
     data: DashboardData | null = null;
@@ -29,6 +32,16 @@ export class Dashboard implements OnInit {
     showBirthdayModal = false;
     showMemberDetailsModal = false;
     selectedMember: Integrante | null = null;
+
+    constructor() {
+        // React to theme changes
+        effect(() => {
+            const isDark = this.themeService.isDarkMode();
+            if (this.data && this.data.lastWeekReport) {
+                this.updateChartTheme(isDark);
+            }
+        });
+    }
 
     ngOnInit() {
         this.loadDashboardData();
@@ -72,18 +85,33 @@ export class Dashboard implements OnInit {
 
         const sortedKeys = Array.from(serviceMap.keys()).sort();
         const xLabels = sortedKeys.map(key => serviceMap.get(key)!);
-        const seriesCategories = Array.from(new Set(reportData.map(d => d.category))).sort();
+        
+        // Helper to get display name with subcategory
+        const getCatName = (d: any) => {
+             const cat = d.category;
+             const sub = d.subCategory;
+             return sub ? `${cat} • ${sub}` : cat;
+        };
+
+        const seriesCategories = Array.from(new Set(reportData.map(d => getCatName(d)))).sort();
 
         const series = seriesCategories.map(cat => {
             const dataPoints = sortedKeys.map(key => {
                 const matches = reportData.filter(d =>
-                    (d.serviceTime === key || `${d.date}_${d.serviceName}` === key) && d.category === cat
+                    (d.serviceTime === key || `${d.date}_${d.serviceName}` === key) && getCatName(d) === cat
                 );
                 return matches.reduce((sum, item) => sum + (item.total || 0), 0);
             });
             return { name: cat, data: dataPoints };
         });
 
+        this.initializeChartOptions(series, xLabels);
+        this.renderChart = true;
+    }
+
+    private initializeChartOptions(series: any[], categories: string[]) {
+        const isDark = this.themeService.isDarkMode();
+        
         this.chartOptions = {
             series: series,
             chart: {
@@ -91,7 +119,11 @@ export class Dashboard implements OnInit {
                 type: 'bar',
                 stacked: true,
                 toolbar: { show: false },
-                fontFamily: 'Inter, sans-serif'
+                fontFamily: 'Inter, sans-serif',
+                background: 'transparent'
+            },
+            theme: {
+                mode: isDark ? 'dark' : 'light'
             },
             plotOptions: {
                 bar: {
@@ -100,36 +132,86 @@ export class Dashboard implements OnInit {
                 }
             },
             xaxis: {
-                categories: xLabels,
-                labels: { show: false }
+                categories: categories,
+                labels: { show: false },
+                axisBorder: { show: true, color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+                axisTicks: { show: true, color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }
             },
             yaxis: {
-                title: { text: 'Asistencia' }
+                title: { 
+                    text: 'Asistencia',
+                    style: { color: isDark ? '#f8fafc' : '#1e293b' }
+                },
+                labels: {
+                    style: { colors: isDark ? '#cbd5e1' : '#64748b' }
+                }
             },
             legend: {
                 position: 'top',
-                horizontalAlign: 'left'
+                horizontalAlign: 'left',
+                labels: {
+                    colors: isDark ? '#cbd5e1' : '#64748b'
+                }
+            },
+            grid: {
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#f1f5f9',
             },
             fill: { opacity: 1 },
             tooltip: {
-                theme: 'light',
+                theme: isDark ? 'dark' : 'light',
                 shared: true,
                 intersect: false,
                 x: {
                     show: true,
                     formatter: (val: any) => {
-                        // If val is a number, use it as index. If it's the category name, return it.
                         if (typeof val === 'number') {
-                            return xLabels[val - 1] || 'Servicio';
+                            return categories[val - 1] || 'Servicio';
                         }
-                        return val; // It's already the 'date time - service' string
+                        return val;
                     }
                 }
             },
             colors: ['#10b981', '#3b82f6', '#f472b6', '#fbbf24', '#6366f1']
         };
+    }
 
-        this.renderChart = true;
+    private updateChartTheme(isDark: boolean) {
+        if (this.chartOptions) {
+            this.chartOptions = {
+                ...this.chartOptions,
+                theme: { mode: isDark ? 'dark' : 'light' },
+                xaxis: {
+                    ...this.chartOptions.xaxis,
+                    axisBorder: { show: true, color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+                    axisTicks: { show: true, color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }
+                },
+                yaxis: {
+                    ...this.chartOptions.yaxis,
+                    title: { 
+                        ...this.chartOptions.yaxis?.title,
+                        style: { color: isDark ? '#f8fafc' : '#1e293b' }
+                    },
+                    labels: {
+                        style: { colors: isDark ? '#cbd5e1' : '#64748b' }
+                    }
+                },
+                legend: {
+                    ...this.chartOptions.legend,
+                    labels: {
+                        colors: isDark ? '#cbd5e1' : '#64748b'
+                    }
+                },
+                grid: {
+                    ...this.chartOptions.grid,
+                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#f1f5f9',
+                },
+                tooltip: {
+                    ...this.chartOptions.tooltip,
+                    theme: isDark ? 'dark' : 'light'
+                }
+            };
+            this.cdr.detectChanges();
+        }
     }
 
     openBirthdayModal() {

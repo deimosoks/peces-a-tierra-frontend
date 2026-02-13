@@ -5,6 +5,8 @@ import { API_CONFIG } from '../config/api.config';
 import { 
   MemberCategoryResponseDto, 
   MemberCategoryRequestDto,
+  MemberSubCategoryResponseDto,
+  MemberSubCategoryRequestDto,
   MemberTypeResponseDto,
   MemberTypeRequestDto 
 } from '../models/member-config.model';
@@ -31,6 +33,19 @@ export class MemberConfigService {
 
   deleteCategory(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/member-category/${id}`);
+  }
+
+  // Sub-category methods
+  createSubCategory(dto: MemberSubCategoryRequestDto): Observable<MemberSubCategoryResponseDto> {
+    return this.http.post<MemberSubCategoryResponseDto>(`${this.baseUrl}/member-sub-category`, dto);
+  }
+
+  updateSubCategory(id: string, dto: MemberSubCategoryRequestDto): Observable<MemberSubCategoryResponseDto> {
+    return this.http.put<MemberSubCategoryResponseDto>(`${this.baseUrl}/member-sub-category/${id}`, dto);
+  }
+
+  deleteSubCategory(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/member-sub-category/${id}`);
   }
 
   // Type methods

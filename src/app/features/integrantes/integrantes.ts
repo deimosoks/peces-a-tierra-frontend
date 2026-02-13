@@ -10,7 +10,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { ReportService, ReportColumn } from '../../core/services/report.service';
 import { API_CONFIG } from '../../core/config/api.config';
 import { MemberConfigService } from '../../core/services/member-config.service';
-import { MemberCategoryResponseDto, MemberTypeResponseDto } from '../../core/models/member-config.model';
+import { MemberCategoryResponseDto, MemberTypeResponseDto, MemberSubCategoryResponseDto } from '../../core/models/member-config.model';
 
 declare var google: any;
 
@@ -42,6 +42,7 @@ export class Integrantes implements OnInit {
   // Filter state
   selectedTypes: string[] = [];
   selectedCategories: string[] = [];
+  selectedSubCategories: string[] = [];
   showTypeDropdown = false;
   showCategoryDropdown = false;
   showAdvancedFilters = false;
@@ -64,6 +65,7 @@ export class Integrantes implements OnInit {
   // Mobile temporary filter state
   tempSelectedTypes: string[] = [];
   tempSelectedCategories: string[] = [];
+  tempSelectedSubCategories: string[] = [];
   tempOnlyActive = true;
   tempHasCc: boolean | null = null;
   tempHasCellphone: boolean | null = null;
@@ -127,6 +129,7 @@ export class Integrantes implements OnInit {
       completeName: ['', [Validators.required]],
       typeId: ['', [Validators.required]],
       categoryId: ['', [Validators.required]],
+      subCategoryId: [''],
       cellphone: [''],
       address: [''],
       neighborhood: [''],
@@ -145,6 +148,19 @@ export class Integrantes implements OnInit {
       note: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(254)]],
       memberId: ['']
     });
+
+
+}
+
+onCategoryChange() {
+  this.integranteForm.patchValue({ subCategoryId: '' });
+}
+
+  get subCategoriesForSelectedCategory(): MemberSubCategoryResponseDto[] {
+    const categoryId = this.integranteForm.get('categoryId')?.value;
+    if (!categoryId) return [];
+    const category = this.availableCategories.find(c => c.id === categoryId);
+    return category?.subCategories || [];
   }
 
   onFileSelected(event: any) {
@@ -163,6 +179,7 @@ export class Integrantes implements OnInit {
     const filterRequest: MemberFilterRequestDto = {
       memberType: this.selectedTypes.length > 0 ? this.selectedTypes : undefined,
       memberCategory: this.selectedCategories.length > 0 ? this.selectedCategories : undefined,
+      subCategory: this.selectedSubCategories.length > 0 ? this.selectedSubCategories : undefined,
       onlyActive: this.onlyActive,
       query: this.searchQuery.trim() || undefined,
       hasCc: this.hasCc,
@@ -346,6 +363,7 @@ export class Integrantes implements OnInit {
     const filterRequest: MemberFilterRequestDto = {
       memberType: this.selectedTypes.length > 0 ? this.selectedTypes : undefined,
       memberCategory: this.selectedCategories.length > 0 ? this.selectedCategories : undefined,
+      subCategory: this.selectedSubCategories.length > 0 ? this.selectedSubCategories : undefined,
       onlyActive: this.onlyActive,
       query: this.searchQuery.trim() || undefined,
       hasCc: this.hasCc,
@@ -366,11 +384,12 @@ export class Integrantes implements OnInit {
           { id: 'completeName', label: 'Nombre Completo', visible: true, order: 1 },
           { id: 'type', label: 'Tipo', visible: true, order: 2 },
           { id: 'category', label: 'Categoría', visible: true, order: 3 },
-          { id: 'cc', label: 'Cédula', visible: true, order: 4 },
-          { id: 'cellphone', label: 'Teléfono', visible: true, order: 5 },
-          { id: 'birthdate', label: 'Nacimiento', visible: true, order: 6 },
-          { id: 'age', label: 'Edad', visible: true, order: 7 },
-          { id: 'address', label: 'Dirección', visible: true, order: 8 }
+          { id: 'subCategory', label: 'Sub-categoría', visible: true, order: 4 },
+          { id: 'cc', label: 'Cédula', visible: true, order: 5 },
+          { id: 'cellphone', label: 'Teléfono', visible: true, order: 6 },
+          { id: 'birthdate', label: 'Nacimiento', visible: true, order: 7 },
+          { id: 'age', label: 'Edad', visible: true, order: 8 },
+          { id: 'address', label: 'Dirección', visible: true, order: 9 }
         ];
 
         if (format === 'excel') {
@@ -477,6 +496,7 @@ export class Integrantes implements OnInit {
   openAdvancedFilters() {
     this.tempSelectedTypes = [...this.selectedTypes];
     this.tempSelectedCategories = [...this.selectedCategories];
+    this.tempSelectedSubCategories = [...this.selectedSubCategories];
     this.tempHasCc = this.hasCc;
     this.tempHasCellphone = this.hasCellphone;
     this.tempHasAddress = this.hasAddress;
@@ -494,6 +514,7 @@ export class Integrantes implements OnInit {
   applyAdvancedFilters() {
     this.selectedTypes = [...this.tempSelectedTypes];
     this.selectedCategories = [...this.tempSelectedCategories];
+    this.selectedSubCategories = [...this.tempSelectedSubCategories];
     this.hasCc = this.tempHasCc;
     this.hasCellphone = this.tempHasCellphone;
     this.hasAddress = this.tempHasAddress;
@@ -525,12 +546,25 @@ export class Integrantes implements OnInit {
     }
   }
 
+  toggleAdvancedSubCategorySelection(subCategory: string) {
+    const index = this.tempSelectedSubCategories.indexOf(subCategory);
+    if (index > -1) {
+      this.tempSelectedSubCategories.splice(index, 1);
+    } else {
+      this.tempSelectedSubCategories.push(subCategory);
+    }
+  }
+
   isAdvancedTypeSelected(type: string): boolean {
     return this.tempSelectedTypes.includes(type);
   }
 
   isAdvancedCategorySelected(category: string): boolean {
     return this.tempSelectedCategories.includes(category);
+  }
+
+  isAdvancedSubCategorySelected(subCategory: string): boolean {
+    return this.tempSelectedSubCategories.includes(subCategory);
   }
 
   setAdvancedFilterValue(filter: 'tempHasCc' | 'tempHasCellphone' | 'tempHasAddress' | 'tempHasBirthdate', value: boolean | null) {
@@ -702,18 +736,18 @@ export class Integrantes implements OnInit {
     this.isEditing = true;
     this.currentId = integrante.id;
     
-    // Convert objects to IDs for the form
     const formValue = {
       ...integrante,
       typeId: integrante.type.id,
-      categoryId: integrante.category.id
+      categoryId: integrante.category.id,
+      subCategoryId: integrante.subCategory?.id || ''
     };
     
     this.integranteForm.patchValue(formValue);
     this.imagePreview = integrante.pictureProfileUrl || null;
     this.showFormModal = true;
-    this.cdr.detectChanges();
-    setTimeout(() => this.initializeGeocoder(), 100);
+    this.cdr?.detectChanges();
+    setTimeout(() => this.initializeGeocoder?.(), 100);
   }
 
   async deleteIntegrante(id: string) {
@@ -740,7 +774,8 @@ export class Integrantes implements OnInit {
     this.integranteForm.reset({ 
       active: true, 
       typeId: this.availableTypes.length > 0 ? this.availableTypes[0].id : '', 
-      categoryId: this.availableCategories.length > 0 ? this.availableCategories[0].id : '' 
+      categoryId: this.availableCategories.length > 0 ? this.availableCategories[0].id : '',
+      subCategoryId: ''
     });
   }
 
@@ -820,8 +855,8 @@ export class Integrantes implements OnInit {
   }
 
   formatCategory(category: any): string {
-    if (!category) return '';
+    if (category === undefined || category === null) return '';
     if (typeof category === 'string') return category;
-    return category.name || '';
+    return category?.name || '';
   }
 }

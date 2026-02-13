@@ -139,9 +139,18 @@
                     <div class="form-group premium-group">
                         <label><i class="fa-solid fa-layer-group"></i> Categoría</label>
                         <div class="select-wrapper">
-                            <select class="form-control premium-select" [(ngModel)]="filters.category">
+                            <select class="form-control premium-select" [(ngModel)]="filters.category" (change)="filters.subCategory = undefined">
                                 <option [ngValue]="undefined">Todas las categorías</option>
                                 <option *ngFor="let c of categorias" [value]="c.id">{{ c.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group premium-group" *ngIf="filters.category">
+                        <label><i class="fa-solid fa-layer-group"></i> Sub-Categoría</label>
+                        <div class="select-wrapper">
+                            <select class="form-control premium-select" [(ngModel)]="filters.subCategory">
+                                <option [ngValue]="undefined">Todas las sub-categorías</option>
+                                <option *ngFor="let s of availableSubCategories" [value]="s.id">{{ s.name }}</option>
                             </select>
                         </div>
                     </div>
@@ -181,7 +190,7 @@
                                     alt="">
                                 <div class="result-info">
                                     <span class="result-name">{{ m.completeName }}</span>
-                                    <span class="result-meta">{{ m.category.name }} • {{ m.cc }}</span>
+                                    <span class="result-meta">{{ m.category.name }} <span *ngIf="m.subCategory"> • {{ m.subCategory.name }}</span> • {{ m.cc }}</span>
                                 </div>
                             </div>
                         </div>

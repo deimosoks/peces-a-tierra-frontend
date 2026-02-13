@@ -1,4 +1,4 @@
-import { MemberCategoryResponseDto, MemberTypeResponseDto } from './member-config.model';
+import { MemberCategoryResponseDto, MemberTypeResponseDto, MemberSubCategoryResponseDto } from './member-config.model';
 
 export interface MemberNoteResponseDto {
     id: string;
@@ -17,6 +17,7 @@ export interface Integrante {
   completeName: string;
   type: MemberTypeResponseDto;
   category: MemberCategoryResponseDto;
+  subCategory?: MemberSubCategoryResponseDto;
   cellphone?: string;
   birthdate?: Date;
   cc?: string;
@@ -42,6 +43,7 @@ export interface IntegranteRequestDto {
   completeName: string;
   typeId: string;
   categoryId: string;
+  subCategoryId?: string;
   cellphone?: string;
   address?: string;
   birthdate?: Date;
@@ -66,6 +68,7 @@ export interface MemberPagesResponseDto {
 export interface MemberFilterRequestDto {
     memberType?: string[];
     memberCategory?: string[];
+    subCategory?: string[];
     query?: string;
     onlyActive: boolean;
     hasCc?: boolean | null;
@@ -81,6 +84,7 @@ export interface MemberExportDto {
     completeName: string;
     type: string;
     category: string;
+    subCategory?: string;
     cellphone: string;
     address: string;
     birthdate: string;

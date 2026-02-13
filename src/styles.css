@@ -483,6 +483,21 @@ button {
   font-size: 0.7rem;
 }
 
+.badge-xs {
+  padding: 0.1rem 0.35rem;
+  font-size: 0.6rem;
+}
+
+.badge-outline {
+  background-color: transparent !important;
+  border: 1.5px solid currentColor;
+  text-shadow: none;
+}
+.badge-sm {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+}
+
 .badge-damas {
   background-color: var(--cat-damas);
   color: var(--cat-damas-text);

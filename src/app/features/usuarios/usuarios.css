@@ -299,9 +299,21 @@
 }
 
 .member-name {
-    font-weight: 500;
-    color: #475569;
+    font-weight: 700;
+    color: var(--text-main);
     font-size: 0.85rem;
+}
+
+.member-meta-mini {
+    margin-top: 0.2rem;
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.text-min-padding {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
 }
 
 .roles-badges {

@@ -35,6 +35,15 @@
                         <td>
                             <div class="user-info-cell">
                                 <span class="user-fullname">{{ att.memberCompleteName }}</span>
+                                <div class="member-types-badges" *ngIf="att.memberCategory" style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                                    <span class="badge badge-category" [style.backgroundColor]="att.memberCategory.color">
+                                        {{ att.memberCategory.name }}
+                                    </span>
+                                    <span class="badge badge-outline" [style.borderColor]="att.memberCategory.color" 
+                                          [style.color]="att.memberCategory.color" *ngIf="att.subCategory">
+                                        {{ att.subCategory.name }}
+                                    </span>
+                                </div>
                             </div>
                         </td>
                         <td>{{ att.serviceName }}</td>
@@ -153,6 +162,12 @@
                     <label>Tipo:</label>
                     <span class="badge badge-sm badge-outline" [style.border-color]="attendanceDetails.memberType.color" [style.color]="attendanceDetails.memberType.color">
                         {{ formatType(attendanceDetails.memberType) }}
+                    </span>
+                </div>
+                <div class="detail-item" *ngIf="attendanceDetails.subCategory">
+                    <label>Sub-Categoría:</label>
+                    <span class="badge badge-sm badge-outline" [style.border-color]="attendanceDetails.memberCategory.color" [style.color]="attendanceDetails.memberCategory.color">
+                        {{ attendanceDetails.subCategory.name }}
                     </span>
                 </div>
                 <div class="detail-item">

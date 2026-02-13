@@ -20,18 +20,41 @@
                 </div>
 
                 <div class="items-list" *ngIf="!isLoadingCategories">
-                    <div class="item-card" *ngFor="let category of categories">
-                        <div class="item-info">
-                            <span class="color-badge" [style.background-color]="category.color"></span>
-                            <span class="item-name">{{ category.name }}</span>
+                    <div class="item-card-container" *ngFor="let category of categories">
+                        <div class="item-card">
+                            <div class="item-info">
+                                <span class="color-badge" [style.background-color]="category.color"></span>
+                                <span class="item-name">{{ category.name }}</span>
+                            </div>
+                            <div class="item-actions">
+                                <button class="action-btn add-sub" (click)="openSubCategoryModal(category.id)" title="Agregar Sub-categoría">
+                                    <i class="fa-solid fa-plus-circle"></i>
+                                </button>
+                                <button class="action-btn edit" (click)="openCategoryModal(category)" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="action-btn delete" (click)="deleteCategory(category)" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="item-actions">
-                            <button class="action-btn edit" (click)="openCategoryModal(category)" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="action-btn delete" (click)="deleteCategory(category)" title="Eliminar">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                        
+                        <!-- Sub-categories list -->
+                        <div class="sub-items-list" *ngIf="category.subCategories && category.subCategories.length > 0">
+                            <div class="sub-item-card" *ngFor="let sub of category.subCategories">
+                                <div class="item-info">
+                                    <span class="color-badge sub" [style.background-color]="sub.color"></span>
+                                    <span class="item-name sub">{{ sub.name }}</span>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="action-btn edit" (click)="openSubCategoryModal(category.id, sub)" title="Editar Sub-categoría">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="action-btn delete" (click)="deleteSubCategory(sub)" title="Eliminar Sub-categoría">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="empty-state" *ngIf="categories.length === 0">
@@ -170,6 +193,50 @@
                     <button type="submit" class="btn btn-primary" [disabled]="typeForm.invalid || isSavingType">
                         <i class="fa-solid" [ngClass]="isSavingType ? 'fa-spinner fa-spin' : 'fa-save'"></i>
                         {{ isSavingType ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Sub-category Modal -->
+<div class="modal-overlay" *ngIf="showSubCategoryModal" (click)="closeSubCategoryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isEditingSubCategory ? 'Editar Sub-categoría' : 'Nueva Sub-categoría' }}</h2>
+            <button class="close-btn" (click)="closeSubCategoryModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <form [formGroup]="subCategoryForm" (submit)="saveSubCategory()">
+                <div class="soft-input-group">
+                    <label class="soft-label">Nombre de la Sub-categoría</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-tag soft-input-icon"></i>
+                        <input type="text" formControlName="name" class="soft-input" 
+                               placeholder="Ej: Staff, Invitados, etc..." required>
+                    </div>
+                </div>
+
+                <div class="soft-input-group">
+                    <label class="soft-label">Color de Identificación</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" formControlName="color" class="color-input" required>
+                        <span class="color-preview" [style.background-color]="subCategoryForm.get('color')?.value">
+                            {{ subCategoryForm.get('color')?.value }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-muted" (click)="closeSubCategoryModal()" 
+                            [disabled]="isSavingSubCategory">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="subCategoryForm.invalid || isSavingSubCategory">
+                        <i class="fa-solid" [ngClass]="isSavingSubCategory ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                        {{ isSavingSubCategory ? 'Guardando...' : 'Guardar' }}
                     </button>
                 </div>
             </form>

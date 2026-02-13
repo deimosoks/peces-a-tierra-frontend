@@ -405,4 +405,10 @@ export class Usuarios implements OnInit {
         if (typeof category === 'string') return category;
         return category.name || '';
     }
+
+    formatSubCategory(subCategory: any): string {
+        if (!subCategory) return '';
+        if (typeof subCategory === 'string') return subCategory;
+        return subCategory.name || '';
+    }
 }

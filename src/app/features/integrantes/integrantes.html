@@ -104,9 +104,14 @@
                             </div>
                         </td>
                         <td class="desktop-only">
-                            <span class="badge badge-sm" [style.background-color]="member.category.color">
-                                {{ member.category.name }}
-                            </span>
+                            <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
+                                <span class="badge badge-sm badge-solid" [style.background-color]="member.category.color" style="color: white !important;">
+                                    {{ member.category.name }}
+                                </span>
+                                <span class="badge badge-sm badge-outline" *ngIf="member.subCategory" [style.border-color]="member.subCategory.color" [style.color]="member.subCategory.color" style="font-size: 0.65rem;">
+                                    {{ member.subCategory.name }}
+                                </span>
+                            </div>
                         </td>
                         <td class="desktop-only">
                             <span class="badge badge-sm badge-outline" [style.border-color]="member.type.color" [style.color]="member.type.color">
@@ -251,9 +256,16 @@
                     </div>
                     <div class="form-group">
                         <label for="categoryId">Categoría *</label>
-                        <select id="categoryId" formControlName="categoryId">
+                        <select id="categoryId" formControlName="categoryId" (change)="onCategoryChange()">
                             <option value="" disabled>Seleccione una categoría</option>
                             <option *ngFor="let c of availableCategories" [value]="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subCategoryId">Sub-categoría</label>
+                        <select id="subCategoryId" formControlName="subCategoryId">
+                            <option value="">Ninguna</option>
+                            <option *ngFor="let sc of subCategoriesForSelectedCategory" [value]="sc.id">{{ sc.name }}</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -317,8 +329,11 @@
                     alt="Avatar Grande">
                 <div class="profile-title">
                     <h3>{{ selectedMember.completeName }}</h3>
-                    <span class="badge" [style.background-color]="selectedMember.category.color">{{ selectedMember.category.name }}</span>
-                    <span class="badge badge-outline ms-2" [style.border-color]="selectedMember.type.color" [style.color]="selectedMember.type.color">{{ selectedMember.type.name }}</span>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem;">
+                        <span class="badge badge-solid" [style.background-color]="selectedMember.category.color">{{ selectedMember.category.name }}</span>
+                        <span class="badge badge-outline" *ngIf="selectedMember.subCategory" [style.border-color]="selectedMember.subCategory.color" [style.color]="selectedMember.subCategory.color">{{ selectedMember.subCategory.name }}</span>
+                        <span class="badge badge-outline" [style.border-color]="selectedMember.type.color" [style.color]="selectedMember.type.color">{{ selectedMember.type.name }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -333,7 +348,15 @@
                 </div>
                 <div class="detail-item">
                     <label>Tipo:</label>
-                    <span>{{ selectedMember.type.name }}</span>
+                    <span class="badge badge-outline" [style.border-color]="selectedMember.type.color" [style.color]="selectedMember.type.color">{{ selectedMember.type.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Categoría:</label>
+                    <span class="badge badge-solid" [style.background-color]="selectedMember.category.color" style="color: white !important;">{{ selectedMember.category.name }}</span>
+                </div>
+                <div class="detail-item" *ngIf="selectedMember.subCategory">
+                    <label>Sub-categoría:</label>
+                    <span class="badge badge-outline" [style.border-color]="selectedMember.subCategory.color" [style.color]="selectedMember.subCategory.color">{{ selectedMember.subCategory.name }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Teléfono:</label>
@@ -572,6 +595,23 @@
                             <input type="checkbox" [checked]="isAdvancedCategorySelected(category.id)" (change)="toggleAdvancedCategorySelection(category.id)">
                             <span>{{ category.name }}</span>
                         </label>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Sub-Categoría</h3>
+                    <div class="filters-grid-nested">
+                        <div *ngFor="let category of availableCategories">
+                            <ng-container *ngIf="category.subCategories && category.subCategories.length > 0">
+                                <h4 class="nested-category-title">{{ category.name }}</h4>
+                                <div class="checkbox-group">
+                                    <label *ngFor="let sub of category.subCategories" class="checkbox-label">
+                                        <input type="checkbox" [checked]="isAdvancedSubCategorySelected(sub.id)" (change)="toggleAdvancedSubCategorySelection(sub.id)">
+                                        <span>{{ sub.name }}</span>
+                                    </label>
+                                </div>
+                            </ng-container>
+                        </div>
                     </div>
                 </div>
 

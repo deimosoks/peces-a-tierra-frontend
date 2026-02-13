@@ -24,8 +24,8 @@ export class ThemeService {
     if (stored !== null) {
       return JSON.parse(stored);
     }
-    // Default to light or check system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Default to light mode as requested
+    return false;
   }
 
   private applyTheme(isDark: boolean) {

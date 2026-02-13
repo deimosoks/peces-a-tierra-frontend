@@ -1690,36 +1690,8 @@
     }
 }
 
-/* Badge Styles for dynamic colors */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  border-radius: 6px;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.badge-sm {
-  padding: 0.2rem 0.5rem;
-  font-size: 0.65rem;
-}
-
-.badge-outline {
-  background-color: transparent !important;
-  border: 1.5px solid currentColor;
-  text-shadow: none;
-}
-
+/* dynamic colors */
 .ms-2 {
   margin-left: 0.5rem;
 }
+

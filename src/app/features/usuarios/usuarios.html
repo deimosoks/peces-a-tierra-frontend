@@ -71,8 +71,16 @@
                                 <span class="username">{{ user.username }}</span>
                             </div>
                         </td>
-                        <td class="desktop-only">
+                        <td class="desktop-only text-min-padding">
                             <span class="member-name">{{ user.memberResponseDto.completeName }}</span>
+                            <div class="member-meta-mini" style="margin-top: 0.2rem; display: flex; gap: 0.3rem; flex-wrap: wrap;">
+                                <span class="badge badge-xs" [style.background-color]="user.memberResponseDto.category.color" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">
+                                    {{ formatCategory(user.memberResponseDto.category) }}
+                                </span>
+                                <span class="badge badge-xs badge-outline" *ngIf="user.memberResponseDto.subCategory" [style.border-color]="user.memberResponseDto.subCategory.color" [style.color]="user.memberResponseDto.subCategory.color" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">
+                                    {{ formatSubCategory(user.memberResponseDto.subCategory) }}
+                                </span>
+                            </div>
                         </td>
                         <td class="desktop-only">
                             <div class="roles-badges">
@@ -203,7 +211,7 @@
                             alt="">
                         <div class="member-info">
                             <strong>{{ selectedMember.completeName }}</strong>
-                            <span>{{ formatCategory(selectedMember.category) }} • {{ formatType(selectedMember.type) }}</span>
+                            <span>{{ formatCategory(selectedMember.category) }} <span *ngIf="selectedMember.subCategory">• {{ formatSubCategory(selectedMember.subCategory) }}</span> • {{ formatType(selectedMember.type) }}</span>
                         </div>
                         <button class="btn-icon-remove" (click)="clearSelectedMember()" title="Cambiar Persona">
                             <i class="fa-solid fa-times"></i>
@@ -225,7 +233,7 @@
                                 </div>
                                 <div class="result-text">
                                     <div class="name">{{ m.completeName }}</div>
-                                    <div class="meta">{{ formatCategory(m.category) }} - {{ m.cc || 'Sin CC' }}</div>
+                                    <div class="meta">{{ formatCategory(m.category) }} <span *ngIf="m.subCategory">• {{ formatSubCategory(m.subCategory) }}</span> - {{ m.cc || 'Sin CC' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -343,6 +351,12 @@
                         <label>Tipo:</label> 
                         <span class="badge badge-sm badge-outline" [style.border-color]="selectedUser.memberResponseDto.type.color" [style.color]="selectedUser.memberResponseDto.type.color">
                             {{ formatType(selectedUser.memberResponseDto.type) }}
+                        </span>
+                    </div>
+                    <div class="info-row" *ngIf="selectedUser.memberResponseDto.subCategory">
+                        <label>Sub-categoría:</label> 
+                        <span class="badge badge-sm badge-outline" [style.border-color]="selectedUser.memberResponseDto.subCategory.color" [style.color]="selectedUser.memberResponseDto.subCategory.color">
+                            {{ formatSubCategory(selectedUser.memberResponseDto.subCategory) }}
                         </span>
                     </div>
                     <div class="info-row">
