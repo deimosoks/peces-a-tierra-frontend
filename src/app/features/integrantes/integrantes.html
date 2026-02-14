@@ -3,17 +3,6 @@
         <div class="header-section">
             <!-- Left: Filters -->
             <div class="filters-left">
-                 <!-- Mobile Filter Button (Visible only on mobile) -->
-                 <div class="soft-input-group mobile-only">
-                    <label class="soft-label">Filtros</label>
-                    <button class="btn btn-square-soft" (click)="openMobileFilters()">
-                        <i class="fa-solid fa-filter"></i>
-                        <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length > 0" style="position: absolute; top: -5px; right: -5px;">
-                            {{ selectedTypes.length + selectedCategories.length }}
-                        </span>
-                    </button>
-                </div>
-
                 <!-- Desktop Advanced Filters -->
                 <div class="soft-input-group desktop-only">
                     <label class="soft-label">Filtros</label>
@@ -33,16 +22,52 @@
             <div class="search-center">
                 <div class="soft-input-group">
                     <label class="soft-label">Buscar Integrante</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                            placeholder="Buscar por nombre, documento, celular..." class="soft-input">
+                    <div style="display: flex; gap: 0.5rem; width: 100%;">
+                        <div class="soft-input-wrapper" style="flex: 1;">
+                            <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                                placeholder="Buscar por nombre, documento, celular..." class="soft-input">
+                        </div>
+                        
+                        <!-- Mobile Filter Button -->
+                        <button class="btn-icon-soft mobile-only" (click)="openAdvancedFilters()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer; position: relative;">
+                            <i class="fa-solid fa-sliders"></i>
+                             <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0" style="position: absolute; top: -5px; right: -5px; min-width: 18px; padding: 2px 4px; font-size: 0.65rem;">
+                                {{ selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
+                            </span>
+                        </button>
+
+                        <!-- Mobile Options Button -->
+                        <div class="mobile-only filter-dropdown-container">
+                            <button class="btn-icon-soft" (click)="showMobileMenu = !showMobileMenu" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer;">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            
+                            <div class="filter-dropdown" *ngIf="showMobileMenu" style="right: 0; left: auto; min-width: 160px; top: 110%;">
+                                <div style="padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-color);">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Opciones</span>
+                                </div>
+                                <button class="dropdown-item" (click)="openFormModal(); showMobileMenu = false" *ngIf="can('CREATE_MEMBER')">
+                                    <i class="fa-solid fa-user-plus text-primary"></i>
+                                    <span>Nuevo Integrante</span>
+                                </button>
+                                <div style="border-top: 1px solid var(--border-color); margin: 0.25rem 0;"></div>
+                                <button class="dropdown-item" (click)="exportData('excel'); showMobileMenu = false">
+                                    <i class="fa-solid fa-file-excel text-success"></i>
+                                    <span>Exportar Excel</span>
+                                </button>
+                                <button class="dropdown-item" (click)="exportData('pdf'); showMobileMenu = false">
+                                    <i class="fa-solid fa-file-pdf text-danger"></i>
+                                    <span>Exportar PDF</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Actions -->
-            <div class="actions-right" style="display: flex; gap: 0.75rem; align-items: flex-end;">
+            <!-- Right: Actions (Desktop Only) -->
+            <div class="actions-right desktop-only" style="display: flex; gap: 0.75rem; align-items: flex-end;">
                 <!-- Export Button -->
                 <div class="soft-input-group">
                     <label class="soft-label invisible-label">Exportar</label>
@@ -464,109 +489,6 @@
     </div>
 </div>
 
-<!-- Mobile Filters Modal -->
-<div class="modal-overlay" *ngIf="showMobileFiltersModal" (click)="closeMobileFilters()">
-    <div class="modal-content mobile-filters-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2><i class="fa-solid fa-filter"></i> Filtros</h2>
-            <button class="close-btn" (click)="closeMobileFilters()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <!-- Type Filter Section -->
-            <div class="filter-section">
-                <h3>Tipo de Integrante</h3>
-                <div class="filter-options-grid">
-                    <div class="filter-option-card" *ngFor="let type of availableTypes" 
-                         [class.selected]="isMobileTypeSelected(type.id)"
-                         (click)="toggleMobileTypeSelection(type.id)">
-                        <input type="checkbox" [checked]="isMobileTypeSelected(type.id)" readonly>
-                        <span>{{ type.name }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Category Filter Section -->
-            <div class="filter-section">
-                <h3>Categoría</h3>
-                <div class="filter-options-grid">
-                    <div class="filter-option-card" *ngFor="let category of availableCategories"
-                         [class.selected]="isMobileCategorySelected(category.id)"
-                         (click)="toggleMobileCategorySelection(category.id)">
-                        <input type="checkbox" [checked]="isMobileCategorySelected(category.id)" readonly>
-                        <span>{{ category.name }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Toggle Section -->
-            <div class="filter-section">
-                <h3>Datos Disponibles</h3>
-                <div class="boolean-filters-mobile">
-                    <div class="boolean-filter-item-mobile">
-                        <span>Cédula:</span>
-                        <div class="trip-switch">
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasCc', null)" (click)="setMobileFilterValue('tempHasCc', null)">Todos</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasCc', true)" (click)="setMobileFilterValue('tempHasCc', true)">Con</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasCc', false)" (click)="setMobileFilterValue('tempHasCc', false)">Sin</button>
-                        </div>
-                    </div>
-                    <div class="boolean-filter-item-mobile">
-                        <span>Teléfono:</span>
-                        <div class="trip-switch">
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasCellphone', null)" (click)="setMobileFilterValue('tempHasCellphone', null)">Todos</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasCellphone', true)" (click)="setMobileFilterValue('tempHasCellphone', true)">Con</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasCellphone', false)" (click)="setMobileFilterValue('tempHasCellphone', false)">Sin</button>
-                        </div>
-                    </div>
-                    <div class="boolean-filter-item-mobile">
-                        <span>Dirección:</span>
-                        <div class="trip-switch">
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasAddress', null)" (click)="setMobileFilterValue('tempHasAddress', null)">Todos</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasAddress', true)" (click)="setMobileFilterValue('tempHasAddress', true)">Con</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasAddress', false)" (click)="setMobileFilterValue('tempHasAddress', false)">Sin</button>
-                        </div>
-                    </div>
-                    <div class="boolean-filter-item-mobile">
-                        <span>Nacimiento:</span>
-                        <div class="trip-switch">
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasBirthdate', null)" (click)="setMobileFilterValue('tempHasBirthdate', null)">Todos</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasBirthdate', true)" (click)="setMobileFilterValue('tempHasBirthdate', true)">Con</button>
-                            <button type="button" [class.active]="isMobileFilterActive('tempHasBirthdate', false)" (click)="setMobileFilterValue('tempHasBirthdate', false)">Sin</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <h3>Rango de Edad</h3>
-                <div class="range-inputs-mobile">
-                    <input type="number" [(ngModel)]="tempAgeRange1" placeholder="Mínima" min="0">
-                    <span class="range-sep">a</span>
-                    <input type="number" [(ngModel)]="tempAgeRange2" placeholder="Máxima" min="0">
-                </div>
-            </div>
-
-            <!-- Active Toggle Section -->
-            <div class="filter-section">
-                <h3>Estado</h3>
-                <div class="toggle-filter-mobile">
-                    <label class="status-switch">
-                        <input type="checkbox" [(ngModel)]="tempOnlyActive">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="toggle-label">{{ tempOnlyActive ? 'Solo Activos' : 'Todos' }}</span>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-muted btn-outline btn-sm" (click)="resetMobileFilters()">Limpiar</button>
-            <div class="footer-actions-right">
-                <button class="btn btn-muted btn-sm" (click)="closeMobileFilters()">Cancelar</button>
-                <button class="btn btn-primary btn-sm" (click)="applyMobileFilters()">Filtrar</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Advanced Filters Modal -->
 <div class="modal-overlay" *ngIf="showAdvancedFiltersModal" (click)="closeAdvancedFilters()">
@@ -598,11 +520,12 @@
                     </div>
                 </div>
 
-                <div class="filter-section">
+                <div class="filter-section" *ngIf="hasVisibleSubCategories">
                     <h3>Sub-Categoría</h3>
                     <div class="filters-grid-nested">
-                        <div *ngFor="let category of availableCategories">
-                            <ng-container *ngIf="category.subCategories && category.subCategories.length > 0">
+                        <ng-container *ngFor="let category of availableCategories">
+                            <!-- Show if category has subcategories AND (no categories selected OR this category is selected) -->
+                            <ng-container *ngIf="category.subCategories && category.subCategories.length > 0 && (tempSelectedCategories.length === 0 || isAdvancedCategorySelected(category.id))">
                                 <h4 class="nested-category-title">{{ category.name }}</h4>
                                 <div class="checkbox-group">
                                     <label *ngFor="let sub of category.subCategories" class="checkbox-label">
@@ -611,7 +534,7 @@
                                     </label>
                                 </div>
                             </ng-container>
-                        </div>
+                        </ng-container>
                     </div>
                 </div>
 

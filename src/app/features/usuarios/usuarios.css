@@ -722,6 +722,38 @@ input:checked+.slider:before {
     background: var(--bg-input);
 }
 
+:host-context([data-theme='dark']) .search-results-list,
+:host-context([data-theme='dark']) .multi-select-dropdown {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+:host-context([data-theme='dark']) .result-item:hover,
+:host-context([data-theme='dark']) .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+:host-context([data-theme='dark']) .action-dropdown {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+:host-context([data-theme='dark']) .dropdown-header-mobile {
+    background: var(--bg-input);
+    border-color: var(--border-color);
+}
+
+:host-context([data-theme='dark']) .menu-trigger {
+    background: var(--bg-input);
+    color: var(--text-muted);
+}
+
+:host-context([data-theme='dark']) .menu-trigger:hover {
+    background: var(--border-color);
+    color: var(--text-main);
+}
+
+
 .checkbox-custom {
     width: 20px;
     height: 20px;

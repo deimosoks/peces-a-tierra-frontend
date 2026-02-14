@@ -49,6 +49,7 @@ export class Integrantes implements OnInit {
   showAdvancedFiltersModal = false;
   showExportDropdown = false;
   showMobileFiltersModal = false;
+  showMobileMenu = false;
 
   // Advanced bitwise-like filters (null = all, true = has data, false = doesn't have data)
   hasCc: boolean | null = null;
@@ -346,6 +347,7 @@ onCategoryChange() {
   clearFilters() {
     this.selectedTypes = [];
     this.selectedCategories = [];
+    this.selectedSubCategories = [];
     this.hasCc = null;
     this.hasCellphone = null;
     this.hasAddress = null;
@@ -353,6 +355,20 @@ onCategoryChange() {
     this.ageFilterRange1 = null;
     this.ageFilterRange2 = null;
     this.filterLocation = '';
+    
+    // Also clear temp variables to ensure modal state is reset
+    this.tempSelectedTypes = [];
+    this.tempSelectedCategories = [];
+    this.tempSelectedSubCategories = [];
+    this.tempHasCc = null;
+    this.tempHasCellphone = null;
+    this.tempHasAddress = null;
+    this.tempHasBirthdate = null;
+    this.tempAgeRange1 = null;
+    this.tempAgeRange2 = null;
+    this.tempLocation = '';
+    this.tempOnlyActive = true;
+
     this.onlyActive = true;
     this.searchQuery = '';
     this.currentPage = 0;
@@ -573,6 +589,17 @@ onCategoryChange() {
 
   isAdvancedFilterActive(filter: 'tempHasCc' | 'tempHasCellphone' | 'tempHasAddress' | 'tempHasBirthdate', value: boolean | null): boolean {
     return this[filter] === value;
+  }
+
+  get hasVisibleSubCategories(): boolean {
+    // If specific categories are selected, check if they have subcategories
+    if (this.tempSelectedCategories.length > 0) {
+      return this.availableCategories
+        .filter(c => this.tempSelectedCategories.includes(c.id))
+        .some(c => c.subCategories && c.subCategories.length > 0);
+    }
+    // Otherwise check if ANY category has subcategories
+    return this.availableCategories.some(c => c.subCategories && c.subCategories.length > 0);
   }
 
   openFormModal() {

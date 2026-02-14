@@ -460,6 +460,24 @@ button {
     color: var(--white-inverse, #ffffff);
 }
 
+/* Global Dark Mode Dropdown Fixes */
+[data-theme='dark'] .filter-dropdown,
+[data-theme='dark'] .export-menu,
+[data-theme='dark'] .action-menu,
+[data-theme='dark'] .dropdown-menu {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme='dark'] .dropdown-item {
+    color: var(--text-main);
+}
+
+[data-theme='dark'] .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
 .badge {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;

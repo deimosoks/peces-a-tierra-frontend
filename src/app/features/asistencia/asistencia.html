@@ -79,7 +79,7 @@
                         <div class="soft-input-wrapper" style="flex: 1;">
                             <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
                             <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                                placeholder="Buscar por nombre..." class="soft-input">
+                                placeholder="Buscar por nombre, documento, celular..." class="soft-input">
                         </div>
                         <!-- Mobile Filter Button -->
                         <button class="btn-icon-soft mobile-only" (click)="openAdvancedFilters()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px;">
@@ -370,11 +370,12 @@
                     </div>
                 </div>
 
-                <div class="filter-section">
+                <div class="filter-section" *ngIf="hasVisibleSubCategories">
                     <h3>Sub-Categoría</h3>
                     <div class="filters-grid-nested">
-                        <div *ngFor="let category of availableCategories">
-                            <ng-container *ngIf="category.subCategories && category.subCategories.length > 0">
+                        <ng-container *ngFor="let category of availableCategories">
+                            <!-- Show if category has subcategories AND (no categories selected OR this category is selected) -->
+                            <ng-container *ngIf="category.subCategories && category.subCategories.length > 0 && (tempSelectedCategories.length === 0 || isAdvancedCategorySelected(category.id))">
                                 <h4 class="nested-category-title">{{ category.name }}</h4>
                                 <div class="checkbox-group">
                                     <label *ngFor="let sub of category.subCategories" class="checkbox-label">
@@ -383,7 +384,7 @@
                                     </label>
                                 </div>
                             </ng-container>
-                        </div>
+                        </ng-container>
                     </div>
                 </div>
 

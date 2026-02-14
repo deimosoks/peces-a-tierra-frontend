@@ -401,6 +401,16 @@ textarea.form-control {
   .search-box-mini input {
     min-width: 150px;
   }
+
+  .full-card {
+    padding: 0.5rem;
+  }
+
+  .header-section {
+    padding: 0.5rem;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
 }
 
 /* Modal Styles */

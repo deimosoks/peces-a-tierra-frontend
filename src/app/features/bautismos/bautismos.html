@@ -54,30 +54,32 @@
                 </div>
             </div>
 
-            <!-- Left: Filters Trigger (Mobile Only) -->
-            <div class="mobile-only" style="margin-right: 0.5rem;">
-                 <div class="soft-input-group">
-                    <label class="soft-label invisible-label">Filtros</label>
-                     <button class="btn btn-square-soft" (click)="openMobileFilterModal()" style="color: var(--primary);">
-                        <i class="fa-solid fa-filter"></i>
-                    </button>
-                 </div>
-            </div>
-
             <!-- Center: Search -->
             <div class="search-center">
                 <div class="soft-input-group">
                     <label class="soft-label">Buscar Bautismo</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                        <input type="text" [(ngModel)]="filterQuery" (keyup.enter)="onSearch()"
-                            placeholder="Buscar por nombre, cedula..." class="soft-input">
+                    <div style="display: flex; gap: 0.35rem; width: 100%;">
+                        <div class="soft-input-wrapper" style="flex: 1;">
+                            <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                            <input type="text" [(ngModel)]="filterQuery" (keyup.enter)="onSearch()"
+                                placeholder="Buscar por nombre, cedula..." class="soft-input">
+                        </div>
+                        
+                        <!-- Mobile Filter Button -->
+                        <button class="btn-icon-soft mobile-only" (click)="openMobileFilterModal()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer;">
+                            <i class="fa-solid fa-filter"></i>
+                        </button>
+
+                        <!-- Mobile Create Button -->
+                        <button class="btn-icon-soft mobile-only" (click)="openCreateModal()" *ngIf="can('BAPTISM_CREATE')" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: none; border-radius: 12px; background: var(--primary); color: white; cursor: pointer;">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Right: Actions -->
-            <div class="actions-right">
+            <div class="actions-right desktop-only">
                 <div class="soft-input-group">
                      <!-- Empty label to align with inputs -->
                     <label class="soft-label invisible-label">Acciones</label>

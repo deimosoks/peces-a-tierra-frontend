@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { IglesiaService, AttendanceCreateDto } from '../../core/models/asistencia.model';
 import { Integrante, MemberFilterRequestDto, MemberPagesResponseDto } from '../../core/models/integrante.model';
+import { MemberCategoryResponseDto } from '../../core/models/member-config.model';
 import { MemberConfigService } from '../../core/services/member-config.service';
 
 @Component({
@@ -21,8 +22,6 @@ export class Asistencia implements OnInit {
   private integranteService = inject(IntegranteService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
-  // Removed confirmationService as it was unused and causing errors
-  // private memberConfigService is now in constructor for explicit injection or we can use inject() here
   
   // Filters & State
   serviceDate: string = this.getNowForInput();
@@ -52,7 +51,7 @@ export class Asistencia implements OnInit {
   // Advanced Filters State
   showAdvancedFiltersModal = false;
   availableTypes: any[] = [];
-  availableCategories: any[] = [];
+  availableCategories: MemberCategoryResponseDto[] = [];
   
   // Filter Selection State
   selectedTypes: string[] = [];
@@ -211,6 +210,20 @@ export class Asistencia implements OnInit {
     this.ageFilterRange1 = null;
     this.ageFilterRange2 = null;
     this.filterLocation = '';
+    
+    // Also clear temp variables to ensure modal state is reset
+    this.tempSelectedTypes = [];
+    this.tempSelectedCategories = [];
+    this.tempSelectedSubCategories = [];
+    this.tempHasCc = null;
+    this.tempHasCellphone = null;
+    this.tempHasAddress = null;
+    this.tempHasBirthdate = null;
+    this.tempAgeRange1 = null;
+    this.tempAgeRange2 = null;
+    this.tempLocation = '';
+    this.tempOnlyActive = true;
+
     this.currentPage = 0;
     this.loadMembers();
   }
@@ -252,6 +265,17 @@ export class Asistencia implements OnInit {
 
   isAdvancedFilterActive(filter: 'tempHasCc' | 'tempHasCellphone' | 'tempHasAddress' | 'tempHasBirthdate', value: boolean | null): boolean {
     return this[filter] === value;
+  }
+
+  get hasVisibleSubCategories(): boolean {
+    // If specific categories are selected, check if they have subcategories
+    if (this.tempSelectedCategories.length > 0) {
+      return this.availableCategories
+        .filter(c => this.tempSelectedCategories.includes(c.id))
+        .some(c => c.subCategories && c.subCategories.length > 0);
+    }
+    // Otherwise check if ANY category has subcategories
+    return this.availableCategories.some(c => c.subCategories && c.subCategories.length > 0);
   }
 
   onSearch() {

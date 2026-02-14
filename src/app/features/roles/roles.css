@@ -413,6 +413,12 @@
     color: white;
 }
 
+:host-context([data-theme='dark']) .perm-item:hover,
+:host-context([data-theme='dark']) .perm-item.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: var(--primary);
+}
+
 .perm-info {
     display: flex;
     flex-direction: column;

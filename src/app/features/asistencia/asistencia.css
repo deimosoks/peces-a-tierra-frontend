@@ -1167,14 +1167,34 @@
     gap: 1rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+    .filters-modal {
+        width: 95% !important;
+        max-width: 95% !important;
+    }
+
     .filters-grid {
         grid-template-columns: 1fr;
         padding: 1rem;
+        gap: 1rem;
     }
     
     .data-filters-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
+    }
+
+    .premium-card {
+        padding: 0.5rem;
+    }
+
+    .header-section {
+        padding: 0.5rem;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .mobile-config-trigger {
+        margin-bottom: 0.25rem !important;
     }
 }
 .empty-state,
@@ -1587,6 +1607,31 @@
     width: 16px;
     text-align: center;
     font-size: 0.9rem;
+}
+
+:host-context([data-theme='dark']) .action-dropdown {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+:host-context([data-theme='dark']) .dropdown-header-mobile {
+    background: var(--bg-input);
+    border-color: var(--border-color);
+}
+
+:host-context([data-theme='dark']) .menu-trigger {
+    background: var(--bg-input);
+    color: var(--text-muted);
+}
+
+:host-context([data-theme='dark']) .menu-trigger:hover {
+    background: var(--border-color);
+    color: var(--text-main);
+}
+
+:host-context([data-theme='dark']) .action-dropdown .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--primary);
 }
 
 .dropdown-divider {
