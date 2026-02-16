@@ -36,9 +36,14 @@
   --cat-ninos: #6ee7b7;
   --cat-ninos-text: #065f46;
 
-  --sidebar-width: 230px;
-  --header-height: 70px;
+  /* Sidebar & Header Sizing (Scaled down ~30%) */
+  --sidebar-width: 170px; /* Reduced from 230px */
+  --header-height: 52px;  /* Reduced from 70px */
   --transition-speed: 0.3s;
+}
+
+html {
+    font-size: 13px; /* Scales down all rem units from 16px to 13px */
 }
 
 [data-theme='dark'] {

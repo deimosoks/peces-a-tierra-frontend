@@ -33,9 +33,11 @@ export const routes: Routes = [
             { path: 'asistencia', component: Asistencia, canActivate: [permissionGuard], data: { permission: 'REGISTER_ATTENDANCE' } },
             { path: 'asistencias/administrar', component: AdministrarAsistencias, canActivate: [permissionGuard], data: { permission: 'MANAGE_ATTENDANCE' } },
             { path: 'reportes', component: Reportes, canActivate: [permissionGuard], data: { permission: 'MANAGE_REPORT' } },
-            { path: 'roles', component: Roles, canActivate: [permissionGuard], data: { permission: 'VIEW_ROLE_PANEL' } },
             { path: 'usuarios', component: Usuarios, canActivate: [permissionGuard], data: { permission: 'VIEW_USER_PANEL' } },
             { path: 'servicios', component: Servicios, canActivate: [permissionGuard], data: { permission: 'VIEW_SERVICE_PANEL' } },
+            { path: 'sedes', loadComponent: () => import('./features/sedes/sedes').then(m => m.Sedes), canActivate: [permissionGuard], data: { permission: 'VIEW_BRANCH_PANEL' } },
+            { path: 'eventos', loadComponent: () => import('./features/eventos/eventos').then(m => m.Eventos), canActivate: [permissionGuard], data: { permission: 'VIEW_EVENTS_PANEL' } },
+            { path: 'roles', component: Roles, canActivate: [permissionGuard], data: { permission: 'VIEW_ROLE_PANEL' } },
             { path: 'configuracion', component: Configuracion, canActivate: [permissionGuard], data: { permission: 'ADMINISTRATOR' } },
         ]
     },

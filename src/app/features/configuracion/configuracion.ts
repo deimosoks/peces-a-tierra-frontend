@@ -21,20 +21,25 @@ import {
   styleUrl: './configuracion.css'
 })
 export class Configuracion implements OnInit {
+  private fb = inject(FormBuilder);
   private configService = inject(MemberConfigService);
   private notificationService = inject(NotificationService);
   private confirmationService = inject(ConfirmationService);
-  private fb = inject(FormBuilder);
 
   // Data
   categories: MemberCategoryResponseDto[] = [];
   types: MemberTypeResponseDto[] = [];
 
-  // Modal states
+  // Loading States
+  isLoadingCategories = true;
+  isLoadingTypes = true;
+
+  // Modal States
   showCategoryModal = false;
   showTypeModal = false;
   showSubCategoryModal = false;
-  
+
+  // Edit States
   isEditingCategory = false;
   isEditingType = false;
   isEditingSubCategory = false;
@@ -49,12 +54,10 @@ export class Configuracion implements OnInit {
   typeForm!: FormGroup;
   subCategoryForm!: FormGroup;
 
-  // Loading states
+  // Saving States
   isSavingCategory = false;
   isSavingType = false;
   isSavingSubCategory = false;
-  isLoadingCategories = false;
-  isLoadingTypes = false;
 
   ngOnInit() {
     this.initForms();

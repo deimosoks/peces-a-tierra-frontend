@@ -4,12 +4,11 @@
             <!-- Left: Filters -->
             <div class="filters-left">
                 <!-- Desktop Advanced Filters -->
-                <div class="soft-input-group desktop-only">
-                    <label class="soft-label">Filtros</label>
-                    <button class="btn btn-action-soft" (click)="openAdvancedFilters()" style="justify-content: space-between; min-width: 140px;">
+                <div class="desktop-only">
+                    <button class="btn btn-action-soft" (click)="openAdvancedFilters()">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fa-solid fa-sliders" style="color: var(--primary);"></i>
-                            <span>Avanzados</span>
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Filtros</span>
                         </div>
                         <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0">
                             {{ selectedTypes.length + selectedCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
@@ -20,81 +19,72 @@
 
             <!-- Center: Search -->
             <div class="search-center">
-                <div class="soft-input-group">
-                    <label class="soft-label">Buscar Integrante</label>
-                    <div style="display: flex; gap: 0.5rem; width: 100%;">
-                        <div class="soft-input-wrapper" style="flex: 1;">
-                            <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                                placeholder="Buscar por nombre, documento, celular..." class="soft-input">
-                        </div>
-                        
-                        <!-- Mobile Filter Button -->
-                        <button class="btn-icon-soft mobile-only" (click)="openAdvancedFilters()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer; position: relative;">
-                            <i class="fa-solid fa-sliders"></i>
-                             <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0" style="position: absolute; top: -5px; right: -5px; min-width: 18px; padding: 2px 4px; font-size: 0.65rem;">
-                                {{ selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
-                            </span>
-                        </button>
+                <div style="display: flex; gap: 0.5rem; width: 100%;">
+                    <div class="soft-input-wrapper" style="flex: 1;">
+                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                            placeholder="Buscar por nombre, documento, celular..." class="soft-input">
+                    </div>
+                    
+                    <!-- Mobile Filter Button -->
+                    <button class="btn-icon-soft mobile-only" (click)="openAdvancedFilters()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer; position: relative;">
+                        <i class="fa-solid fa-sliders"></i>
+                            <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0" style="position: absolute; top: -5px; right: -5px; min-width: 18px; padding: 2px 4px; font-size: 0.65rem;">
+                            {{ selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
+                        </span>
+                    </button>
 
-                        <!-- Mobile Options Button -->
-                        <div class="mobile-only filter-dropdown-container">
-                            <button class="btn-icon-soft" (click)="showMobileMenu = !showMobileMenu" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer;">
-                                <i class="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
-                            
-                            <div class="filter-dropdown" *ngIf="showMobileMenu" style="right: 0; left: auto; min-width: 160px; top: 110%;">
-                                <div style="padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-color);">
-                                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Opciones</span>
-                                </div>
-                                <button class="dropdown-item" (click)="openFormModal(); showMobileMenu = false" *ngIf="can('CREATE_MEMBER')">
-                                    <i class="fa-solid fa-user-plus text-primary"></i>
-                                    <span>Nuevo Integrante</span>
-                                </button>
-                                <div style="border-top: 1px solid var(--border-color); margin: 0.25rem 0;"></div>
-                                <button class="dropdown-item" (click)="exportData('excel'); showMobileMenu = false">
-                                    <i class="fa-solid fa-file-excel text-success"></i>
-                                    <span>Exportar Excel</span>
-                                </button>
-                                <button class="dropdown-item" (click)="exportData('pdf'); showMobileMenu = false">
-                                    <i class="fa-solid fa-file-pdf text-danger"></i>
-                                    <span>Exportar PDF</span>
-                                </button>
+                    <!-- Mobile Options Button -->
+                    <div class="mobile-only filter-dropdown-container">
+                        <button class="btn-icon-soft" (click)="showMobileMenu = !showMobileMenu" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer;">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        
+                        <div class="filter-dropdown" *ngIf="showMobileMenu" style="right: 0; left: auto; min-width: 160px; top: 110%;">
+                            <div style="padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-color);">
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Opciones</span>
                             </div>
+                            <button class="dropdown-item" (click)="openFormModal(); showMobileMenu = false" *ngIf="can('CREATE_MEMBER')">
+                                <i class="fa-solid fa-user-plus text-primary"></i>
+                                <span>Nuevo Integrante</span>
+                            </button>
+                            <div style="border-top: 1px solid var(--border-color); margin: 0.25rem 0;"></div>
+                            <button class="dropdown-item" (click)="exportData('excel'); showMobileMenu = false">
+                                <i class="fa-solid fa-file-excel text-success"></i>
+                                <span>Exportar Excel</span>
+                            </button>
+                            <button class="dropdown-item" (click)="exportData('pdf'); showMobileMenu = false">
+                                <i class="fa-solid fa-file-pdf text-danger"></i>
+                                <span>Exportar PDF</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Right: Actions (Desktop Only) -->
-            <div class="actions-right desktop-only" style="display: flex; gap: 0.75rem; align-items: flex-end;">
+            <div class="actions-right desktop-only" style="display: flex; gap: 0.75rem; align-items: center;">
                 <!-- Export Button -->
-                <div class="soft-input-group">
-                    <label class="soft-label invisible-label">Exportar</label>
-                    <div class="filter-dropdown-container export-dropdown-container">
-                        <button class="btn btn-muted btn-action-soft" (click)="toggleExportDropdown()" title="Exportar">
-                            <i class="fa-solid fa-download"></i> <span class="desktop-only" style="font-weight: 500;">Exportar</span>
+                <div class="filter-dropdown-container export-dropdown-container">
+                    <button class="btn btn-muted btn-action-soft" (click)="toggleExportDropdown()" title="Exportar">
+                        <i class="fa-solid fa-download"></i> <span class="desktop-only" style="font-weight: 500;">Exportar</span>
+                    </button>
+                    <div class="filter-dropdown export-menu" *ngIf="showExportDropdown" style="right: 0; left: auto;">
+                        <button class="dropdown-item" (click)="exportData('excel')">
+                            <i class="fa-solid fa-file-excel text-success"></i>
+                            <span>Excel</span>
                         </button>
-                        <div class="filter-dropdown export-menu" *ngIf="showExportDropdown" style="right: 0; left: auto;">
-                            <button class="dropdown-item" (click)="exportData('excel')">
-                                <i class="fa-solid fa-file-excel text-success"></i>
-                                <span>Excel</span>
-                            </button>
-                            <button class="dropdown-item" (click)="exportData('pdf')">
-                                <i class="fa-solid fa-file-pdf text-danger"></i>
-                                <span>PDF</span>
-                            </button>
-                        </div>
+                        <button class="dropdown-item" (click)="exportData('pdf')">
+                            <i class="fa-solid fa-file-pdf text-danger"></i>
+                            <span>PDF</span>
+                        </button>
                     </div>
                 </div>
 
                 <!-- New Button -->
-                <div class="soft-input-group">
-                    <label class="soft-label invisible-label">Nuevo</label>
-                    <button class="btn btn-primary btn-action-soft" (click)="openFormModal()" *ngIf="can('CREATE_MEMBER')">
-                        <i class="fa-solid fa-user-plus"></i> <span class="desktop-only">Nuevo</span>
-                    </button>
-                </div>
+                <button class="btn btn-primary btn-action-soft" (click)="openFormModal()" *ngIf="can('CREATE_MEMBER')">
+                    <i class="fa-solid fa-user-plus"></i> <span class="desktop-only">Nuevo</span>
+                </button>
             </div>
         </div>
 
@@ -106,6 +96,8 @@
                         <th class="desktop-only text-center">TELÉFONO</th>
                         <th class="desktop-only">DIRECCIÓN</th>
                         <th class="desktop-only">CATEGORÍA</th>
+                        <th class="desktop-only">SEDE</th>
+                        <th class="desktop-only text-center">GÉNERO</th>
                         <th class="desktop-only">TIPO</th>
                         <th>ACCIONES</th>
                     </tr>
@@ -130,13 +122,22 @@
                         </td>
                         <td class="desktop-only">
                             <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
-                                <span class="badge badge-sm badge-solid" [style.background-color]="member.category.color" style="color: white !important;">
+                                <span class="badge badge-sm badge-solid" *ngIf="member.category" [style.background-color]="member.category.color" style="color: white !important;">
                                     {{ member.category.name }}
                                 </span>
-                                <span class="badge badge-sm badge-outline" *ngIf="member.subCategory" [style.border-color]="member.subCategory.color" [style.color]="member.subCategory.color" style="font-size: 0.65rem;">
+                                <span class="badge badge-sm badge-outline" *ngIf="member.subCategory" [style.border-color]="member.subCategory.color || '#ccc'" [style.color]="member.subCategory.color || '#ccc'" style="font-size: 0.65rem;">
                                     {{ member.subCategory.name }}
                                 </span>
                             </div>
+                        </td>
+                        <td class="desktop-only">
+                            <span class="text-muted">{{ member.branchName || '---' }}</span>
+                        </td>
+                        <td class="desktop-only text-center">
+                            <span class="badge badge-sm" [class.badge-blue]="member.gender === 'HOMBRE'" [class.badge-pink]="member.gender === 'MUJER'" *ngIf="member.gender">
+                                {{ member.gender === 'HOMBRE' ? 'M' : (member.gender === 'MUJER' ? 'F' : member.gender) }}
+                            </span>
+                            <span class="text-muted" *ngIf="!member.gender">---</span>
                         </td>
                         <td class="desktop-only">
                             <span class="badge badge-sm badge-outline" [style.border-color]="member.type.color" [style.color]="member.type.color">
@@ -272,6 +273,13 @@
                 </div>
 
                 <div class="form-grid">
+                    <div class="form-group" *ngIf="isAdmin">
+                        <label for="branchId">Sede *</label>
+                        <select id="branchId" formControlName="branchId">
+                            <option value="">Seleccione una sede</option>
+                            <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="typeId">Tipo *</label>
                         <select id="typeId" formControlName="typeId">
@@ -300,6 +308,13 @@
                     <div class="form-group">
                         <label for="birthdate">Nacimiento</label>
                         <input id="birthdate" type="date" formControlName="birthdate">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Género *</label>
+                        <select id="gender" formControlName="gender">
+                            <option value="" disabled>Seleccione un género</option>
+                            <option *ngFor="let g of availableGenders" [value]="g.value">{{ g.label }}</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="cc">Identificación (CC)</label>
@@ -394,6 +409,10 @@
                 <div class="detail-item" *ngIf="selectedMember.age && selectedMember.age > 0">
                     <label>Edad:</label>
                     <span>{{ selectedMember.age }} años</span>
+                </div>
+                <div class="detail-item" *ngIf="selectedMember.gender">
+                    <label>Género:</label>
+                    <span>{{ selectedMember.gender }}</span>
                 </div>
                 <div class="detail-item full">
                     <label>Dirección:</label>
@@ -499,6 +518,15 @@
         </div>
         <div class="modal-body">
             <div class="filters-grid">
+                <!-- Branch (Admin Only) -->
+                <div class="filter-section" *ngIf="isAdmin">
+                    <h3>Sede</h3>
+                    <select [(ngModel)]="tempSelectedBranchId" class="premium-input full-width-input">
+                        <option value="">Todas las sedes</option>
+                        <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                    </select>
+                </div>
+
                 <!-- Type & Category -->
                 <div class="filter-section">
                     <h3>Tipo</h3>
@@ -535,6 +563,15 @@
                                 </div>
                             </ng-container>
                         </ng-container>
+                    </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="filter-section">
+                    <h3>Género</h3>
+                    <div class="trip-switch">
+                        <button type="button" [class.active]="tempSelectedGender === ''" (click)="tempSelectedGender = ''">Todos</button>
+                        <button type="button" *ngFor="let g of availableGenders" [class.active]="tempSelectedGender === g.value" (click)="tempSelectedGender = g.value">{{ g.label }}</button>
                     </div>
                 </div>
 

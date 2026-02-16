@@ -53,4 +53,12 @@ export class IntegranteService {
   deleteNote(noteId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/members/notes/${noteId}`);
   }
+
+  getNotes(memberId: string): Observable<MemberNoteResponseDto[]> {
+    return this.http.get<MemberNoteResponseDto[]>(`${this.baseUrl}/members/${memberId}/notes`);
+  }
+
+  updateNote(noteId: string, note: string): Observable<MemberNoteResponseDto> {
+    return this.http.put<MemberNoteResponseDto>(`${this.baseUrl}/members/notes/${noteId}`, { note });
+  }
 }

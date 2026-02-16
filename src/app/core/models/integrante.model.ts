@@ -15,6 +15,9 @@ export interface MemberNoteRequestDto {
 export interface Integrante {
   id: string;
   completeName: string;
+  firstName?: string; // Optional as it might be derived or separate
+  lastName?: string;  // Optional same reason
+  email?: string;
   type: MemberTypeResponseDto;
   category: MemberCategoryResponseDto;
   subCategory?: MemberSubCategoryResponseDto;
@@ -26,6 +29,13 @@ export interface Integrante {
   pictureProfileUrl?: string;
   age?: number;
   active: boolean;
+  gender?: string;
+  branchName?: string; // Added branchName to response
+  branch?: {
+      id: string;
+      name: string;
+  };
+  
   notes?: MemberNoteResponseDto[];
   
   // Address fields
@@ -49,6 +59,8 @@ export interface IntegranteRequestDto {
   birthdate?: Date;
   cc?: string;
   pictureProfile?: File;
+  gender?: string;
+  branchId?: string;
   
   // Address fields
   neighborhood?: string;
@@ -78,6 +90,8 @@ export interface MemberFilterRequestDto {
     ageFilterRange1?: number | null;
     ageFilterRange2?: number | null;
     location?: string;
+    gender?: string;
+    branchId?: string; // Added branchId to filter
 }
 
 export interface MemberExportDto {
@@ -90,4 +104,12 @@ export interface MemberExportDto {
     birthdate: string;
     cc: string;
     age: number;
+    gender?: string;
+}
+
+export interface ReportColumn {
+    id: string;
+    label: string;
+    visible: boolean;
+    order: number;
 }

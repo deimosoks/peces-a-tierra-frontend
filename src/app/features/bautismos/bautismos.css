@@ -39,28 +39,29 @@
 /* Header Layout */
 .header-section {
   display: flex;
-  align-items: flex-end; /* Align to bottom so inputs align despite labels */
-  gap: 1rem; /* Reduced gap */
-  margin-bottom: 1rem; /* Reduced margin */
+  align-items: center; /* Center vertically */
+  gap: 1rem;
+  margin-bottom: 1rem;
   background: var(--bg-card);
-  padding: 0.75rem; /* Reduced padding */
+  padding: 0.75rem;
   border-radius: 12px;
-  /* border: 1px solid var(--border-color); REMOVED BORDER */
-  box-shadow: var(--shadow-sm); /* Optional: subtle shadow instead of border if needed, or just plain */
+  box-shadow: var(--shadow-sm);
 }
 
 /* Left Section: Filters */
 .filters-left {
     display: flex;
-    align-items: flex-end;
-    gap: 0.75rem; /* Reduced gap */
+    align-items: center;
+    gap: 0.75rem;
     flex-shrink: 0;
 }
 
+
+
 /* Center Section: Search */
 .search-center {
-    flex: 1; /* Occupy remaining space */
-    min-width: 0; /* Prevent overflow */
+    flex: 1;
+    min-width: 0;
 }
 
 /* Right Section: Actions */

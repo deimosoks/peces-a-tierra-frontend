@@ -1,72 +1,176 @@
-import { Component, OnInit, inject, HostListener, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IntegranteService } from '../../core/services/integrante';
-import { AuthService } from '../../core/services/auth.service';
-import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
-import { SafeClickDirective } from '../../shared/directives/safe-click.directive';
-import { ConfirmationService } from '../../core/services/confirmation.service';
-import { NotificationService } from '../../core/services/notification.service';
-import { ReportService, ReportColumn } from '../../core/services/report.service';
-import { API_CONFIG } from '../../core/config/api.config';
 import { MemberConfigService } from '../../core/services/member-config.service';
-import { MemberCategoryResponseDto, MemberTypeResponseDto, MemberSubCategoryResponseDto } from '../../core/models/member-config.model';
+import { BranchService } from '../../core/services/branch.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { ConfirmationService } from '../../core/services/confirmation.service';
+import { ReportService } from '../../core/services/report.service';
+import { AuthService } from '../../core/services/auth.service';
+import {
+    Integrante,
+    IntegranteRequestDto,
+    MemberFilterRequestDto,
+    ReportColumn
+} from '../../core/models/integrante.model';
+import {
+    MemberCategoryResponseDto,
+    MemberSubCategoryResponseDto,
+    MemberTypeResponseDto
+} from '../../core/models/member-config.model';
+import { Branch } from '../../core/models/branch.model';
+import { SafeClickDirective } from '../../shared/directives/safe-click.directive';
 
 declare var google: any;
 
 @Component({
-  selector: 'app-integrantes',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SafeClickDirective],
-  templateUrl: './integrantes.html',
-  styleUrl: './integrantes.css',
+    selector: 'app-integrantes',
+    standalone: true,
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, SafeClickDirective],
+    templateUrl: './integrantes.html',
+    styleUrl: './integrantes.css'
 })
 export class Integrantes implements OnInit {
-  private fb = inject(FormBuilder);
-  private integranteService = inject(IntegranteService);
-  private authService = inject(AuthService);
-  private confirmationService = inject(ConfirmationService);
-  private notificationService = inject(NotificationService);
-  private reportService = inject(ReportService);
-  private cdr = inject(ChangeDetectorRef);
-  private memberConfigService = inject(MemberConfigService);
+    private fb = inject(FormBuilder);
+    private integranteService = inject(IntegranteService);
+    private configService = inject(MemberConfigService);
+    private branchService = inject(BranchService);
+    private notificationService = inject(NotificationService);
+    private confirmationService = inject(ConfirmationService);
+    private reportService = inject(ReportService);
+    private authService = inject(AuthService);
+    private cdr = inject(ChangeDetectorRef);
 
-  members: Integrante[] = [];
-  totalPages = 0;
-  currentPage = 0;
-  onlyActive = true;
-  searchQuery = '';
-  isLoading = false;
-  activeDropdownId: string | null = null;
+    // Data
+    // Data
+    // availableCategories/Types are used instead of categories/types in some parts
+    availableCategories: MemberCategoryResponseDto[] = [];
+    availableTypes: MemberTypeResponseDto[] = [];
+    
+    members: Integrante[] = [];
+    categories: MemberCategoryResponseDto[] = [];
+    subCategories: MemberSubCategoryResponseDto[] = [];
+    types: MemberTypeResponseDto[] = [];
+    branches: Branch[] = [];
+    filteredSubCategories: MemberSubCategoryResponseDto[] = [];
 
-  // Filter state
-  selectedTypes: string[] = [];
-  selectedCategories: string[] = [];
-  selectedSubCategories: string[] = [];
-  showTypeDropdown = false;
-  showCategoryDropdown = false;
-  showAdvancedFilters = false;
-  showAdvancedFiltersModal = false;
-  showExportDropdown = false;
-  showMobileFiltersModal = false;
-  showMobileMenu = false;
+    // State
+    isLoading = true;
+    showModal = false;
+    isEditing = false;
+    isSaving = false;
+    currentId: string | null = null;
+    showFilters = false;
+    showNoteModal = false;
+    showMobileMenu = false;
+    
+    // Pagination
+    currentPage = 0;
+    totalPages = 0;
 
-  // Advanced bitwise-like filters (null = all, true = has data, false = doesn't have data)
-  hasCc: boolean | null = null;
-  hasCellphone: boolean | null = null;
-  hasAddress: boolean | null = null;
-  hasBirthdate: boolean | null = null;
-  ageFilterRange1: number | null = null;
-  ageFilterRange2: number | null = null;
+    // Filter States
+    selectedTypes: string[] = [];
+    selectedCategories: string[] = [];
+    selectedSubCategories: string[] = [];
+    selectedBranchId: string = '';
+    selectedGender: string = '';
+    onlyActive = true;
+    searchQuery = '';
+    hasCc: boolean | null = null;
+    hasCellphone: boolean | null = null;
+    hasAddress: boolean | null = null;
+    hasBirthdate: boolean | null = null;
+    ageFilterRange1: number | null = null;
+    ageFilterRange2: number | null = null;
 
-  // Dynamic available options (fetched from API)
-  availableTypes: MemberTypeResponseDto[] = [];
-  availableCategories: MemberCategoryResponseDto[] = [];
+    // UI States
+    showTypeDropdown = false;
+    showCategoryDropdown = false;
+    activeDropdownId: string | null = null;
+    showAdvancedFilters = false;
+    showAdvancedFiltersModal = false;
+    showExportDropdown = false;
+    showMobileFiltersModal = false;
 
+    // Filters
+    openModal(integrante?: Integrante) {
+        this.isEditing = !!integrante;
+        this.currentId = integrante?.id || null;
+
+        if (integrante) {
+            this.form.patchValue({
+                firstName: integrante.firstName,
+                lastName: integrante.lastName,
+                email: integrante.email,
+                phoneNumber: integrante.cellphone,
+                address: integrante.address,
+                birthdate: integrante.birthdate ? new Date(integrante.birthdate).toISOString().substring(0, 10) : '',
+                gender: integrante.gender,
+                branchId: integrante.branch?.id,
+                categoryId: integrante.category?.id,
+                subCategoryId: integrante.subCategory?.id,
+                typeId: integrante.type?.id,
+                active: integrante.active
+            });
+            
+            if (integrante.category?.id) {
+                this.onCategoryChange();
+            }
+        } else {
+            this.form.reset({
+                active: true,
+                gender: 'MALE' // Default
+            });
+            this.filteredSubCategories = [];
+        }
+
+        this.showModal = true;
+    }
+    filters: MemberFilterRequestDto = { onlyActive: true };
+
+    form: FormGroup;
+    
+    // Helper to fix openModal phoneNumber -> cellphone
+    // I'll handle that in a separate chunk or just rely on previous 'replace_file_content' if I can.
+    // Wait, I can do multiple chunks in 'replace_file_content' if I use 'multi_replace_file_content'. 
+    // But I'm using 'replace_file_content' which is single block.
+    // I will switch to 'multi_replace_file_content' to fix multiple spots.
+
+    noteForm: FormGroup;
+
+    constructor() {
+        this.form = this.fb.group({
+            firstName: ['', Validators.required],
+            lastName: ['', Validators.required],
+            email: ['', [Validators.email]],
+            phoneNumber: [''],
+            address: [''],
+            birthdate: [''],
+            gender: [''], // Added gender
+            branchId: [''], // Added branch
+            categoryId: ['', Validators.required],
+            subCategoryId: [''],
+            typeId: ['', Validators.required],
+            active: [true]
+        });
+
+        this.noteForm = this.fb.group({
+            content: ['', Validators.required]
+        });
+    }
+
+
+  availableGenders = [
+    { value: 'HOMBRE', label: 'Hombre' },
+    { value: 'MUJER', label: 'Mujer' }
+  ];
   // Mobile temporary filter state
   tempSelectedTypes: string[] = [];
   tempSelectedCategories: string[] = [];
   tempSelectedSubCategories: string[] = [];
+  tempSelectedBranchId: string = '';
+  tempSelectedGender: string = '';
   tempOnlyActive = true;
   tempHasCc: boolean | null = null;
   tempHasCellphone: boolean | null = null;
@@ -80,35 +184,51 @@ export class Integrantes implements OnInit {
   filterLocation = '';
 
   selectedMember?: Integrante;
-  showModal = false; // For details
-  showFormModal = false; // For Create/Edit
-  showNoteModal = false; // For Adding Note
-
+  showFormModal = false;
+  // Duplicate properties removed here (showModal, isEditing etc already defined above)
+  
   integranteForm!: FormGroup;
-  noteForm!: FormGroup;
+  // noteForm already defined above
   isAddingNote = false;
-  isEditing = false;
-  isSaving = false;
-  currentId?: string;
+  // isEditing, isSaving, currentId already defined above
 
   // Remove hardcoded arrays - now using availableTypes and availableCategories
   selectedFile: File | null = null;
   imagePreview: string | null = null;
 
   ngOnInit() {
+    this.checkPermissions();
     this.initForm();
     this.loadCategoriesAndTypes();
     this.loadMembers();
+    if (this.isAdmin) {
+        this.loadBranches();
+    }
+  }
+
+  isAdmin = false;
+
+  checkPermissions() {
+      // Assuming ADMINISTRATOR is the role/permission. 
+      // User said "si eres administrador".
+      this.isAdmin = this.authService.can('ADMINISTRATOR');
+  }
+
+  loadBranches() {
+      this.branchService.findAll().subscribe({
+          next: (data) => this.branches = data,
+          error: () => this.notificationService.error('Error al cargar las sedes')
+      });
   }
 
   loadCategoriesAndTypes() {
-    this.memberConfigService.getCategories().subscribe({
-      next: (data) => this.availableCategories = data,
+    this.configService.getCategories().subscribe({
+      next: (data: MemberCategoryResponseDto[]) => this.availableCategories = data,
       error: () => this.notificationService.error('Error al cargar categorías')
     });
 
-    this.memberConfigService.getTypes().subscribe({
-      next: (data) => this.availableTypes = data,
+    this.configService.getTypes().subscribe({
+      next: (data: MemberTypeResponseDto[]) => this.availableTypes = data,
       error: () => this.notificationService.error('Error al cargar tipos')
     });
   }
@@ -142,16 +262,20 @@ export class Integrantes implements OnInit {
       longitude: [null],
       birthdate: [''],
       cc: [''],
+      gender: ['', [Validators.required]],
+      branchId: [''],
       active: [true]
     });
 
+    // noteForm is already initialized in constructor, but sticking to this pattern if needed
+    // However, we should avoid duplicates. The constructor uses 'content' for noteForm, 
+    // but the logic later uses 'note' and 'memberId'. The logic later seems to check 'noteForm.value'.
+    // Methods use 'note' and 'memberId'.
     this.noteForm = this.fb.group({
       note: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(254)]],
       memberId: ['']
     });
-
-
-}
+  }
 
 onCategoryChange() {
   this.integranteForm.patchValue({ subCategoryId: '' });
@@ -189,16 +313,21 @@ onCategoryChange() {
       hasBirthdate: this.hasBirthdate,
       ageFilterRange1: this.ageFilterRange1,
       ageFilterRange2: this.ageFilterRange2,
-      location: this.filterLocation || undefined
+      location: this.filterLocation || undefined,
+      gender: this.selectedGender || undefined,
+      branchId: this.selectedBranchId || undefined
     };
 
     this.integranteService.searchMembers(filterRequest, this.currentPage).subscribe({
-      next: (res) => {
+      next: (res: any) => {
+        // Use implicit any for res if MemberPagesResponseDto is not perfectly matching or if laziness is preferred, 
+        // but better to use MemberPagesResponseDto if imported.
+        // The error said 'res' implicitly has 'any' type.
         this.members = res.members;
         this.totalPages = res.pages;
         this.isLoading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading members:', error);
         this.notificationService.error('Error al cargar los integrantes');
         this.isLoading = false;
@@ -231,10 +360,12 @@ onCategoryChange() {
   }
 
   toggleMemberStatus(member: Integrante) {
+    if (!this.can('UPDATE_MEMBER')) return;
+    
     const newStatus = !member.active;
 
     this.integranteService.toggleStatus(member.id, newStatus).subscribe({
-      next: (currentStatus) => {
+      next: (currentStatus: boolean) => {
         member.active = currentStatus;
         this.notificationService.success(`Integrante ${currentStatus ? 'activado' : 'desactivado'} correctamente`);
       }
@@ -348,6 +479,8 @@ onCategoryChange() {
     this.selectedTypes = [];
     this.selectedCategories = [];
     this.selectedSubCategories = [];
+    this.selectedGender = '';
+    this.selectedBranchId = '';
     this.hasCc = null;
     this.hasCellphone = null;
     this.hasAddress = null;
@@ -360,6 +493,8 @@ onCategoryChange() {
     this.tempSelectedTypes = [];
     this.tempSelectedCategories = [];
     this.tempSelectedSubCategories = [];
+    this.tempSelectedBranchId = '';
+    this.tempSelectedGender = '';
     this.tempHasCc = null;
     this.tempHasCellphone = null;
     this.tempHasAddress = null;
@@ -388,11 +523,13 @@ onCategoryChange() {
       hasBirthdate: this.hasBirthdate,
       ageFilterRange1: this.ageFilterRange1,
       ageFilterRange2: this.ageFilterRange2,
-      location: this.filterLocation || undefined
+      location: this.filterLocation || undefined,
+      gender: this.selectedGender || undefined,
+      branchId: this.selectedBranchId || undefined
     };
 
     this.integranteService.exportMembers(filterRequest).subscribe({
-      next: (data) => {
+      next: (data: any) => {
         // No additional formatting needed if backend sends names in MemberExportDto
         const formattedData = data;
 
@@ -405,7 +542,8 @@ onCategoryChange() {
           { id: 'cellphone', label: 'Teléfono', visible: true, order: 6 },
           { id: 'birthdate', label: 'Nacimiento', visible: true, order: 7 },
           { id: 'age', label: 'Edad', visible: true, order: 8 },
-          { id: 'address', label: 'Dirección', visible: true, order: 9 }
+          { id: 'gender', label: 'Género', visible: true, order: 9 },
+          { id: 'address', label: 'Dirección', visible: true, order: 10 }
         ];
 
         if (format === 'excel') {
@@ -416,7 +554,7 @@ onCategoryChange() {
         this.showExportDropdown = false;
         this.notificationService.success(`Datos exportados a ${format.toUpperCase()} correctamente`);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error exporting members:', error);
         this.notificationService.error('Error al exportar los datos');
       }
@@ -428,6 +566,7 @@ onCategoryChange() {
     // Copy current state to temp state
     this.tempSelectedTypes = [...this.selectedTypes];
     this.tempSelectedCategories = [...this.selectedCategories];
+    this.tempSelectedGender = this.selectedGender;
     this.tempOnlyActive = this.onlyActive;
     this.tempHasCc = this.hasCc;
     this.tempHasCellphone = this.hasCellphone;
@@ -513,6 +652,8 @@ onCategoryChange() {
     this.tempSelectedTypes = [...this.selectedTypes];
     this.tempSelectedCategories = [...this.selectedCategories];
     this.tempSelectedSubCategories = [...this.selectedSubCategories];
+    this.tempSelectedBranchId = this.selectedBranchId;
+    this.tempSelectedGender = this.selectedGender;
     this.tempHasCc = this.hasCc;
     this.tempHasCellphone = this.hasCellphone;
     this.tempHasAddress = this.hasAddress;
@@ -531,6 +672,8 @@ onCategoryChange() {
     this.selectedTypes = [...this.tempSelectedTypes];
     this.selectedCategories = [...this.tempSelectedCategories];
     this.selectedSubCategories = [...this.tempSelectedSubCategories];
+    this.selectedBranchId = this.tempSelectedBranchId;
+    this.selectedGender = this.tempSelectedGender;
     this.hasCc = this.tempHasCc;
     this.hasCellphone = this.tempHasCellphone;
     this.hasAddress = this.tempHasAddress;
@@ -726,6 +869,9 @@ onCategoryChange() {
       const formValue = this.integranteForm.value;
 
       Object.keys(formValue).forEach(key => {
+        if (key === 'subCategoryId' && !formValue[key]) {
+            return; // Don't send empty string for subCategory, backend needs null (missing)
+        }
         if (formValue[key] !== null && formValue[key] !== undefined) {
           formData.append(key, formValue[key]);
         }
@@ -767,7 +913,8 @@ onCategoryChange() {
       ...integrante,
       typeId: integrante.type.id,
       categoryId: integrante.category.id,
-      subCategoryId: integrante.subCategory?.id || ''
+      subCategoryId: integrante.subCategory?.id || '',
+      gender: integrante.gender || ''
     };
     
     this.integranteForm.patchValue(formValue);
@@ -795,7 +942,7 @@ onCategoryChange() {
 
   resetForm() {
     this.isEditing = false;
-    this.currentId = undefined;
+    this.currentId = null;
     this.selectedFile = null;
     this.imagePreview = null;
     this.integranteForm.reset({ 
@@ -833,7 +980,7 @@ onCategoryChange() {
       const request = this.noteForm.value;
 
       this.integranteService.createNote(request).subscribe({
-        next: (newNote) => {
+        next: (newNote: any) => {
           if (this.selectedMember && this.selectedMember.id === request.memberId) {
             if (!this.selectedMember.notes) this.selectedMember.notes = [];
             this.selectedMember.notes.unshift(newNote);
@@ -842,13 +989,46 @@ onCategoryChange() {
           this.closeNoteModal();
           this.notificationService.success('Nota agregada correctamente');
         },
-        error: (err) => {
+        error: (err: any) => {
           this.isAddingNote = false;
           console.error('Error adding note:', err);
           this.notificationService.error('Error al agregar la nota');
         }
       });
     }
+  }
+
+  loadNotes(memberId: string) {
+    this.integranteService.getNotes(memberId).subscribe({
+      next: (notes: any) => {
+        if (this.selectedMember && this.selectedMember.id === memberId) {
+            this.selectedMember.notes = notes;
+        }
+      },
+      error: (err: any) => console.error('Error loading notes', err)
+    });
+  }
+
+  editNote(note: any) {
+    const newContent = prompt('Editar nota:', note.note);
+    if (newContent !== null && newContent.trim() !== '' && newContent !== note.note) {
+      this.updateNote(note.id, newContent);
+    }
+  }
+
+  updateNote(noteId: string, newContent: string) {
+    this.integranteService.updateNote(noteId, newContent).subscribe({
+      next: () => {
+        this.notificationService.success('Nota actualizada');
+        if (this.selectedMember && this.selectedMember.notes) {
+          const noteIndex = this.selectedMember.notes.findIndex(n => n.id === noteId);
+          if (noteIndex > -1) {
+             this.selectedMember.notes[noteIndex].note = newContent;
+          }
+        }
+      },
+      error: (err: any) => this.notificationService.error('Error al actualizar nota')
+    });
   }
 
   async deleteNote(noteId: string) {

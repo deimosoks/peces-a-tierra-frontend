@@ -1,245 +1,313 @@
 <div class="config-container">
-    <div class="config-card">
-        <h1 class="page-title">
-            <i class="fa-solid fa-gear"></i>
-            Configuración General
-        </h1>
+  <div class="config-card">
+    <h1 class="page-title">
+      <i class="fa-solid fa-gear"></i>
+      Configuración General
+    </h1>
 
-        <div class="config-grid">
-            <!-- Categories Section -->
-            <div class="config-section">
-                <div class="section-header">
-                    <h2>
-                        <i class="fa-solid fa-tag"></i>
-                        Categorías de Miembros
-                    </h2>
-                    <button class="btn btn-primary btn-sm" (click)="openCategoryModal()">
-                        <i class="fa-solid fa-plus"></i>
-                        Nueva Categoría
-                    </button>
-                </div>
-
-                <div class="items-list" *ngIf="!isLoadingCategories">
-                    <div class="item-card-container" *ngFor="let category of categories">
-                        <div class="item-card">
-                            <div class="item-info">
-                                <span class="color-badge" [style.background-color]="category.color"></span>
-                                <span class="item-name">{{ category.name }}</span>
-                            </div>
-                            <div class="item-actions">
-                                <button class="action-btn add-sub" (click)="openSubCategoryModal(category.id)" title="Agregar Sub-categoría">
-                                    <i class="fa-solid fa-plus-circle"></i>
-                                </button>
-                                <button class="action-btn edit" (click)="openCategoryModal(category)" title="Editar">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="action-btn delete" (click)="deleteCategory(category)" title="Eliminar">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Sub-categories list -->
-                        <div class="sub-items-list" *ngIf="category.subCategories && category.subCategories.length > 0">
-                            <div class="sub-item-card" *ngFor="let sub of category.subCategories">
-                                <div class="item-info">
-                                    <span class="color-badge sub" [style.background-color]="sub.color"></span>
-                                    <span class="item-name sub">{{ sub.name }}</span>
-                                </div>
-                                <div class="item-actions">
-                                    <button class="action-btn edit" (click)="openSubCategoryModal(category.id, sub)" title="Editar Sub-categoría">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </button>
-                                    <button class="action-btn delete" (click)="deleteSubCategory(sub)" title="Eliminar Sub-categoría">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="empty-state" *ngIf="categories.length === 0">
-                        <i class="fa-solid fa-inbox"></i>
-                        <p>No hay categorías registradas</p>
-                    </div>
-                </div>
-
-                <div class="loading-state" *ngIf="isLoadingCategories">
-                    <div class="spinner"></div>
-                    Cargando categorías...
-                </div>
-            </div>
-
-            <!-- Types Section -->
-            <div class="config-section">
-                <div class="section-header">
-                    <h2>
-                        <i class="fa-solid fa-users"></i>
-                        Tipos de Miembros
-                    </h2>
-                    <button class="btn btn-primary btn-sm" (click)="openTypeModal()">
-                        <i class="fa-solid fa-plus"></i>
-                        Nuevo Tipo
-                    </button>
-                </div>
-
-                <div class="items-list" *ngIf="!isLoadingTypes">
-                    <div class="item-card" *ngFor="let type of types">
-                        <div class="item-info">
-                            <span class="color-badge" [style.background-color]="type.color"></span>
-                            <span class="item-name">{{ type.name }}</span>
-                        </div>
-                        <div class="item-actions">
-                            <button class="action-btn edit" (click)="openTypeModal(type)" title="Editar">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button class="action-btn delete" (click)="deleteType(type)" title="Eliminar">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="empty-state" *ngIf="types.length === 0">
-                        <i class="fa-solid fa-inbox"></i>
-                        <p>No hay tipos registrados</p>
-                    </div>
-                </div>
-
-                <div class="loading-state" *ngIf="isLoadingTypes">
-                    <div class="spinner"></div>
-                    Cargando tipos...
-                </div>
-            </div>
+    <div class="config-grid">
+      <!-- Categories Section -->
+      <div class="config-section">
+        <div class="section-header">
+          <h2>
+            <i class="fa-solid fa-tag"></i>
+            Categorías de Miembros
+          </h2>
+          <button class="btn btn-primary btn-sm" (click)="openCategoryModal()">
+            <i class="fa-solid fa-plus"></i>
+            <span class="btn-text">Nueva Categoría</span>
+          </button>
         </div>
+
+        <div class="items-list" *ngIf="!isLoadingCategories">
+          <div class="item-card-container" *ngFor="let category of categories">
+            <div class="item-card">
+              <div class="item-info">
+                <span class="color-badge" [style.background-color]="category.color"></span>
+                <span class="item-name">{{ category.name }}</span>
+              </div>
+              <div class="item-actions">
+                <button
+                  class="action-btn add-sub"
+                  (click)="openSubCategoryModal(category.id)"
+                  title="Agregar Sub-categoría"
+                >
+                  <i class="fa-solid fa-plus-circle"></i>
+                </button>
+                <button
+                  class="action-btn edit"
+                  (click)="openCategoryModal(category)"
+                  title="Editar"
+                >
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button
+                  class="action-btn delete"
+                  (click)="deleteCategory(category)"
+                  title="Eliminar"
+                >
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sub-categories list -->
+            <div
+              class="sub-items-list"
+              *ngIf="category.subCategories && category.subCategories.length > 0"
+            >
+              <div class="sub-item-card" *ngFor="let sub of category.subCategories">
+                <div class="item-info">
+                  <span class="color-badge sub" [style.background-color]="sub.color"></span>
+                  <span class="item-name sub">{{ sub.name }}</span>
+                </div>
+                <div class="item-actions">
+                  <button
+                    class="action-btn edit"
+                    (click)="openSubCategoryModal(category.id, sub)"
+                    title="Editar Sub-categoría"
+                  >
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button
+                    class="action-btn delete"
+                    (click)="deleteSubCategory(sub)"
+                    title="Eliminar Sub-categoría"
+                  >
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="categories.length === 0">
+            <i class="fa-solid fa-inbox"></i>
+            <p>No hay categorías registradas</p>
+          </div>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoadingCategories">
+          <div class="spinner"></div>
+          Cargando categorías...
+        </div>
+      </div>
+
+      <!-- Types Section -->
+      <div class="config-section">
+        <div class="section-header">
+          <h2>
+            <i class="fa-solid fa-users"></i>
+            Tipos de Miembros
+          </h2>
+          <button class="btn btn-primary btn-sm" (click)="openTypeModal()">
+            <i class="fa-solid fa-plus"></i>
+            <span class="btn-text">Nuevo Tipo</span>
+          </button>
+        </div>
+
+        <div class="items-list" *ngIf="!isLoadingTypes">
+          <div class="item-card" *ngFor="let type of types">
+            <div class="item-info">
+              <span class="color-badge" [style.background-color]="type.color"></span>
+              <span class="item-name">{{ type.name }}</span>
+            </div>
+            <div class="item-actions">
+              <button class="action-btn edit" (click)="openTypeModal(type)" title="Editar">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="action-btn delete" (click)="deleteType(type)" title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="types.length === 0">
+            <i class="fa-solid fa-inbox"></i>
+            <p>No hay tipos registrados</p>
+          </div>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoadingTypes">
+          <div class="spinner"></div>
+          Cargando tipos...
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Category Modal -->
 <div class="modal-overlay" *ngIf="showCategoryModal" (click)="closeCategoryModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2>{{ isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
-            <button class="close-btn" (click)="closeCategoryModal()">&times;</button>
-        </div>
-
-        <div class="modal-body">
-            <form [formGroup]="categoryForm" (submit)="saveCategory()">
-                <div class="soft-input-group">
-                    <label class="soft-label">Nombre de la Categoría</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-tag soft-input-icon"></i>
-                        <input type="text" formControlName="name" class="soft-input" 
-                               placeholder="Ej: Adultos, Jóvenes, Niños..." required>
-                    </div>
-                </div>
-
-                <div class="soft-input-group">
-                    <label class="soft-label">Color de Identificación</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" formControlName="color" class="color-input" required>
-                        <span class="color-preview" [style.background-color]="categoryForm.get('color')?.value">
-                            {{ categoryForm.get('color')?.value }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-muted" (click)="closeCategoryModal()" 
-                            [disabled]="isSavingCategory">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || isSavingCategory">
-                        <i class="fa-solid" [ngClass]="isSavingCategory ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-                        {{ isSavingCategory ? 'Guardando...' : 'Guardar' }}
-                    </button>
-                </div>
-            </form>
-        </div>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
+      <button class="close-btn" (click)="closeCategoryModal()">&times;</button>
     </div>
+
+    <div class="modal-body">
+      <form [formGroup]="categoryForm" (submit)="saveCategory()">
+        <div class="soft-input-group">
+          <label class="soft-label">Nombre de la Categoría</label>
+          <div class="soft-input-wrapper">
+            <i class="fa-solid fa-tag soft-input-icon"></i>
+            <input
+              type="text"
+              formControlName="name"
+              class="soft-input"
+              placeholder="Ej: Adultos, Jóvenes, Niños..."
+              required
+            />
+          </div>
+        </div>
+
+        <div class="soft-input-group">
+          <label class="soft-label">Color de Identificación</label>
+          <div class="color-input-wrapper">
+            <input type="color" formControlName="color" class="color-input" required />
+            <span class="color-preview" [style.background-color]="categoryForm.get('color')?.value">
+              {{ categoryForm.get('color')?.value }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-muted"
+            (click)="closeCategoryModal()"
+            [disabled]="isSavingCategory"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="categoryForm.invalid || isSavingCategory"
+          >
+            <i class="fa-solid" [ngClass]="isSavingCategory ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+            {{ isSavingCategory ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- Type Modal -->
 <div class="modal-overlay" *ngIf="showTypeModal" (click)="closeTypeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2>{{ isEditingType ? 'Editar Tipo' : 'Nuevo Tipo' }}</h2>
-            <button class="close-btn" (click)="closeTypeModal()">&times;</button>
-        </div>
-
-        <div class="modal-body">
-            <form [formGroup]="typeForm" (submit)="saveType()">
-                <div class="soft-input-group">
-                    <label class="soft-label">Nombre del Tipo</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-users soft-input-icon"></i>
-                        <input type="text" formControlName="name" class="soft-input" 
-                               placeholder="Ej: Miembro, Visitante, Líder..." required>
-                    </div>
-                </div>
-
-                <div class="soft-input-group">
-                    <label class="soft-label">Color de Identificación</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" formControlName="color" class="color-input" required>
-                        <span class="color-preview" [style.background-color]="typeForm.get('color')?.value">
-                            {{ typeForm.get('color')?.value }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-muted" (click)="closeTypeModal()" 
-                            [disabled]="isSavingType">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary" [disabled]="typeForm.invalid || isSavingType">
-                        <i class="fa-solid" [ngClass]="isSavingType ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-                        {{ isSavingType ? 'Guardando...' : 'Guardar' }}
-                    </button>
-                </div>
-            </form>
-        </div>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditingType ? 'Editar Tipo' : 'Nuevo Tipo' }}</h2>
+      <button class="close-btn" (click)="closeTypeModal()">&times;</button>
     </div>
+
+    <div class="modal-body">
+      <form [formGroup]="typeForm" (submit)="saveType()">
+        <div class="soft-input-group">
+          <label class="soft-label">Nombre del Tipo</label>
+          <div class="soft-input-wrapper">
+            <i class="fa-solid fa-users soft-input-icon"></i>
+            <input
+              type="text"
+              formControlName="name"
+              class="soft-input"
+              placeholder="Ej: Miembro, Visitante, Líder..."
+              required
+            />
+          </div>
+        </div>
+
+        <div class="soft-input-group">
+          <label class="soft-label">Color de Identificación</label>
+          <div class="color-input-wrapper">
+            <input type="color" formControlName="color" class="color-input" required />
+            <span class="color-preview" [style.background-color]="typeForm.get('color')?.value">
+              {{ typeForm.get('color')?.value }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-muted"
+            (click)="closeTypeModal()"
+            [disabled]="isSavingType"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="typeForm.invalid || isSavingType"
+          >
+            <i class="fa-solid" [ngClass]="isSavingType ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+            {{ isSavingType ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- Sub-category Modal -->
 <div class="modal-overlay" *ngIf="showSubCategoryModal" (click)="closeSubCategoryModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2>{{ isEditingSubCategory ? 'Editar Sub-categoría' : 'Nueva Sub-categoría' }}</h2>
-            <button class="close-btn" (click)="closeSubCategoryModal()">&times;</button>
-        </div>
-
-        <div class="modal-body">
-            <form [formGroup]="subCategoryForm" (submit)="saveSubCategory()">
-                <div class="soft-input-group">
-                    <label class="soft-label">Nombre de la Sub-categoría</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-tag soft-input-icon"></i>
-                        <input type="text" formControlName="name" class="soft-input" 
-                               placeholder="Ej: Staff, Invitados, etc..." required>
-                    </div>
-                </div>
-
-                <div class="soft-input-group">
-                    <label class="soft-label">Color de Identificación</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" formControlName="color" class="color-input" required>
-                        <span class="color-preview" [style.background-color]="subCategoryForm.get('color')?.value">
-                            {{ subCategoryForm.get('color')?.value }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-muted" (click)="closeSubCategoryModal()" 
-                            [disabled]="isSavingSubCategory">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary" [disabled]="subCategoryForm.invalid || isSavingSubCategory">
-                        <i class="fa-solid" [ngClass]="isSavingSubCategory ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-                        {{ isSavingSubCategory ? 'Guardando...' : 'Guardar' }}
-                    </button>
-                </div>
-            </form>
-        </div>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditingSubCategory ? 'Editar Sub-categoría' : 'Nueva Sub-categoría' }}</h2>
+      <button class="close-btn" (click)="closeSubCategoryModal()">&times;</button>
     </div>
+
+    <div class="modal-body">
+      <form [formGroup]="subCategoryForm" (submit)="saveSubCategory()">
+        <div class="soft-input-group">
+          <label class="soft-label">Nombre de la Sub-categoría</label>
+          <div class="soft-input-wrapper">
+            <i class="fa-solid fa-tag soft-input-icon"></i>
+            <input
+              type="text"
+              formControlName="name"
+              class="soft-input"
+              placeholder="Ej: Staff, Invitados, etc..."
+              required
+            />
+          </div>
+        </div>
+
+        <div class="soft-input-group">
+          <label class="soft-label">Color de Identificación</label>
+          <div class="color-input-wrapper">
+            <input type="color" formControlName="color" class="color-input" required />
+            <span
+              class="color-preview"
+              [style.background-color]="subCategoryForm.get('color')?.value"
+            >
+              {{ subCategoryForm.get('color')?.value }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-muted"
+            (click)="closeSubCategoryModal()"
+            [disabled]="isSavingSubCategory"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="subCategoryForm.invalid || isSavingSubCategory"
+          >
+            <i
+              class="fa-solid"
+              [ngClass]="isSavingSubCategory ? 'fa-spinner fa-spin' : 'fa-save'"
+            ></i>
+            {{ isSavingSubCategory ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

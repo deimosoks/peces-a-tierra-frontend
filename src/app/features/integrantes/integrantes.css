@@ -801,6 +801,16 @@
   transform: translateX(16px);
 }
 
+.status-switch input:disabled + .slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #cbd5e1 !important;
+}
+
+.status-switch input:disabled + .slider:before {
+  background-color: #f1f5f9;
+}
+
 /* Mini Status Switch for Actions Column */
 .status-switch-mini {
   display: inline-block;
@@ -846,6 +856,16 @@
 
 .status-switch-mini input:checked + .slider:before {
   transform: translateX(12px);
+}
+
+.status-switch-mini input:disabled + .slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #cbd5e1 !important;
+}
+
+.status-switch-mini input:disabled + .slider:before {
+  background-color: #f1f5f9;
 }
 
 /* Address Cell Truncation & wrapping */
@@ -1867,3 +1887,15 @@
   margin-left: 0.5rem;
 }
 
+/* Gender Badges */
+.badge-blue {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.badge-pink {
+    background-color: rgba(236, 72, 153, 0.1);
+    color: #db2777;
+    border: 1px solid rgba(219, 39, 119, 0.2);
+}

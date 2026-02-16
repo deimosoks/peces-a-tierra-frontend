@@ -308,6 +308,8 @@ export class Usuarios implements OnInit {
     // Actions
     // Actions
     toggleStatus(user: User) {
+        if (!this.can('UPDATE_USER')) return;
+
         const originalStatus = user.active;
         const targetStatus = !originalStatus;
 

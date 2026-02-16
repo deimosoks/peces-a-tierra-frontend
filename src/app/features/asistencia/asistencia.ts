@@ -9,6 +9,8 @@ import { IglesiaService, AttendanceCreateDto } from '../../core/models/asistenci
 import { Integrante, MemberFilterRequestDto, MemberPagesResponseDto } from '../../core/models/integrante.model';
 import { MemberCategoryResponseDto } from '../../core/models/member-config.model';
 import { MemberConfigService } from '../../core/services/member-config.service';
+import { ServiceEventService } from '../../core/services/service-event.service';
+import { ServiceEventResponseDto } from '../../core/models/service-event.model';
 
 @Component({
   selector: 'app-asistencia',
@@ -22,6 +24,7 @@ export class Asistencia implements OnInit {
   private integranteService = inject(IntegranteService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
+  private serviceEventService = inject(ServiceEventService);
   
   // Filters & State
   serviceDate: string = this.getNowForInput();
@@ -29,6 +32,16 @@ export class Asistencia implements OnInit {
   isManualAttendanceTime: boolean = false;
   selectedServiceId: string = '';
   searchQuery: string = '';
+
+  // Event Logic
+  // Event Logic
+  isAdmin = false;
+  activeEvents: ServiceEventResponseDto[] = [];
+  selectedActiveEvent: ServiceEventResponseDto | null = null;
+  pastEvents: ServiceEventResponseDto[] = [];
+  showPastEvents = false;
+  noActiveEvent = false;
+  selectedEventId = '';
 
   // Note System
   memberNotes: Map<string, string> = new Map();
@@ -57,6 +70,12 @@ export class Asistencia implements OnInit {
   selectedTypes: string[] = [];
   selectedCategories: string[] = [];
   selectedSubCategories: string[] = [];
+  selectedGender: string = '';
+  
+  availableGenders = [
+    { value: 'HOMBRE', label: 'Hombre' },
+    { value: 'MUJER', label: 'Mujer' }
+  ];
   
   // Boolean Filters
   hasCc: boolean | null = null;
@@ -73,6 +92,7 @@ export class Asistencia implements OnInit {
   tempSelectedTypes: string[] = [];
   tempSelectedCategories: string[] = [];
   tempSelectedSubCategories: string[] = [];
+  tempSelectedGender: string = '';
   tempHasCc: boolean | null = null;
   tempHasCellphone: boolean | null = null;
   tempHasAddress: boolean | null = null;
@@ -85,9 +105,111 @@ export class Asistencia implements OnInit {
   constructor(private memberConfigService: MemberConfigService) {}
 
   ngOnInit() {
+    this.checkPermissions();
     this.loadServices();
     this.loadMemberConfigs();
     this.loadMembers();
+    this.loadActiveEvent();
+  }
+
+  checkPermissions() {
+    this.isAdmin = this.authService.can('ADMINISTRATOR');
+  }
+
+  loadActiveEvent() {
+    this.serviceEventService.getActiveEvent().subscribe({
+      next: (events) => {
+        this.activeEvents = events || [];
+        
+        if (this.activeEvents.length === 0) {
+            this.noActiveEvent = true;
+            this.selectedActiveEvent = null;
+        } else if (this.activeEvents.length === 1) {
+            this.noActiveEvent = false;
+            this.selectActiveEvent(this.activeEvents[0]);
+        } else {
+            // Multiple events: Allow user to select
+            this.noActiveEvent = false;
+            this.selectedActiveEvent = null;
+        }
+      },
+      error: (err) => {
+        console.error('Error loading active events', err);
+        this.noActiveEvent = true;
+        this.activeEvents = [];
+        this.selectedActiveEvent = null;
+      }
+    });
+  }
+
+  selectActiveEvent(event: ServiceEventResponseDto) {
+      this.selectedActiveEvent = event;
+      this.selectedEventId = event.id;
+      this.selectServiceFromEvent(event);
+  }
+
+  clearActiveEventSelection() {
+      this.selectedActiveEvent = null;
+      this.selectedEventId = '';
+      this.selectedServiceId = ''; 
+  }
+
+  loadAllEvents() {
+    this.serviceEventService.findAll().subscribe({
+      next: (events) => {
+        this.pastEvents = events;
+      },
+      error: (err) => {
+        console.error('Error loading events', err);
+        this.notificationService.error('Error al cargar eventos pasados');
+      }
+    });
+  }
+
+  togglePastEvents() {
+    this.showPastEvents = !this.showPastEvents;
+    if (this.showPastEvents) {
+        this.loadAllEvents();
+        this.selectedEventId = '';
+        this.selectedActiveEvent = null; // Clear active event to allow selection
+        this.noActiveEvent = false; // Hide warning when in manual mode
+        this.formReset();
+    } else {
+        // Switch back to active event mode
+        this.loadActiveEvent();
+    }
+  }
+
+  onEventSelect(eventId: string) {
+    this.selectedEventId = eventId;
+    const event = this.pastEvents.find(e => e.id === eventId);
+    if (event) {
+        this.selectServiceFromEvent(event);
+    }
+  }
+
+  private selectServiceFromEvent(event: ServiceEventResponseDto) {
+    // Attempt to match service by name
+    const match = this.services.find(s => s.name === event.serviceName);
+    if (match) {
+        this.selectedServiceId = match.id;
+    }
+    
+    // Set dates from event
+    if (event.startDateTime) {
+        // Extract date part YYYY-MM-DD
+        const datePart = event.startDateTime.substring(0, 10);
+        // Extract time part HH:mm
+        const timePart = event.startDateTime.substring(11, 16);
+        
+        this.serviceDate = `${datePart}T${timePart}`;
+        this.attendanceDate = this.getNowForInput(); // default attendance time to now
+    }
+  }
+
+  private formReset() {
+      this.selectedServiceId = '';
+      this.selectedEventId = '';
   }
 
   loadMemberConfigs() {
@@ -142,7 +264,8 @@ export class Asistencia implements OnInit {
       hasBirthdate: this.hasBirthdate,
       ageFilterRange1: this.ageFilterRange1,
       ageFilterRange2: this.ageFilterRange2,
-      location: this.filterLocation || undefined
+      location: this.filterLocation || undefined,
+      gender: this.selectedGender || undefined
     };
 
     if (this.showAdvancedFiltersModal) {
@@ -168,6 +291,7 @@ export class Asistencia implements OnInit {
     this.tempSelectedTypes = [...this.selectedTypes];
     this.tempSelectedCategories = [...this.selectedCategories];
     this.tempSelectedSubCategories = [...this.selectedSubCategories];
+    this.tempSelectedGender = this.selectedGender;
     this.tempHasCc = this.hasCc;
     this.tempHasCellphone = this.hasCellphone;
     this.tempHasAddress = this.hasAddress;
@@ -186,6 +310,7 @@ export class Asistencia implements OnInit {
     this.selectedTypes = [...this.tempSelectedTypes];
     this.selectedCategories = [...this.tempSelectedCategories];
     this.selectedSubCategories = [...this.tempSelectedSubCategories];
+    this.selectedGender = this.tempSelectedGender;
     this.hasCc = this.tempHasCc;
     this.hasCellphone = this.tempHasCellphone;
     this.hasAddress = this.tempHasAddress;
@@ -203,6 +328,7 @@ export class Asistencia implements OnInit {
     this.selectedTypes = [];
     this.selectedCategories = [];
     this.selectedSubCategories = [];
+    this.selectedGender = '';
     this.hasCc = null;
     this.hasCellphone = null;
     this.hasAddress = null;
@@ -215,6 +341,7 @@ export class Asistencia implements OnInit {
     this.tempSelectedTypes = [];
     this.tempSelectedCategories = [];
     this.tempSelectedSubCategories = [];
+    this.tempSelectedGender = '';
     this.tempHasCc = null;
     this.tempHasCellphone = null;
     this.tempHasAddress = null;
@@ -306,8 +433,8 @@ export class Asistencia implements OnInit {
   }
 
   save() {
-    if (!this.selectedServiceId) {
-      this.notificationService.warning('Por favor seleccione un servicio');
+    if (!this.selectedEventId) {
+      this.notificationService.warning('Por favor seleccione un evento');
       return;
     }
     if (this.selectedMemberIds.size === 0) {
@@ -330,7 +457,7 @@ export class Asistencia implements OnInit {
       : this.attendanceDate;
 
     const attendances: AttendanceCreateDto[] = Array.from(this.selectedMemberIds).map(memberId => ({
-      serviceId: this.selectedServiceId,
+      serviceEventId: this.selectedEventId,
       memberId: memberId,
       serviceDate: formattedServiceDate,
       attendanceDate: formattedAttendanceDate,

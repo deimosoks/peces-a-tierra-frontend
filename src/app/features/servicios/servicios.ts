@@ -117,6 +117,8 @@ export class Servicios implements OnInit {
   }
 
   toggleServiceStatus(service: IglesiaService) {
+    if (!this.can('UPDATE_SERVICE')) return;
+
     const newStatus = !service.active;
     this.asistenciaService.toggleServiceStatus(service.id, newStatus).subscribe({
       next: (res) => {

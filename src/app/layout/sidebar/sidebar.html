@@ -46,20 +46,28 @@
             <h3 class="section-title">ADMINISTRACIÓN</h3>
             <a routerLink="/usuarios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_USER_PANEL')" (click)="close()">
                 <i class="fa-solid fa-user-gear"></i>
-                <span>Usuarios del sistema</span>
+                <span>Usuarios del Sistema</span>
             </a>
             <a routerLink="/roles" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_ROLE_PANEL')" (click)="close()">
-                <i class="fa-solid fa-id-card-clip"></i>
-                <span>Roles y permisos</span>
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Roles y Permisos</span>
             </a>
             <a routerLink="/servicios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_SERVICE_PANEL')" (click)="close()">
                 <i class="fa-solid fa-church"></i>
                 <span>Gestión de Servicios</span>
             </a>
+            <a routerLink="/eventos" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_EVENTS_PANEL')" (click)="close()">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Eventos</span>
+            </a>
             <a routerLink="/asistencias/administrar" routerLinkActive="active" class="nav-item"
                 *ngIf="can('MANAGE_ATTENDANCE')" (click)="close()">
                 <i class="fa-solid fa-clipboard-list"></i>
                 <span>Administrar Asistencias</span>
+            </a>
+            <a routerLink="/sedes" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_BRANCH_PANEL')" (click)="close()">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>Sedes</span>
             </a>
             <a routerLink="/configuracion" routerLinkActive="active" class="nav-item" *ngIf="can('ADMINISTRATOR')" (click)="close()">
                 <i class="fa-solid fa-gear"></i>

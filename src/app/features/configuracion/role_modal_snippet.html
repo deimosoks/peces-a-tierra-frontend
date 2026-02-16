@@ -1,0 +1,75 @@
+<!-- Role Modal -->
+<div class="modal-overlay" *ngIf="showRoleModal" (click)="closeRoleModal()">
+  <div class="modal-content role-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditingRole ? 'Editar Rol' : 'Nuevo Rol' }}</h2>
+      <button class="close-btn" (click)="closeRoleModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="roleForm" (submit)="saveRole()">
+        <div class="form-section">
+          <label class="section-label">Información Básica</label>
+          <div class="form-grid">
+            <div class="soft-input-group">
+              <label class="soft-label">Nombre del Rol</label>
+              <div class="soft-input-wrapper">
+                <i class="fa-solid fa-shield-cat soft-input-icon"></i>
+                <input type="text" formControlName="name" class="soft-input" placeholder="Ej: Administrador" required>
+              </div>
+            </div>
+
+            <div class="soft-input-group">
+              <label class="soft-label">Color Identificador</label>
+              <div class="color-input-wrapper">
+                <input type="color" formControlName="color" class="color-input" required>
+                <span class="color-preview" [style.background-color]="roleForm.get('color')?.value">
+                  {{ roleForm.get('color')?.value }}
+                </span>
+              </div>
+            </div>
+
+            <div class="soft-input-group full-width">
+              <label class="soft-label">Descripción</label>
+              <div class="soft-input-wrapper">
+                <i class="fa-solid fa-align-left soft-input-icon"></i>
+                <textarea formControlName="description" class="soft-input" rows="2"
+                  placeholder="Describa brevemente las responsabilidades de este rol"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section perms-section">
+          <label class="section-label">Matriz de Permisos</label>
+          <div class="perms-grid">
+            <div class="perm-category" *ngFor="let group of groupedPermissions">
+              <h3>{{ group.category }}</h3>
+              <div class="perm-item" *ngFor="let perm of group.permissions"
+                [class.active]="isPermissionSelected(perm.id)" (click)="togglePermission(perm.id)">
+                <div class="perm-checkbox">
+                  <i class="fa-solid fa-check" *ngIf="isPermissionSelected(perm.id)"></i>
+                </div>
+                <div class="perm-info">
+                  <span class="perm-name">{{ perm.name }}</span>
+                  <span class="perm-desc">{{ perm.description }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-muted" (click)="closeRoleModal()" [disabled]="isSavingRole">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="roleForm.invalid || isSavingRole">
+            <i class="fa-solid" [ngClass]="isSavingRole ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+            {{ isSavingRole ? (isEditingRole ? 'Actualizando...' : 'Guardando...') : (isEditingRole ?
+            'Actualizar Rol' : 'Guardar') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

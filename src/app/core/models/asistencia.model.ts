@@ -9,33 +9,28 @@ export interface IglesiaService {
 }
 
 export interface AttendanceCreateDto {
-    serviceId: string;
+    serviceEventId: string;
     memberId: string;
     serviceDate: string; // LocalDateTime string format
     attendanceDate: string; // LocalDateTime string format
     note?: string;
 }
 
-export interface AttendanceIdResponseDto {
-    serviceId: string;
-    memberId: string;
-    serviceDate: string;
-}
-
 export interface AttendanceResponseDto {
-    id: AttendanceIdResponseDto;
+    id: string;
     serviceName: string;
     memberCompleteName: string;
     memberCategory: MemberCategoryResponseDto;
     memberType: MemberTypeResponseDto;
-    subCategory?: MemberSubCategoryResponseDto;
     attendanceDate: string;
+    branchName: string;
     invalid: boolean;
     note: string;
     registeredBy: string;
     invalidReason?: string;
     invalidAt?: string;
     invalidatedBy?: string;
+    subCategory?: MemberSubCategoryResponseDto;
 }
 
 export interface AttendancePagesResponseDto {
@@ -44,21 +39,22 @@ export interface AttendancePagesResponseDto {
 }
 
 export interface AttendanceFiltersRequestDto {
-    serviceId?: string;
+    serviceEventId?: string; // Updated from serviceId
     startDate?: string;
     endDate?: string;
+    branchId?: string; // Added branchId
     memberId?: string;
 }
 
 export interface AttendanceInvalidateDto {
-    attendanceId: AttendanceIdResponseDto;
+    attendanceId: string;
     invalidReason: string;
 }
 
 export interface Asistencia {
     id?: string;
     memberId: string;
-    serviceId: string;
+    serviceEventId: string; // Updated
     attendanceDate: string;
     // UI helper
     presente: boolean;

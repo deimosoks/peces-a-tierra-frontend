@@ -177,6 +177,16 @@
     border-radius: 50%;
 }
 
+.status-switch input:disabled + .slider {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #cbd5e1 !important;
+}
+
+.status-switch input:disabled + .slider:before {
+    background-color: #f1f5f9;
+}
+
 .status-switch input:checked + .slider {
     background-color: #2563eb;
 }

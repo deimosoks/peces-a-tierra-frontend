@@ -376,6 +376,16 @@ input:checked+.slider:before {
     transform: translateX(16px);
 }
 
+.status-switch input:disabled + .slider {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #cbd5e1 !important;
+}
+
+.status-switch input:disabled + .slider:before {
+    background-color: #f1f5f9;
+}
+
 .slider.round {
     border-radius: 20px;
 }

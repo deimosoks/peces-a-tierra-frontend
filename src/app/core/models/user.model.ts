@@ -9,6 +9,7 @@ export interface User {
     updateAt?: string;
     memberResponseDto: Integrante;
     roles: Role[];
+    branchName?: string;
 }
 
 export interface UserRequestDto {

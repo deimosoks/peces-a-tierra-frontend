@@ -1,0 +1,132 @@
+<div class="fade-in">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Sedes</h1>
+            <p class="text-muted">Gestión de sedes y ubicaciones</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" (click)="openModal()" *ngIf="canCreate">
+                <i class="fa-solid fa-plus"></i>
+                Nueva Sede
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <p>Cargando sedes...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && branches.length === 0">
+        <div class="empty-icon">
+            <i class="fa-solid fa-map-location-dot"></i>
+        </div>
+        <h3>No hay sedes registradas</h3>
+        <p>Comienza creando una nueva sede para gestionar las ubicaciones.</p>
+        <button class="btn btn-primary" (click)="openModal()" *ngIf="canCreate">
+            <i class="fa-solid fa-plus"></i>
+            Crear Primera Sede
+        </button>
+    </div>
+
+    <!-- Content -->
+    <div class="grid-container" *ngIf="!isLoading && branches.length > 0">
+        <div class="card branch-card" *ngFor="let branch of branches">
+            <div class="card-header branch-header">
+                <div>
+                    <h3 class="branch-name">{{ branch.name }}</h3>
+                </div>
+                <div class="branch-actions">
+                    <button class="icon-btn" (click)="openModal(branch)" title="Editar" *ngIf="canUpdate">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="icon-btn danger" (click)="deleteBranch(branch)" title="Eliminar" *ngIf="canDelete">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="branch-info">
+                    <div class="info-item" *ngIf="branch.address">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>{{ branch.address }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="branch.city">
+                        <i class="fa-solid fa-city"></i>
+                        <span>{{ branch.city }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="branch.cellphone">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>{{ branch.cellphone }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ isEditing ? 'Editar Sede' : 'Nueva Sede' }}</h2>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <form [formGroup]="form" (submit)="save()">
+                <div class="form-grid">
+                    <div class="soft-input-group full-width">
+                        <label class="soft-label">Nombre de la Sede</label>
+                        <div class="soft-input-wrapper">
+                            <i class="fa-solid fa-building soft-input-icon"></i>
+                            <input type="text" formControlName="name" class="soft-input" 
+                                   placeholder="Ej: Sede Central, Norte..." required>
+                        </div>
+                    </div>
+
+                    <div class="soft-input-group full-width">
+                        <label class="soft-label">Dirección</label>
+                        <div class="soft-input-wrapper">
+                            <i class="fa-solid fa-map-pin soft-input-icon"></i>
+                            <input type="text" id="googleAddress" formControlName="address" class="soft-input" 
+                                   placeholder="Dirección completa" required>
+                        </div>
+                    </div>
+
+                    <div class="soft-input-group">
+                        <label class="soft-label">Ciudad</label>
+                        <div class="soft-input-wrapper">
+                            <i class="fa-solid fa-city soft-input-icon"></i>
+                            <input type="text" formControlName="city" class="soft-input" 
+                                   placeholder="Ciudad" required>
+                        </div>
+                    </div>
+
+                    <div class="soft-input-group">
+                        <label class="soft-label">Celular</label>
+                        <div class="soft-input-wrapper">
+                            <i class="fa-solid fa-phone soft-input-icon"></i>
+                            <input type="tel" formControlName="cellphone" class="soft-input" 
+                                   placeholder="Número de celular" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-muted" (click)="closeModal()" [disabled]="isSaving">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving">
+                        <i class="fa-solid" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                        {{ isSaving ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

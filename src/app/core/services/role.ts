@@ -78,7 +78,18 @@ export class RoleService {
             { id: 'BAPTISM_INVALIDATE', name: 'Invalidar Bautismo', description: 'Permite invalidar registros de bautismo', category: 'BAPTISM' },
 
             // ADMIN
-            { id: 'ADMINISTRATOR', name: 'Administrador Total', description: 'Acceso total a todas las funciones del sistema', category: 'ADMIN' }
+            { id: 'ADMINISTRATOR', name: 'Administrador Total', description: 'Acceso total a todas las funciones del sistema', category: 'ADMIN' },
+
+            // BRANCHES (SEDES)
+            { id: 'VIEW_BRANCH_PANEL', name: 'Ver Panel de Sedes', description: 'Acceso al panel de gestión de sedes', category: 'BRANCH' },
+            { id: 'BRANCH_CREATE', name: 'Crear Sede', description: 'Permite registrar nuevas sedes', category: 'BRANCH' },
+            { id: 'BRANCH_UPDATE', name: 'Actualizar Sede', description: 'Permite editar información de sedes', category: 'BRANCH' },
+            { id: 'BRANCH_DELETE', name: 'Eliminar Sede', description: 'Permite eliminar sedes del sistema', category: 'BRANCH' },
+
+            // SERVICE EVENTS
+            { id: 'VIEW_EVENTS_PANEL', name: 'Ver Panel de Eventos', description: 'Acceso al calendario de eventos', category: 'EVENT' },
+            { id: 'REGISTER_EVENTS', name: 'Registrar Eventos', description: 'Permite programar nuevos eventos de servicio', category: 'EVENT' },
+            { id: 'CANCEL_EVENTS', name: 'Cancelar Eventos', description: 'Permite cancelar eventos programados', category: 'EVENT' }
         ]);
     }
 }

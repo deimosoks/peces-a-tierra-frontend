@@ -63,15 +63,11 @@
                         <td><strong>{{ s.name }}</strong></td>
                         <td class="text-muted desktop-only">{{ s.description }}</td>
                         <td class="text-center desktop-only">
-                            <label class="status-switch" *ngIf="can('UPDATE_SERVICE')" 
-                                appSafeClick (safeClick)="toggleServiceStatus(s)">
+                            <label class="status-switch" appSafeClick (safeClick)="toggleServiceStatus(s)">
                                 <input type="checkbox" [checked]="s.active" 
                                     [disabled]="!can('UPDATE_SERVICE')">
                                 <span class="slider round"></span>
                             </label>
-                            <span *ngIf="!can('UPDATE_SERVICE')" class="status-badge" [class.active]="s.active">
-                                {{ s.active ? 'Activo' : 'Inactivo' }}
-                            </span>
                         </td>
                         <td class="text-center">
                             <div class="actions-mini justify-center">

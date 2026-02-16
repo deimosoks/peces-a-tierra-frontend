@@ -56,6 +56,7 @@
                         <th>USUARIO DEL SISTEMA</th>
                         <th class="desktop-only">PERSONA ENLAZADA</th>
                         <th class="desktop-only text-center">ROLES</th>
+                        <th class="desktop-only">SEDE</th>
                         <th class="desktop-only text-center">ESTADO</th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
@@ -90,6 +91,9 @@
                                     {{ role.name }}
                                 </span>
                             </div>
+                        </td>
+                        <td class="desktop-only">
+                            <span class="text-muted">{{ user.branchName || '---' }}</span>
                         </td>
                         <td class="desktop-only text-center">
                             <label class="status-switch" appSafeClick (safeClick)="toggleStatus(user)">
@@ -321,6 +325,9 @@
                 <div class="user-main-info">
                     <h3>{{ selectedUser.username }}</h3>
                     <span class="member-badge">{{ selectedUser.memberResponseDto.completeName }}</span>
+                    <span class="text-muted small d-block" *ngIf="selectedUser.branchName" style="margin-top: 0.2rem;">
+                        <i class="fa-solid fa-building"></i> {{ selectedUser.branchName }}
+                    </span>
                     <div class="status-badge" [class.active]="selectedUser.active">
                         {{ selectedUser.active ? 'Activo' : 'Inactivo' }}
                     </div>

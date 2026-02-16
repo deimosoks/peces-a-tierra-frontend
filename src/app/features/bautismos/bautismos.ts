@@ -12,6 +12,9 @@ import { CertificateService } from '../../core/services/certificate.service';
 
 declare var google: any;
 
+import { BranchService } from '../../core/services/branch.service';
+import { Branch } from '../../core/models/branch.model';
+
 @Component({
   selector: 'app-bautismos',
   standalone: true,
@@ -27,9 +30,14 @@ export class Bautismos implements OnInit {
   private confirmationService = inject(ConfirmationService);
   private notificationService = inject(NotificationService);
   private certificateService = inject(CertificateService);
+  private branchService = inject(BranchService);
   private cdr = inject(ChangeDetectorRef);
 
   baptisms: BaptismResponseDto[] = [];
+  branches: Branch[] = [];
+  permissions: any = {};
+  isAdmin = false;
+
   totalPages = 0;
   currentPage = 0;
   isLoading = false;
@@ -41,6 +49,7 @@ export class Bautismos implements OnInit {
   filterEndDate: Date | null = null;
   filterQuery = '';
   filterActive = true;
+  filterBranchId = '';
 
   // Member search
   memberSearchQuery = '';
@@ -52,7 +61,9 @@ export class Bautismos implements OnInit {
   showCreateModal = false;
   showInvalidateModal = false;
   showDetailsModal = false;
-  showMobileFilterModal = false;
+  showMobileFilterModal = false; // Reusing as main filter modal or renaming
+  showFilterModal = false; // Main filter modal
+
   selectedBaptism?: BaptismResponseDto;
 
   baptismForm!: FormGroup;
@@ -60,9 +71,24 @@ export class Bautismos implements OnInit {
   isSaving = false;
 
   ngOnInit() {
+    this.checkPermissions();
     this.initForms();
     this.loadBaptisms();
     this.setupClickOutsideListener();
+    if (this.isAdmin) {
+        this.loadBranches();
+    }
+  }
+
+  checkPermissions() {
+      this.isAdmin = this.authService.can('ADMINISTRATOR');
+  }
+
+  loadBranches() {
+      this.branchService.findAll().subscribe({
+          next: (data) => this.branches = data,
+          error: () => this.notificationService.error('Error al cargar las sedes')
+      });
   }
 
   can(permission: string): boolean {
@@ -95,7 +121,8 @@ export class Bautismos implements OnInit {
       startDate: this.filterStartDate || undefined,
       endDate: this.filterEndDate || undefined,
       query: this.filterQuery || undefined,
-      active: this.filterActive
+      active: this.filterActive,
+      branchId: this.filterBranchId || undefined
     };
 
     this.baptismService.search(filterRequest, this.currentPage).subscribe({
@@ -123,8 +150,17 @@ export class Bautismos implements OnInit {
     this.filterEndDate = null;
     this.filterQuery = '';
     this.filterActive = true;
+    this.filterBranchId = '';
     this.currentPage = 0;
     this.loadBaptisms();
+  }
+
+  openFilterModal() {
+      this.showFilterModal = true;
+  }
+
+  closeFilterModal() {
+      this.showFilterModal = false;
   }
 
   // Pagination

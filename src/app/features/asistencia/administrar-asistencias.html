@@ -3,17 +3,20 @@
     <div class="card premium-card">
         <!-- Filters -->
         <div class="asistencia-header-actions">
-            <button class="btn btn-primary btn-filter-trigger" (click)="openFilterModal()">
-                <i class="fa-solid fa-filter"></i>
+            <button class="btn btn-action-soft" (click)="openFilterModal()">
+                <i class="fa-solid fa-sliders"></i>
                 Filtros Avanzados
             </button>
             <div class="active-filters-chips"
-                *ngIf="selectedMemberName || filters.serviceId || filters.startDate || filters.endDate">
+                *ngIf="selectedMemberName || filters.serviceEventId || filters.startDate || filters.endDate || filters.branchId">
                 <span class="filter-chip" *ngIf="selectedMemberName">
                     {{ selectedMemberName }}
                     <button (click)="clearMemberFilter()">&times;</button>
                 </span>
-                <!-- Could add more chips here for other filters if desired -->
+                <span class="filter-chip" *ngIf="filters.branchId">
+                     <i class="fa-solid fa-building"></i> {{ getBranchName(filters.branchId) }}
+                     <button (click)="filters.branchId = ''; onSearch()">&times;</button>
+                </span>
             </div>
         </div>
 
@@ -24,6 +27,7 @@
                     <tr>
                         <th>INTEGRANTE</th>
                         <th>SERVICIO</th>
+                        <th>SEDE</th>
                         <th class="desktop-only">INICIO DE SERVICIO</th>
                         <th class="desktop-only">HORA DE LLEGADA</th>
                         <th class="text-center desktop-only">ESTADO</th>
@@ -47,7 +51,8 @@
                             </div>
                         </td>
                         <td>{{ att.serviceName }}</td>
-                        <td class="desktop-only">{{ att.id.serviceDate | date:'short' }}</td>
+                        <td>{{ att.branchName }}</td>
+                        <td class="desktop-only">{{ att.attendanceDate | date:'short' }}</td>
                         <td class="desktop-only">{{ att.attendanceDate | date:'shortTime' }}</td>
                         <td class="text-center desktop-only">
                             <span class="status-indicator" [class.invalid]="att.invalid">
@@ -69,11 +74,11 @@
 
                                 <!-- Mobile Actions -->
                                 <div class="mobile-only mobile-actions-wrapper">
-                                    <button class="menu-trigger" (click)="toggleDropdown($event, att.id.memberId + att.id.serviceDate)">
+                                    <button class="menu-trigger" (click)="toggleDropdown($event, att.id)">
                                         <i class="fa-solid fa-ellipsis-vertical"></i>
                                     </button>
 
-                                    <div class="action-dropdown" *ngIf="activeDropdownId === (att.id.memberId + att.id.serviceDate)" (click)="$event.stopPropagation()">
+                                    <div class="action-dropdown" *ngIf="activeDropdownId === att.id" (click)="$event.stopPropagation()">
                                         <div class="dropdown-header-mobile">
                                             <span class="member-name-small">{{ att.memberCompleteName }}</span>
                                         </div>
@@ -152,6 +157,10 @@
                     <label>Servicio:</label>
                     <span>{{ attendanceDetails.serviceName }}</span>
                 </div>
+                <div class="detail-item full">
+                    <label>Sede:</label>
+                    <span>{{ attendanceDetails.branchName }}</span>
+                </div>
                 <div class="detail-item">
                     <label>Categoría:</label>
                     <span class="badge badge-sm" [style.background-color]="attendanceDetails.memberCategory.color" [ngClass]="getBadgeClass(attendanceDetails.memberCategory)">
@@ -172,7 +181,7 @@
                 </div>
                 <div class="detail-item">
                     <label>Fecha del Servicio:</label>
-                    <span>{{ attendanceDetails.id.serviceDate | date:'medium' }}</span>
+                    <span>{{ attendanceDetails.attendanceDate | date:'medium' }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Hora de Llegada:</label>
@@ -272,12 +281,24 @@
                     </div>
                 </div>
 
+                <!-- Branch Selector (Admin Only) -->
+                <div class="input-with-label" *ngIf="isAdmin">
+                    <label>Sede</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-building"></i>
+                        <select [(ngModel)]="filters.branchId" class="premium-input">
+                            <option value="">Todas las sedes</option>
+                            <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Service Selector -->
                 <div class="input-with-label">
                     <label>Servicio</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-church"></i>
-                        <select [(ngModel)]="filters.serviceId" class="premium-input">
+                        <select [(ngModel)]="filters.serviceEventId" class="premium-input">
                             <option value="">Todos los servicios</option>
                             <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
                         </select>

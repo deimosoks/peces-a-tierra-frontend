@@ -10,25 +10,30 @@ import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante
 import { MemberCategoryResponseDto, MemberTypeResponseDto } from '../../core/models/member-config.model';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
+import { BranchService } from '../../core/services/branch.service'; // Added import
+import { Branch } from '../../core/models/branch.model'; // Added import
+
 @Component({
   selector: 'app-administrar-asistencias',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './administrar-asistencias.html',
-  styleUrl: './asistencia.css', // Reusing existing styles
+  styleUrl: './asistencia.css',
 })
 export class AdministrarAsistencias implements OnInit {
   private asistenciaService = inject(AsistenciaService);
   private authService = inject(AuthService);
   private integranteService = inject(IntegranteService);
   private notificationService = inject(NotificationService);
+  private branchService = inject(BranchService); // Injected
 
   // Filters & State
   filters: AttendanceFiltersRequestDto = {
-    serviceId: '',
+    serviceEventId: '',
     startDate: '',
     endDate: '',
-    memberId: ''
+    memberId: '',
+    branchId: '' // Added branchId
   };
   showFilterModal = false;
 
@@ -40,7 +45,10 @@ export class AdministrarAsistencias implements OnInit {
   private memberSearchSubject = new Subject<string>();
 
   services: IglesiaService[] = [];
+  branches: Branch[] = []; // Added branches array
   attendances: AttendanceResponseDto[] = [];
+
+  isAdmin = false; // Added isAdmin
 
   // Pagination
   currentPage = 0;
@@ -59,9 +67,24 @@ export class AdministrarAsistencias implements OnInit {
   activeDropdownId: string | null = null;
 
   ngOnInit() {
+    this.checkPermissions();
     this.loadServices();
     this.loadAttendances();
     this.setupMemberSearch();
+    if (this.isAdmin) {
+        this.loadBranches();
+    }
+  }
+
+  checkPermissions() {
+      this.isAdmin = this.authService.can('ADMINISTRATOR');
+  }
+
+  loadBranches() {
+      this.branchService.findAll().subscribe({
+          next: (data) => this.branches = data,
+          error: () => this.notificationService.error('Error al cargar las sedes')
+      });
   }
 
   setupMemberSearch() {
@@ -116,10 +139,11 @@ export class AdministrarAsistencias implements OnInit {
 
     // Formatting dates for backend if they exist
     const searchFilters: AttendanceFiltersRequestDto = {
-      serviceId: this.filters.serviceId || undefined,
+      serviceEventId: this.filters.serviceEventId || undefined,
       startDate: this.filters.startDate ? `${this.filters.startDate}:00` : undefined,
       endDate: this.filters.endDate ? `${this.filters.endDate}:00` : undefined,
-      memberId: this.filters.memberId || undefined
+      memberId: this.filters.memberId || undefined,
+      branchId: this.filters.branchId || undefined
     };
 
     console.log('Sending Filters Body:', searchFilters);
@@ -241,5 +265,10 @@ export class AdministrarAsistencias implements OnInit {
   @HostListener('document:click')
   closeDropdown() {
     this.activeDropdownId = null;
+  }
+  getBranchName(id: string | undefined): string {
+    if (!id) return '';
+    const branch = this.branches.find(b => b.id === id);
+    return branch ? branch.name : 'Desconocido';
   }
 }

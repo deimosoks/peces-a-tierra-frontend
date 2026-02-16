@@ -3,90 +3,136 @@
     <div class="card premium-card">
         <!-- Header Filters -->
         <!-- Header Filters (Soft UI) -->
-        <div class="header-section" style="align-items: flex-end; flex-wrap: wrap;">
+        <!-- Header & Controls (New Layout) -->
+        <div class="header-layout-v2">
             
-            <!-- Mobile Configuration Summary trigger (Renamed to openConfigModal) -->
-            <button class="mobile-config-trigger mobile-only" (click)="showConfigModal = true" style="margin-bottom: 0.5rem; width: 100%;">
-                <div class="config-info">
-                    <span class="service-name">{{ getSelectedServiceName() }}</span>
-                    <span class="service-date">{{ serviceDate | date:'d MMM, h:mm a' }}</span>
-                </div>
-                <i class="fa-solid fa-chevron-down"></i>
-            </button>
-
-            <!-- Left: Settings (Desktop Only) -->
-            <div class="filters-left desktop-only" style="gap: 1rem;">
-                <!-- Service Date -->
-                <div class="soft-input-group">
-                    <label class="soft-label">Fecha Servicio (Inicio)</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-calendar-alt soft-input-icon"></i>
-                        <input type="datetime-local" [(ngModel)]="serviceDate" class="soft-input">
-                    </div>
-                </div>
-
-                <!-- Arrival Time -->
-                <div class="soft-input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <label class="soft-label">Hora Llegada</label>
-                        <div class="toggle-wrapper" style="flex-direction: row; height: auto; gap: 0.5rem; padding: 0;">
-                             <span class="toggle-label-soft" style="font-size: 0.65rem;">{{ isManualAttendanceTime ? 'Manual' : 'Auto' }}</span>
-                             <label class="status-switch" style="width: 28px; height: 16px;">
-                                <input type="checkbox" [(ngModel)]="isManualAttendanceTime">
-                                <span class="slider round"></span>
-                            </label>
+            <!-- 1. Active Event Banner -->
+            <!-- 1. Multiple Events Selection (If > 1 active event) -->
+            <div class="active-events-list fade-in" *ngIf="activeEvents.length > 1 && !selectedActiveEvent && !showPastEvents">
+                <h3 class="section-title">Seleccione un evento activo:</h3>
+                <div class="events-grid">
+                    <div class="event-card-selection" *ngFor="let event of activeEvents" (click)="selectActiveEvent(event)">
+                        <div class="event-icon">
+                            <i class="fa-solid fa-wifi"></i>
+                        </div>
+                        <div class="event-info">
+                            <h4>{{ event.serviceName }}</h4>
+                            <p><i class="fa-regular fa-clock"></i> {{ event.startDateTime | date:'h:mm a' }}</p>
+                            <p><i class="fa-solid fa-location-dot"></i> {{ event.branchName }}</p>
+                            <p *ngIf="event.address"><i class="fa-solid fa-map-pin"></i> {{ event.address }}</p>
+                        </div>
+                        <div class="event-action">
+                            <i class="fa-solid fa-chevron-right"></i>
                         </div>
                     </div>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-clock soft-input-icon"></i>
-                        <input type="datetime-local" [(ngModel)]="attendanceDate" class="soft-input"
-                            [disabled]="!isManualAttendanceTime">
+                </div>
+            </div>
+
+            <!-- 2. Selected Active Event Banner -->
+            <div class="event-banner active-event fade-in" *ngIf="selectedActiveEvent && !showPastEvents">
+                <div class="banner-icon">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-wifi"></i>
                     </div>
                 </div>
-
-                <!-- Service Type -->
-                <div class="soft-input-group">
-                    <label class="soft-label">Tipo Servicio</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-solid fa-church soft-input-icon"></i>
-                        <select [(ngModel)]="selectedServiceId" class="soft-input">
-                            <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down" style="position: absolute; right: 0.75rem; font-size: 0.75rem; color: #64748b; pointer-events: none;"></i>
-                    </div>
-                </div>
-
-                <!-- Advanced Filters Button (New) -->
-                <div class="soft-input-group">
-                    <label class="soft-label">Filtros</label>
-                    <button class="btn btn-action-soft" (click)="openAdvancedFilters()" style="justify-content: space-between; min-width: 140px;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fa-solid fa-sliders" style="color: var(--primary);"></i>
-                            <span>Avanzados</span>
-                        </div>
-                        <span class="filter-badge" *ngIf="selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) > 0">
-                            {{ selectedTypes.length + selectedCategories.length + selectedSubCategories.length + (hasCc !== null ? 1 : 0) + (hasCellphone !== null ? 1 : 0) + (hasAddress !== null ? 1 : 0) + (hasBirthdate !== null ? 1 : 0) + (ageFilterRange1 !== null || ageFilterRange2 !== null ? 1 : 0) + (filterLocation ? 1 : 0) }}
+                <div class="banner-content">
+                    <div class="banner-label">EN CURSO</div>
+                    <h2 class="banner-title">{{ selectedActiveEvent.serviceName }}</h2>
+                    <div class="banner-meta">
+                        <span class="meta-item">
+                            <i class="fa-regular fa-clock"></i> {{ selectedActiveEvent.startDateTime | date:'h:mm a' }}
                         </span>
+                        <span class="meta-item">
+                            <i class="fa-solid fa-location-dot"></i> {{ selectedActiveEvent.branchName }}
+                        </span>
+                        <span class="meta-item" *ngIf="selectedActiveEvent.address">
+                            <i class="fa-solid fa-map-pin"></i> {{ selectedActiveEvent.address }}
+                        </span>
+                    </div>
+                </div>
+                <div class="banner-actions">
+                    <button class="btn-text-action" *ngIf="activeEvents.length > 1" (click)="clearActiveEventSelection()">
+                        <i class="fa-solid fa-arrow-right-arrow-left"></i> Cambiar
+                    </button>
+                    <button class="btn-text-action" *ngIf="isAdmin" (click)="togglePastEvents()">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Historial
                     </button>
                 </div>
             </div>
 
-            <!-- Center: Search (Main Action) -->
-            <div class="search-center" style="min-width: 250px;">
-                <div class="soft-input-group">
-                    <label class="soft-label">Registrar Asistencia</label>
-                    <div style="display: flex; gap: 0.5rem; width: 100%;">
-                        <div class="soft-input-wrapper" style="flex: 1;">
-                            <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                                placeholder="Buscar por nombre, documento, celular..." class="soft-input">
-                        </div>
-                        <!-- Mobile Filter Button -->
-                        <button class="btn-icon-soft mobile-only" (click)="openAdvancedFilters()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px;">
-                            <i class="fa-solid fa-sliders"></i>
-                        </button>
+            <!-- 2. No Active Event Warning -->
+            <div class="event-banner no-event fade-in" *ngIf="noActiveEvent && !showPastEvents">
+                <div class="banner-icon">
+                    <div class="icon-circle warning">
+                        <i class="fa-solid fa-moon"></i>
                     </div>
                 </div>
+                <div class="banner-content">
+                    <h2 class="banner-title">No hay un servicio activo</h2>
+                    <p class="banner-subtitle">
+                        <span *ngIf="!isAdmin">Espera a que inicie el servicio para registrar asistencia.</span>
+                        <span *ngIf="isAdmin">No se detectó un evento en curso. Puedes registrar asistencias pasadas.</span>
+                    </p>
+                </div>
+                <div class="banner-actions" *ngIf="isAdmin">
+                    <button class="btn-primary-soft" (click)="togglePastEvents()">
+                        Registrar Pasados
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Past Event Selector (Admin) -->
+            <div class="past-events-panel fade-in" *ngIf="showPastEvents">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial de Eventos</h3>
+                    <button class="close-panel-btn" (click)="togglePastEvents()">
+                        <i class="fa-solid fa-xmark"></i> Volver
+                    </button>
+                </div>
+                <div class="panel-body">
+                    <div class="soft-input-wrapper full-width">
+                        <i class="fa-solid fa-calendar-day soft-input-icon"></i>
+                        <select class="soft-input" [(ngModel)]="selectedEventId" (ngModelChange)="onEventSelect($event)">
+                            <option value="" disabled selected>Seleccione un evento anterior...</option>
+                            <option *ngFor="let event of pastEvents" [value]="event.id">
+                                {{ event.serviceName }} | {{ event.startDateTime | date:'mediumDate' }} - {{ event.startDateTime | date:'shortTime' }} | {{ event.branchName }}
+                            </option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Action Bar (Search & Filters) -->
+            <div class="action-bar-v2" [class.disabled]="!selectedActiveEvent && !selectedEventId">
+                <!-- Search -->
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                           placeholder="Buscar por nombre, documento o celular..." 
+                           class="search-input-modern"
+                           [disabled]="!selectedActiveEvent && !selectedEventId"
+                    >
+                </div>
+
+                <!-- Manual Time Toggle -->
+                 <div class="time-control-group">
+                    <div class="toggle-switch-wrapper" title="Modo Manual">
+                        <label class="switch-modern">
+                            <input type="checkbox" [(ngModel)]="isManualAttendanceTime" [disabled]="!selectedActiveEvent && !selectedEventId">
+                            <span class="slider-modern"></span>
+                        </label>
+                        <span class="toggle-label-modern">{{ isManualAttendanceTime ? 'Manual' : 'Auto' }}</span>
+                    </div>
+                    <input *ngIf="isManualAttendanceTime" type="datetime-local" [(ngModel)]="attendanceDate" class="time-input-modern fade-in">
+                 </div>
+
+                <!-- Advanced Filters -->
+                <button class="btn-filter-modern" (click)="openAdvancedFilters()" [disabled]="!selectedActiveEvent && !selectedEventId">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span class="desktop-only">Filtros</span>
+                    <span class="filter-dot" *ngIf="selectedTypes.length + selectedCategories.length + selectedSubCategories.length > 0"></span>
+                </button>
             </div>
         </div>
 
@@ -385,6 +431,15 @@
                                 </div>
                             </ng-container>
                         </ng-container>
+                    </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="filter-section">
+                    <h3>Género</h3>
+                    <div class="trip-switch">
+                        <button type="button" [class.active]="tempSelectedGender === ''" (click)="tempSelectedGender = ''">Todos</button>
+                        <button type="button" *ngFor="let g of availableGenders" [class.active]="tempSelectedGender === g.value" (click)="tempSelectedGender = g.value">{{ g.label }}</button>
                     </div>
                 </div>
 

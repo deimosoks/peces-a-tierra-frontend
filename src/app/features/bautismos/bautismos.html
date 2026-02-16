@@ -11,82 +11,37 @@
     <!-- <div class="full-card"> -->
         <!-- Header -->
         <!-- Header -->
+        <!-- Header -->
         <div class="header-section">
-            <!-- Left: Filters (Desktop Only) -->
-            <div class="filters-left desktop-only">
-                <!-- Start Date -->
-                <div class="soft-input-group">
-                    <label class="soft-label">Fecha (Desde)</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-regular fa-calendar soft-input-icon"></i>
-                        <input type="date" [(ngModel)]="filterStartDate" (change)="onSearch()" class="soft-input">
-                    </div>
-                </div>
-
-                <!-- End Date -->
-                <div class="soft-input-group">
-                    <label class="soft-label">Fecha (Hasta)</label>
-                    <div class="soft-input-wrapper">
-                        <i class="fa-regular fa-calendar soft-input-icon"></i>
-                        <input type="date" [(ngModel)]="filterEndDate" (change)="onSearch()" class="soft-input">
-                    </div>
-                </div>
-
-                <!-- Toggle -->
-                <div class="toggle-wrapper">
-                    <!-- <label class="soft-label">Estado</label> -->
-                    <div class="toggle-container">
-                        <label class="status-switch">
-                            <input type="checkbox" [(ngModel)]="filterActive" (change)="onSearch()">
-                            <span class="slider round"></span>
-                        </label>
-                        <span class="toggle-label toggle-label-soft">
-                            {{ filterActive ? 'Solo Válidos' : 'Todos' }}
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Clear Filters (Small icon button) -->
-                <div class="toggle-wrapper" *ngIf="filterStartDate || filterEndDate || filterQuery">
-                     <button class="btn btn-muted btn-sm btn-square-soft" (click)="clearFilters()" title="Limpiar Filtros">
-                        <i class="fa-solid fa-filter-circle-xmark"></i>
-                    </button>
-                </div>
+            <!-- Left: Filters Trigger -->
+            <div class="filters-left">
+                <button class="btn btn-action-soft" (click)="openFilterModal()">
+                    <i class="fa-solid fa-sliders"></i>
+                    Filtros
+                </button>
             </div>
 
             <!-- Center: Search -->
             <div class="search-center">
-                <div class="soft-input-group">
-                    <label class="soft-label">Buscar Bautismo</label>
-                    <div style="display: flex; gap: 0.35rem; width: 100%;">
-                        <div class="soft-input-wrapper" style="flex: 1;">
-                            <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                            <input type="text" [(ngModel)]="filterQuery" (keyup.enter)="onSearch()"
-                                placeholder="Buscar por nombre, cedula..." class="soft-input">
-                        </div>
-                        
-                        <!-- Mobile Filter Button -->
-                        <button class="btn-icon-soft mobile-only" (click)="openMobileFilterModal()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer;">
-                            <i class="fa-solid fa-filter"></i>
-                        </button>
-
-                        <!-- Mobile Create Button -->
-                        <button class="btn-icon-soft mobile-only" (click)="openCreateModal()" *ngIf="can('BAPTISM_CREATE')" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: none; border-radius: 12px; background: var(--primary); color: white; cursor: pointer;">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
+                <div style="display: flex; gap: 0.35rem; width: 100%;">
+                    <div class="soft-input-wrapper" style="flex: 1;">
+                        <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
+                        <input type="text" [(ngModel)]="filterQuery" (keyup.enter)="onSearch()"
+                            placeholder="Buscar por nombre, cedula..." class="soft-input">
                     </div>
+                    
+                    <!-- Mobile Create Button -->
+                    <button class="btn-icon-soft mobile-only" (click)="openCreateModal()" *ngIf="can('BAPTISM_CREATE')" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: none; border-radius: 12px; background: var(--primary); color: white; cursor: pointer;">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
                 </div>
             </div>
 
             <!-- Right: Actions -->
             <div class="actions-right desktop-only">
-                <div class="soft-input-group">
-                     <!-- Empty label to align with inputs -->
-                    <label class="soft-label invisible-label">Acciones</label>
-                    <button class="btn btn-primary btn-action-soft" (click)="openCreateModal()" *ngIf="can('BAPTISM_CREATE')">
-                        <i class="fa-solid fa-plus"></i> <span class="desktop-only">Nuevo Bautismo</span>
-                    </button>
-                </div>
+                <button class="btn btn-primary btn-action-soft" (click)="openCreateModal()" *ngIf="can('BAPTISM_CREATE')">
+                    <i class="fa-solid fa-plus"></i> <span class="desktop-only">Nuevo Bautismo</span>
+                </button>
             </div>
         </div>
 
@@ -96,6 +51,7 @@
                 <thead>
                     <tr>
                         <th>Miembro</th>
+                        <th>Sede</th>
                         <th class="desktop-only">Fecha</th>
                         <th class="desktop-only">Ubicación</th>
                         <th class="desktop-only">Registrado Por</th>
@@ -105,15 +61,16 @@
                 </thead>
                 <tbody>
                     <tr *ngIf="isLoading">
-                        <td colspan="6" class="text-center">Cargando...</td>
+                        <td colspan="7" class="text-center">Cargando...</td>
                     </tr>
                     <tr *ngIf="!isLoading && baptisms.length === 0">
-                        <td colspan="6" class="text-center">No se encontraron bautismos</td>
+                        <td colspan="7" class="text-center">No se encontraron bautismos</td>
                     </tr>
                     <tr *ngFor="let baptism of baptisms" [class.inactive-row]="baptism.invalid">
                         <td (click)="openDetailsModal(baptism)" style="cursor: pointer;">
                             <span style="font-weight: 600; color: var(--primary);">{{ baptism.memberName }}</span>
                         </td>
+                        <td>{{ baptism.branchName || '---' }}</td>
                         <td class="desktop-only">{{ formatDate(baptism.date) }}</td>
                         <td class="desktop-only">{{ baptism.address || baptism.city || baptism.neighborhood || '---' }}</td>
                         <td class="desktop-only">{{ baptism.registeredBy }}</td>
@@ -162,21 +119,33 @@
     </div>
 </div>
 
-<!-- Mobile Filter Modal -->
-<div class="modal-overlay" *ngIf="showMobileFilterModal" (click)="closeMobileFilterModal()">
+<!-- Filter Modal -->
+<div class="modal-overlay" *ngIf="showFilterModal" (click)="closeFilterModal()">
     <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
         <div class="modal-header">
             <h2>Filtros</h2>
-            <button class="close-btn" (click)="closeMobileFilterModal()">&times;</button>
+            <button class="close-btn" (click)="closeFilterModal()">&times;</button>
         </div>
         <div class="modal-body">
             <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Branch Selector (Admin Only) -->
+                <div class="soft-input-group" *ngIf="isAdmin">
+                    <label class="soft-label">Sede</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-building soft-input-icon"></i>
+                        <select [(ngModel)]="filterBranchId" class="soft-input">
+                            <option value="">Todas las sedes</option>
+                            <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Start Date -->
                 <div class="soft-input-group">
                     <label class="soft-label">Fecha (Desde)</label>
                     <div class="soft-input-wrapper">
                         <i class="fa-regular fa-calendar soft-input-icon"></i>
-                        <input type="date" [(ngModel)]="filterStartDate" (change)="onSearch()" class="soft-input">
+                        <input type="date" [(ngModel)]="filterStartDate" class="soft-input">
                     </div>
                 </div>
 
@@ -185,7 +154,7 @@
                     <label class="soft-label">Fecha (Hasta)</label>
                     <div class="soft-input-wrapper">
                         <i class="fa-regular fa-calendar soft-input-icon"></i>
-                        <input type="date" [(ngModel)]="filterEndDate" (change)="onSearch()" class="soft-input">
+                        <input type="date" [(ngModel)]="filterEndDate" class="soft-input">
                     </div>
                 </div>
 
@@ -194,7 +163,7 @@
                     <span class="toggle-label toggle-label-soft">Estado</span>
                     <div class="toggle-container" style="width: auto;">
                         <label class="status-switch">
-                            <input type="checkbox" [(ngModel)]="filterActive" (change)="onSearch()">
+                            <input type="checkbox" [(ngModel)]="filterActive">
                             <span class="slider round"></span>
                         </label>
                         <span class="toggle-label toggle-label-soft" style="margin-left: 0.5rem;">
@@ -205,10 +174,10 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-muted" (click)="clearFilters(); closeMobileFilterModal()" *ngIf="filterStartDate || filterEndDate">
+            <button class="btn btn-muted" (click)="clearFilters(); closeFilterModal()" *ngIf="filterStartDate || filterEndDate || filterBranchId">
                 Limpiar
             </button>
-            <button class="btn btn-primary" (click)="closeMobileFilterModal()">
+            <button class="btn btn-primary" (click)="onSearch(); closeFilterModal()">
                 Aplicar
             </button>
         </div>
@@ -317,6 +286,10 @@
                 <div class="detail-item">
                     <label>Miembro:</label>
                     <span>{{ selectedBaptism.memberName }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Sede:</label>
+                    <span>{{ selectedBaptism.branchName || '---' }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Fecha:</label>

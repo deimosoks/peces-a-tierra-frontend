@@ -35,6 +35,7 @@ export interface BaptismResponseDto {
   invalidAt?: Date;
   invalidatedBy?: string;
   invalid: boolean;
+  branchName?: string;
 }
 
 // Baptism Filter Request DTO
@@ -44,6 +45,7 @@ export interface BaptismFilterRequestDto {
   endDate?: Date;
   query?: string;
   active: boolean;
+  branchId?: string;
 }
 
 // Baptism Pages Response DTO
