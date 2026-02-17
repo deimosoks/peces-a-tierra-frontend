@@ -14,7 +14,7 @@
         <!-- Header -->
         <div class="header-section">
             <!-- Left: Filters Trigger -->
-            <div class="filters-left">
+            <div class="filters-left desktop-only">
                 <button class="btn btn-action-soft" (click)="openFilterModal()">
                     <i class="fa-solid fa-sliders"></i>
                     Filtros
@@ -29,6 +29,11 @@
                         <input type="text" [(ngModel)]="filterQuery" (keyup.enter)="onSearch()"
                             placeholder="Buscar por nombre, cedula..." class="soft-input">
                     </div>
+
+                    <!-- Mobile Filter Button -->
+                    <button class="btn-icon-soft mobile-only" (click)="openFilterModal()" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-input); color: var(--text-muted); cursor: pointer;">
+                        <i class="fa-solid fa-sliders"></i>
+                    </button>
                     
                     <!-- Mobile Create Button -->
                     <button class="btn-icon-soft mobile-only" (click)="openCreateModal()" *ngIf="can('BAPTISM_CREATE')" style="height: 42px; width: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: none; border-radius: 12px; background: var(--primary); color: white; cursor: pointer;">

@@ -395,6 +395,19 @@
         </div>
         <div class="modal-body">
             <div class="filters-grid">
+                <!-- Branch Selector (Admin Only) -->
+                <div class="filter-section" *ngIf="isAdmin">
+                    <h3>Sede</h3>
+                    <div class="soft-input-wrapper full-width">
+                        <i class="fa-solid fa-building soft-input-icon"></i>
+                        <select [(ngModel)]="tempSelectedBranchId" class="soft-input">
+                            <option value="">Todas las sedes</option>
+                            <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
                 <!-- Type & Category -->
                 <div class="filter-section">
                     <h3>Tipo</h3>

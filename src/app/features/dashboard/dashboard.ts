@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { DashboardService } from '../../core/services/dashboard';
+import { ReporteService } from '../../core/services/reporte';
 import { DashboardData } from '../../core/models/dashboard.model';
 import { Integrante } from '../../core/models/integrante.model';
 import { ThemeService } from '../../core/services/theme.service';
@@ -45,6 +46,7 @@ export class Dashboard implements OnInit {
 
     ngOnInit() {
         this.loadDashboardData();
+        this.loadTodayAttendance();
     }
 
     loadDashboardData() {
@@ -261,5 +263,65 @@ export class Dashboard implements OnInit {
         if (!type) return '';
         if (typeof type === 'string') return type.replace(/_/g, ' ');
         return type.name || '';
+    }
+
+    // New Section: Today's Attendance
+    todayAttendance: any[] = [];
+    private reporteService = inject(ReporteService);
+
+    loadTodayAttendance() {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
+        const filters: any = {
+            startDate: this.toLocalISOString(start),
+            endDate: this.toLocalISOString(end),
+            groupBy: ['BRANCH', 'CATEGORY', 'SUBCATEGORY'],
+            onlyActive: true
+        };
+
+        this.reporteService.generateReport(filters).subscribe({
+            next: (data: any[]) => {
+                this.processTodayData(data);
+                this.cdr.detectChanges();
+            },
+            error: (err: any) => console.error('Error loading today attendance:', err)
+        });
+    }
+
+    private toLocalISOString(date: Date): string {
+        const tzOffset = date.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
+        return localISOTime;
+    }
+
+    private processTodayData(data: any[]) {
+        const branchMap = new Map<string, any>();
+
+        data.forEach(d => {
+            const branchName = d.branchName || 'Sin Sede';
+            if (!branchMap.has(branchName)) {
+                branchMap.set(branchName, { name: branchName, total: 0, categories: new Map<string, any>() });
+            }
+            const branch = branchMap.get(branchName);
+            branch.total += (d.total || 0);
+
+            const catName = this.formatCategory(d.category) || 'Sin Categoría';
+            if (!branch.categories.has(catName)) {
+                branch.categories.set(catName, { name: catName, total: 0, subCategories: [] });
+            }
+            const category = branch.categories.get(catName);
+            category.total += (d.total || 0);
+
+            if (d.subCategory) {
+                category.subCategories.push({ name: d.subCategory, total: d.total });
+            }
+        });
+
+        this.todayAttendance = Array.from(branchMap.values()).map(b => ({
+            ...b,
+            categories: Array.from(b.categories.values())
+        }));
     }
 }

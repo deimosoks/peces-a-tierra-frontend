@@ -11,6 +11,8 @@ import { MemberCategoryResponseDto } from '../../core/models/member-config.model
 import { MemberConfigService } from '../../core/services/member-config.service';
 import { ServiceEventService } from '../../core/services/service-event.service';
 import { ServiceEventResponseDto } from '../../core/models/service-event.model';
+import { BranchService } from '../../core/services/branch.service';
+import { Branch } from '../../core/models/branch.model';
 
 @Component({
   selector: 'app-asistencia',
@@ -25,6 +27,7 @@ export class Asistencia implements OnInit {
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private serviceEventService = inject(ServiceEventService);
+  private branchService = inject(BranchService);
   
   // Filters & State
   serviceDate: string = this.getNowForInput();
@@ -55,6 +58,10 @@ export class Asistencia implements OnInit {
   selectedMember?: Integrante;
   showModal = false; // For details
   showConfigModal = false; // For mobile config (Renamed from showFilterModal)
+
+  branches: Branch[] = [];
+  selectedBranchId: string = '';
+  tempSelectedBranchId: string = '';
 
   // Pagination
   currentPage = 0;
@@ -109,7 +116,15 @@ export class Asistencia implements OnInit {
     this.loadServices();
     this.loadMemberConfigs();
     this.loadMembers();
+    this.loadMembers();
     this.loadActiveEvent();
+    if (this.isAdmin) {
+        this.loadBranches();
+    }
+  }
+
+  loadBranches() {
+      this.branchService.findAll().subscribe(data => this.branches = data);
   }
 
   checkPermissions() {
@@ -265,7 +280,8 @@ export class Asistencia implements OnInit {
       ageFilterRange1: this.ageFilterRange1,
       ageFilterRange2: this.ageFilterRange2,
       location: this.filterLocation || undefined,
-      gender: this.selectedGender || undefined
+      gender: this.selectedGender || undefined,
+      branchId: this.selectedBranchId || undefined
     };
 
     if (this.showAdvancedFiltersModal) {
@@ -298,7 +314,9 @@ export class Asistencia implements OnInit {
     this.tempHasBirthdate = this.hasBirthdate;
     this.tempAgeRange1 = this.ageFilterRange1;
     this.tempAgeRange2 = this.ageFilterRange2;
+    this.tempAgeRange2 = this.ageFilterRange2;
     this.tempLocation = this.filterLocation;
+    this.tempSelectedBranchId = this.selectedBranchId;
     this.showAdvancedFiltersModal = true;
   }
 
@@ -318,6 +336,7 @@ export class Asistencia implements OnInit {
     this.ageFilterRange1 = this.tempAgeRange1;
     this.ageFilterRange2 = this.tempAgeRange2;
     this.filterLocation = this.tempLocation;
+    this.selectedBranchId = this.tempSelectedBranchId;
     
     this.currentPage = 0;
     this.loadMembers();
@@ -350,6 +369,8 @@ export class Asistencia implements OnInit {
     this.tempAgeRange2 = null;
     this.tempLocation = '';
     this.tempOnlyActive = true;
+    this.selectedBranchId = '';
+    this.tempSelectedBranchId = '';
 
     this.currentPage = 0;
     this.loadMembers();

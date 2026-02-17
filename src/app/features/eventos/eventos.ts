@@ -43,12 +43,14 @@ export class Eventos implements OnInit {
   canCreate = false;
   canCancel = false;
 
+  isAdmin = false;
+  currentUserBranchId?: string;
   form: FormGroup;
 
   constructor() {
     this.form = this.fb.group({
       serviceId: ['', Validators.required],
-      branchId: ['', Validators.required],
+      branchId: [''], // Validator added dynamically based on role
       date: [new Date().toISOString().substring(0, 10), Validators.required],
       startTime: ['08:00', Validators.required],
       endTime: ['10:00', Validators.required]
@@ -57,17 +59,39 @@ export class Eventos implements OnInit {
 
   ngOnInit() {
     this.checkPermissions();
+    
+    // Add validator if admin
+    if (this.isAdmin) {
+        this.form.get('branchId')?.addValidators(Validators.required);
+    }
+
     this.loadEvents();
     
     if (this.canCreate) {
       this.loadServices();
-      this.loadBranches();
+      if (this.isAdmin) {
+          this.loadBranches();
+      } else {
+          // If not admin, try to set branch from user info
+          const user = this.authService.currentUser();
+          if (user?.branchId) {
+              this.currentUserBranchId = user.branchId;
+              this.form.patchValue({ branchId: this.currentUserBranchId });
+          } else if (user?.memberResponseDto?.branch?.id) {
+              // Fallback to memberResponseDto if branchId is not directly on user
+              this.currentUserBranchId = user.memberResponseDto.branch.id;
+              this.form.patchValue({ branchId: this.currentUserBranchId });
+          } else {
+              console.warn('Could not find branch for current user');
+          }
+      }
     }
   }
 
   checkPermissions() {
     this.canCreate = this.authService.can('REGISTER_EVENTS');
     this.canCancel = this.authService.can('CANCEL_EVENTS');
+    this.isAdmin = this.authService.can('ADMINISTRATOR');
   }
 
   loadEvents() {
@@ -121,7 +145,7 @@ export class Eventos implements OnInit {
   openModal() {
     this.form.reset({
       serviceId: '',
-      branchId: '',
+      branchId: this.isAdmin ? '' : (this.currentUserBranchId || ''),
       date: new Date().toISOString().substring(0, 10),
       startTime: '08:00',
       endTime: '10:00'

@@ -38,6 +38,40 @@
         </div>
     </div>
 
+    <!-- Today's Attendance Section -->
+    <div class="today-attendance-section" *ngIf="!isLoading && todayAttendance && todayAttendance.length > 0">
+        <div class="section-title-wrapper">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+                <h2>Asistencia de Hoy</h2>
+                <span class="subtitle">Desglose por Sede y Categoría</span>
+            </div>
+        </div>
+
+        <div class="attendance-cards-grid">
+            <div class="attendance-card" *ngFor="let branch of todayAttendance">
+                <div class="attendance-header">
+                    <h3>{{ branch.name }}</h3>
+                    <span class="total-badge">{{ branch.total }}</span>
+                </div>
+                <div class="attendance-body">
+                    <div class="category-item" *ngFor="let cat of branch.categories">
+                        <div class="cat-header">
+                            <span class="cat-name">{{ cat.name }}</span>
+                            <span class="cat-total">{{ cat.total }}</span>
+                        </div>
+                        <div class="sub-list" *ngIf="cat.subCategories && cat.subCategories.length > 0">
+                            <div class="sub-item" *ngFor="let sub of cat.subCategories">
+                                <span>{{ sub.name }}</span>
+                                <span>{{ sub.total }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Access (Optional reference from user image) -->
     <div class="section-title-wrapper" *ngIf="!isLoading">
         <i class="fa-solid fa-bolt"></i>

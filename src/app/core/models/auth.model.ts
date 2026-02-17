@@ -1,3 +1,5 @@
+import { Integrante } from './integrante.model';
+
 export interface LoginRequest {
     username: string;
     password: string;
@@ -23,6 +25,8 @@ export interface UserInfo {
     pictureProfileUrl: string;
     completeName: string;
     permissions: string[]; // Set<String> comes as array in JSON
+    branchId?: string; // Added branchId
+    memberResponseDto?: Integrante; // Added memberResponseDto
 }
 
 export interface RefreshTokenRequest {

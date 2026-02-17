@@ -97,20 +97,28 @@ export class Integrantes implements OnInit {
     openModal(integrante?: Integrante) {
         this.isEditing = !!integrante;
         this.currentId = integrante?.id || null;
+        this.showFormModal = true; // Use correct modal flag
 
         if (integrante) {
-            this.form.patchValue({
-                firstName: integrante.firstName,
-                lastName: integrante.lastName,
-                email: integrante.email,
-                phoneNumber: integrante.cellphone,
-                address: integrante.address,
-                birthdate: integrante.birthdate ? new Date(integrante.birthdate).toISOString().substring(0, 10) : '',
-                gender: integrante.gender,
-                branchId: integrante.branch?.id,
+            this.integranteForm.patchValue({
+                completeName: integrante.completeName,
+                // Split name if firstName/lastName not available or keep as completeName if backend handles it
+                // Assuming form uses completeName based on initForm
+                // firstName: ... 
+                // lastName: ...
+                // email: integrante.email, // initForm doesn't have email in the shown snippet but constructor did. 
+                // Let's check initForm again. It has completeName.
+                
+                typeId: integrante.type?.id,
                 categoryId: integrante.category?.id,
                 subCategoryId: integrante.subCategory?.id,
-                typeId: integrante.type?.id,
+                cellphone: integrante.cellphone,
+                address: integrante.address,
+                // neighborhood, city etc...
+                birthdate: integrante.birthdate ? new Date(integrante.birthdate).toISOString().substring(0, 10) : '',
+                cc: integrante.cc,
+                gender: integrante.gender,
+                branchId: integrante.branch?.id || '',
                 active: integrante.active
             });
             
@@ -118,18 +126,17 @@ export class Integrantes implements OnInit {
                 this.onCategoryChange();
             }
         } else {
-            this.form.reset({
+            this.integranteForm.reset({
                 active: true,
-                gender: 'MALE' // Default
+                gender: 'HOMBRE', // Match availableGenders value
+                branchId: ''
             });
             this.filteredSubCategories = [];
         }
-
-        this.showModal = true;
     }
     filters: MemberFilterRequestDto = { onlyActive: true };
 
-    form: FormGroup;
+    // form property removed
     
     // Helper to fix openModal phoneNumber -> cellphone
     // I'll handle that in a separate chunk or just rely on previous 'replace_file_content' if I can.
@@ -140,21 +147,7 @@ export class Integrantes implements OnInit {
     noteForm: FormGroup;
 
     constructor() {
-        this.form = this.fb.group({
-            firstName: ['', Validators.required],
-            lastName: ['', Validators.required],
-            email: ['', [Validators.email]],
-            phoneNumber: [''],
-            address: [''],
-            birthdate: [''],
-            gender: [''], // Added gender
-            branchId: [''], // Added branch
-            categoryId: ['', Validators.required],
-            subCategoryId: [''],
-            typeId: ['', Validators.required],
-            active: [true]
-        });
-
+        // Constructor form initialization removed
         this.noteForm = this.fb.group({
             content: ['', Validators.required]
         });
@@ -380,6 +373,12 @@ onCategoryChange() {
   closeModal() {
     this.showModal = false;
     this.selectedMember = undefined;
+  }
+
+  closeFormModal() {
+    this.showFormModal = false;
+    this.selectedMember = undefined;
+    this.isEditing = false;
   }
 
   // Filter dropdown management
@@ -746,20 +745,18 @@ onCategoryChange() {
   }
 
   openFormModal() {
-    this.resetForm();
-    this.showFormModal = true;
+    this.openModal(); // Reuse openModal logic for new member
     this.cdr.detectChanges(); // Ensure DOM is updated
-    setTimeout(() => this.initializeGeocoder(), 100);
+    this.initializeGeocoder();
   }
 
-  closeFormModal() {
-    this.showFormModal = false;
-    this.resetForm();
-    // Clean up geocoder if needed (though dom removal helps)
-  }
+  // closeFormModal is handled by closeFormModal() at line 378
 
   initializeGeocoder() {
-    this.initGoogleAutocomplete();
+    // Wait for DOM
+    setTimeout(() => {
+        this.initGoogleAutocomplete();
+    }, 100);
   }
 
   initGoogleAutocomplete() {
@@ -770,7 +767,6 @@ onCategoryChange() {
         console.error('Google Maps API not loaded');
         return;
     }
-
     const autocomplete = new google.maps.places.Autocomplete(input, {
         componentRestrictions: { country: 'co' },
         fields: ['address_components', 'geometry', 'formatted_address'],
@@ -906,22 +902,7 @@ onCategoryChange() {
   }
 
   editIntegrante(integrante: Integrante) {
-    this.isEditing = true;
-    this.currentId = integrante.id;
-    
-    const formValue = {
-      ...integrante,
-      typeId: integrante.type.id,
-      categoryId: integrante.category.id,
-      subCategoryId: integrante.subCategory?.id || '',
-      gender: integrante.gender || ''
-    };
-    
-    this.integranteForm.patchValue(formValue);
-    this.imagePreview = integrante.pictureProfileUrl || null;
-    this.showFormModal = true;
-    this.cdr?.detectChanges();
-    setTimeout(() => this.initializeGeocoder?.(), 100);
+    this.openModal(integrante);
   }
 
   async deleteIntegrante(id: string) {

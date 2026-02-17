@@ -1,4 +1,5 @@
 import { MemberCategoryResponseDto, MemberTypeResponseDto, MemberSubCategoryResponseDto } from './member-config.model';
+import { BranchResponseDto } from './branch.model';
 
 export interface MemberNoteResponseDto {
     id: string;
@@ -31,10 +32,7 @@ export interface Integrante {
   active: boolean;
   gender?: string;
   branchName?: string; // Added branchName to response
-  branch?: {
-      id: string;
-      name: string;
-  };
+  branch?: BranchResponseDto;
   
   notes?: MemberNoteResponseDto[];
   

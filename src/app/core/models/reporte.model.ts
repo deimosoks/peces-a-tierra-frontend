@@ -4,6 +4,8 @@ export interface ReportFilters {
     typePeoples?: string[];
     categories?: string[];
     subCategories?: string[]; // Added subCategories
+    branchIds?: string[]; // Added branchIds
+    groupBy?: string[];   // Added groupBy
     serviceIds?: string[];
     startDate?: string; // LocalDateTime ISO
     endDate?: string;   // LocalDateTime ISO
@@ -12,11 +14,12 @@ export interface ReportFilters {
 }
 
 export interface ReportData {
-    date: string;
-    serviceTime: string;
-    serviceName: string;
-    category: MemberCategoryResponseDto;
-    typePeople: MemberTypeResponseDto;
+    date?: string;
+    serviceTime?: string;
+    serviceName?: string;
+    category?: MemberCategoryResponseDto;
+    typePeople?: MemberTypeResponseDto;
     subCategory?: string;
+    branchName?: string;
     total: number;
 }
