@@ -479,6 +479,22 @@ textarea.soft-input {
     resize: vertical;
 }
 
+select.soft-input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
 /* Buttons */
 .btn {
     padding: 0.6rem 1.25rem;

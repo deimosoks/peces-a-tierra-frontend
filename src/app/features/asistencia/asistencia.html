@@ -160,6 +160,11 @@
                                 <div class="user-details">
                                     <span class="user-fullname">{{ member.completeName }}</span>
                                     <span class="user-age-small" *ngIf="getMemberAge(member) !== '---'">{{ getMemberAge(member) }} años</span>
+                                    <!-- Mobile Category Info -->
+                                    <div class="mobile-category-info mobile-only">
+                                        <span class="badge-mini" [style.background-color]="member.category.color">{{ formatCategory(member.category) }}</span>
+                                        <span class="badge-mini-outline" *ngIf="member.subCategory" [style.border-color]="member.category.color" [style.color]="member.category.color">{{ member.subCategory.name }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </td>

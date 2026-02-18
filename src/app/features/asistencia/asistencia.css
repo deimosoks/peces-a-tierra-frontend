@@ -1686,6 +1686,33 @@
     gap: 0.5rem;
 }
 
+/* Mobile Category Info */
+.mobile-category-info {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.badge-mini {
+  font-size: 0.6rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-mini-outline {
+  font-size: 0.6rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 /* New styles for reordered columns */
 .user-info-cell {
     display: flex;

@@ -11,6 +11,8 @@ import { Role } from '../../core/models/role.model';
 import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { BranchService } from '../../core/services/branch.service';
+import { Branch } from '../../core/models/branch.model';
 
 @Component({
     selector: 'app-usuarios',
@@ -27,6 +29,7 @@ export class Usuarios implements OnInit {
     private cdr = inject(ChangeDetectorRef);
     private confirmationService = inject(ConfirmationService);
     private notificationService = inject(NotificationService);
+    private branchService = inject(BranchService);
 
     // Data
     users: User[] = [];
@@ -67,6 +70,7 @@ export class Usuarios implements OnInit {
 
     ngOnInit() {
         this.loadStats();
+        this.loadBranches();
         this.loadUsers();
         this.loadRoles();
     }
@@ -84,9 +88,20 @@ export class Usuarios implements OnInit {
         });
     }
 
+    isAdmin = false;
+    branches: Branch[] = [];
+    selectedBranchId = '';
+
+    loadBranches() {
+        this.isAdmin = this.can('ADMINISTRATOR');
+        if (this.isAdmin) {
+            this.branchService.findAll().subscribe(branches => this.branches = branches);
+        }
+    }
+
     loadUsers() {
         this.isLoading = true;
-        this.userService.getUsers(this.currentPage).subscribe({
+        this.userService.getUsers(this.currentPage, this.searchQuery, this.selectedBranchId).subscribe({
             next: (response) => {
                 this.users = response.users;
                 this.totalPages = response.pages;
@@ -107,7 +122,7 @@ export class Usuarios implements OnInit {
         this.currentPage = 0; // Reset to first page on new search
         if (this.searchQuery.trim()) {
             this.isLoading = true;
-            this.userService.searchUsers(this.searchQuery, this.currentPage).subscribe({
+            this.userService.getUsers(this.currentPage, this.searchQuery, this.selectedBranchId).subscribe({
                 next: (response) => {
                     this.users = response.users;
                     this.totalPages = response.pages;

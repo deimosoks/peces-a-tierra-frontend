@@ -15,16 +15,18 @@ export class UserService {
         return this.http.post<UserStats>(`${this.baseUrl}/report`, {});
     }
 
-    getUsers(page: number = 0): Observable<UserPagesResponseDto> {
-        const params = new HttpParams().set('page', page.toString());
+    getUsers(page: number = 0, query: string = '', branchId?: string): Observable<UserPagesResponseDto> {
+        let params = new HttpParams()
+            .set('page', page.toString());
+        
+        if (query) params = params.set('query', query);
+        if (branchId) params = params.set('branchId', branchId);
+
         return this.http.get<UserPagesResponseDto>(this.baseUrl, { params });
     }
 
-    searchUsers(query: string, page: number = 0): Observable<UserPagesResponseDto> {
-        const params = new HttpParams()
-            .set('query', query)
-            .set('page', page.toString());
-        return this.http.get<UserPagesResponseDto>(`${this.baseUrl}`, { params });
+    searchUsers(query: string, page: number = 0, branchId?: string): Observable<UserPagesResponseDto> {
+        return this.getUsers(page, query, branchId);
     }
 
     createUser(user: UserRequestDto): Observable<User> {

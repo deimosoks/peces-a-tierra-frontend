@@ -34,17 +34,28 @@
                     <div class="soft-input-wrapper">
                         <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
                         <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                            placeholder="Buscar por usuario..." class="soft-input">
+                            placeholder="Buscar por nombre..." class="soft-input">
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Actions -->
             <div class="actions-right">
+                <!-- Branch Filter (Admin Only) -->
+                <div class="soft-input-group branch-filter-group" *ngIf="isAdmin">
+                    <label class="soft-label">Filtrar por Sede</label>
+                    <div class="soft-input-wrapper">
+                        <i class="fa-solid fa-building soft-input-icon"></i>
+                        <select [(ngModel)]="selectedBranchId" (change)="onSearch()" class="soft-input select-arrow">
+                            <option value="">Todas las sedes</option>
+                            <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="soft-input-group">
                     <label class="soft-label invisible-label">Nuevo</label>
                     <button class="btn btn-primary btn-action-soft" (click)="openNewModal()" *ngIf="can('CREATE_USER')">
-                        <i class="fa-solid fa-user-plus"></i> <span class="desktop-only">Nuevo Usuario</span>
+                        <i class="fa-solid fa-user-plus"></i> <span class="desktop-only" style="margin-left: 0.5rem;">Nuevo Usuario</span>
                     </button>
                 </div>
             </div>

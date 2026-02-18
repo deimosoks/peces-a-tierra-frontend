@@ -29,11 +29,11 @@ export class AdministrarAsistencias implements OnInit {
 
   // Filters & State
   filters: AttendanceFiltersRequestDto = {
-    serviceEventId: '',
+    serviceId: '', // Renamed from serviceEventId
     startDate: '',
     endDate: '',
     memberId: '',
-    branchId: '' // Added branchId
+    branchId: ''
   };
   showFilterModal = false;
 
@@ -138,8 +138,9 @@ export class AdministrarAsistencias implements OnInit {
     this.isLoading = true;
 
     // Formatting dates for backend if they exist
+    // Formatting dates for backend if they exist
     const searchFilters: AttendanceFiltersRequestDto = {
-      serviceEventId: this.filters.serviceEventId || undefined,
+      serviceId: this.filters.serviceId || undefined,
       startDate: this.filters.startDate ? `${this.filters.startDate}:00` : undefined,
       endDate: this.filters.endDate ? `${this.filters.endDate}:00` : undefined,
       memberId: this.filters.memberId || undefined,

@@ -242,6 +242,11 @@
                   <span class="user-age" *ngIf="member.age && member.age > 0"
                     >{{ member.age }} años</span
                   >
+                  <!-- Mobile Category Info -->
+                  <div class="mobile-category-info mobile-only">
+                     <span class="badge-mini" *ngIf="member.category" [style.background-color]="member.category.color">{{ member.category.name }}</span>
+                     <span class="badge-mini-outline" *ngIf="member.subCategory" [style.border-color]="member.category.color" [style.color]="member.category.color">{{ member.subCategory.name }}</span>
+                  </div>
                 </div>
               </div>
             </td>
