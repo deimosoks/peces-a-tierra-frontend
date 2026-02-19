@@ -66,7 +66,12 @@
                 </thead>
                 <tbody>
                     <tr *ngIf="isLoading">
-                        <td colspan="7" class="text-center">Cargando...</td>
+                        <td colspan="7" style="padding: 0; border: none;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div>Cargando bautismos...</div>
+                            </div>
+                        </td>
                     </tr>
                     <tr *ngIf="!isLoading && baptisms.length === 0">
                         <td colspan="7" class="text-center">No se encontraron bautismos</td>

@@ -173,9 +173,11 @@
                         <td colspan="5" class="text-center p-4 text-muted">No se encontraron usuarios.</td>
                     </tr>
                     <tr *ngIf="isLoading">
-                         <td colspan="5" class="loading-state">
-                             <div class="spinner"></div>
-                             Cargando usuarios...
+                         <td colspan="6" style="padding: 0; border: none;">
+                             <div class="loading-container">
+                                 <div class="loading-spinner"></div>
+                                 <div>Cargando usuarios...</div>
+                             </div>
                          </td>
                      </tr>
                 </tbody>
@@ -248,7 +250,12 @@
                                 </div>
                                 <div class="result-text">
                                     <div class="name">{{ m.completeName }}</div>
-                                    <div class="meta">{{ formatCategory(m.category) }} <span *ngIf="m.subCategory">• {{ formatSubCategory(m.subCategory) }}</span> - {{ m.cc || 'Sin CC' }}</div>
+                                    <div class="meta">
+                                        {{ formatCategory(m.category) }} 
+                                        <span *ngIf="m.subCategory">• {{ formatSubCategory(m.subCategory) }}</span> 
+                                        - {{ m.cc || 'Sin CC' }}
+                                        <span *ngIf="m.branch?.name" style="color: var(--primary); font-weight: 600;"> • {{ m.branch?.name }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

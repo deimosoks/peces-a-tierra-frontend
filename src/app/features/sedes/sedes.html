@@ -3,7 +3,6 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Sedes</h1>
-            <p class="text-muted">Gestión de sedes y ubicaciones</p>
         </div>
         <div class="header-actions">
             <button class="btn btn-primary" (click)="openModal()" *ngIf="canCreate">
@@ -14,9 +13,9 @@
     </div>
 
     <!-- Loading State -->
-    <div class="loading-state" *ngIf="isLoading">
-        <i class="fa-solid fa-circle-notch fa-spin"></i>
-        <p>Cargando sedes...</p>
+    <div class="loading-container" *ngIf="isLoading">
+        <div class="loading-spinner"></div>
+        <div>Cargando sedes...</div>
     </div>
 
     <!-- Empty State -->
@@ -74,7 +73,15 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
             <h2>{{ isEditing ? 'Editar Sede' : 'Nueva Sede' }}</h2>
-            <button class="close-btn" (click)="closeModal()">&times;</button>
+            <button class="close-btn" (click)="closeModal()" [disabled]="isSaving">&times;</button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="modal-loading-overlay" *ngIf="isSaving">
+            <div class="spinner-wrapper">
+                <div class="spinner-circle"></div>
+                <p>Procesando...</p>
+            </div>
         </div>
 
         <div class="modal-body">

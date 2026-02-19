@@ -86,9 +86,9 @@
           </div>
         </div>
 
-        <div class="loading-state" *ngIf="isLoadingCategories">
-          <div class="spinner"></div>
-          Cargando categorías...
+        <div class="loading-container" *ngIf="isLoadingCategories">
+          <div class="loading-spinner"></div>
+          <div>Cargando categorías...</div>
         </div>
       </div>
 
@@ -126,9 +126,9 @@
           </div>
         </div>
 
-        <div class="loading-state" *ngIf="isLoadingTypes">
-          <div class="spinner"></div>
-          Cargando tipos...
+        <div class="loading-container" *ngIf="isLoadingTypes">
+          <div class="loading-spinner"></div>
+          <div>Cargando tipos...</div>
         </div>
       </div>
     </div>
@@ -141,6 +141,14 @@
     <div class="modal-header">
       <h2>{{ isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
       <button class="close-btn" (click)="closeCategoryModal()">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="modal-loading-overlay" *ngIf="isSavingCategory">
+        <div class="spinner-wrapper">
+            <div class="spinner-circle"></div>
+            <p>Procesando...</p>
+        </div>
     </div>
 
     <div class="modal-body">
@@ -200,6 +208,14 @@
       <button class="close-btn" (click)="closeTypeModal()">&times;</button>
     </div>
 
+    <!-- Loading Overlay -->
+    <div class="modal-loading-overlay" *ngIf="isSavingType">
+        <div class="spinner-wrapper">
+            <div class="spinner-circle"></div>
+            <p>Procesando...</p>
+        </div>
+    </div>
+
     <div class="modal-body">
       <form [formGroup]="typeForm" (submit)="saveType()">
         <div class="soft-input-group">
@@ -255,6 +271,14 @@
     <div class="modal-header">
       <h2>{{ isEditingSubCategory ? 'Editar Sub-categoría' : 'Nueva Sub-categoría' }}</h2>
       <button class="close-btn" (click)="closeSubCategoryModal()">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="modal-loading-overlay" *ngIf="isSavingSubCategory">
+        <div class="spinner-wrapper">
+            <div class="spinner-circle"></div>
+            <p>Procesando...</p>
+        </div>
     </div>
 
     <div class="modal-body">

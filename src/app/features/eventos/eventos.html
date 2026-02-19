@@ -1,176 +1,64 @@
-<div class="fade-in">
-    <!-- Header -->
-    <div class="page-header">
-        <div>
-        </div>
-        <div class="header-actions">
-            <button class="btn btn-primary" (click)="openModal()" *ngIf="canCreate">
-                <i class="fa-solid fa-plus"></i>
-                Nuevo Evento
-            </button>
-        </div>
-    </div>
+<app-service-calendar 
+    [isAdmin]="isAdmin" 
+    [isSelectionMode]="false"
+    [canCreate]="canCreate"
+    (eventAction)="cancelEvent($event)"
+    (createEvent)="openModal()">
+</app-service-calendar>
 
-    <!-- Loading State -->
-    <div class="loading-state" *ngIf="isLoading">
-        <i class="fa-solid fa-circle-notch fa-spin"></i>
-        <p>Cargando eventos...</p>
-    </div>
-
-    <!-- Schedule View -->
-    <div class="schedule-container" *ngIf="!isLoading && (upcomingEvents.length > 0 || pastEvents.length > 0)">
-        
-        <!-- Upcoming Events Section -->
-        <div class="schedule-section">
-            <h2 class="section-title">
-                <i class="fa-solid fa-clock-rotate-left"></i> Próximos Eventos
-            </h2>
-            
-            <div class="events-grid" *ngIf="upcomingEvents.length > 0; else noUpcoming">
-                <div class="event-card upcoming" *ngFor="let event of upcomingEvents">
-                    <div class="event-date-badge">
-                        <span class="day">{{ event.startDateTime | date:'dd' }}</span>
-                        <span class="month">{{ event.startDateTime | date:'MMM' | uppercase }}</span>
-                    </div>
-                    <div class="event-details">
-                        <h3 class="event-title">{{ event.serviceName }}</h3>
-                        <div class="event-meta">
-                            <span><i class="fa-regular fa-calendar"></i> {{ event.startDateTime | date:'fullDate' }}</span>
-                            <span><i class="fa-regular fa-clock"></i> {{ event.startDateTime | date:'shortTime' }} - {{ event.endDateTime | date:'shortTime' }}</span>
-                            <span><i class="fa-solid fa-map-pin"></i> {{ event.branchName }}</span>
-                            <span *ngIf="event.address"><i class="fa-solid fa-location-dot"></i> {{ event.address }}</span>
-                        </div>
-                    </div>
-                    <div class="event-actions">
-                        <button class="icon-btn danger" 
-                                (click)="cancelEvent(event)" 
-                                title="Cancelar Evento" 
-                                *ngIf="canCancel">
-                            <i class="fa-solid fa-ban"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <ng-template #noUpcoming>
-                <div class="empty-section">
-                    <p>No hay eventos próximos programados.</p>
-                </div>
-            </ng-template>
-        </div>
-
-        <!-- Past Events Section -->
-        <div class="schedule-section">
-            <h2 class="section-title text-muted-title">
-                <i class="fa-solid fa-history"></i> Historial
-            </h2>
-            
-            <div class="events-list history" *ngIf="pastEvents.length > 0">
-                <div class="event-item" *ngFor="let event of pastEvents">
-                    <div class="event-date">
-                        {{ event.startDateTime | date:'mediumDate' }}
-                    </div>
-                    <div class="event-info">
-                        <span class="name">{{ event.serviceName }}</span>
-                        <span class="location"><i class="fa-solid fa-map-pin"></i> {{ event.branchName }}</span>
-                    </div>
-                    <div class="event-status">
-                        <span class="badge badge-secondary">Finalizado</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Empty State (Global) -->
-    <div class="empty-state" *ngIf="!isLoading && events.length === 0">
-        <div class="empty-icon">
-            <i class="fa-solid fa-calendar-xmark"></i>
-        </div>
-        <h3>No hay eventos registrados</h3>
-        <p>Los eventos pasados y futuros aparecerán aquí.</p>
-        <button class="btn btn-primary" (click)="openModal()" *ngIf="canCreate">
-            <i class="fa-solid fa-plus"></i>
-            Crear Primer Evento
+<!-- Modal Form (Only needed here, child handles calendar) -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-content" *ngIf="showModal">
+    <div class="modal-header">
+        <h2 class="modal-title">Nuevo Evento</h2>
+        <button class="btn-icon" (click)="closeModal()">
+            <i class="fa-solid fa-times"></i>
         </button>
     </div>
-</div>
 
-<!-- Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h2>Nuevo Evento de Servicio</h2>
-            <button class="close-btn" (click)="closeModal()">&times;</button>
+    <form [formGroup]="form" (ngSubmit)="save()" class="modal-form">
+        <!-- Service Selection -->
+        <div class="form-group">
+            <label class="form-label">Servicio</label>
+            <select formControlName="serviceId" class="form-control">
+                <option value="">Seleccione un servicio</option>
+                <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+            </select>
         </div>
 
-        <div class="modal-body">
-            <form [formGroup]="form" (submit)="save()">
-                <div class="form-grid">
-                    <div class="soft-input-group full-width">
-                        <label class="soft-label">Tipo de Servicio</label>
-                        <div class="soft-input-wrapper">
-                            <i class="fa-solid fa-church soft-input-icon"></i>
-                            <select formControlName="serviceId" class="soft-input">
-                                <option value="" disabled selected>Seleccione un servicio...</option>
-                                <option *ngFor="let service of services" [value]="service.id">
-                                    {{ service.name }}
-                                </option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down select-arrow"></i>
-                        </div>
-                    </div>
-
-                    <div class="soft-input-group full-width" *ngIf="isAdmin">
-                        <label class="soft-label">Sede / Branch</label>
-                        <div class="soft-input-wrapper">
-                            <i class="fa-solid fa-map-marker-alt soft-input-icon"></i>
-                            <select formControlName="branchId" class="soft-input">
-                                <option value="" disabled selected>Seleccione una sede...</option>
-                                <option *ngFor="let branch of branches" [value]="branch.id">
-                                    {{ branch.name }}
-                                </option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down select-arrow"></i>
-                        </div>
-                    </div>
-
-                    <div class="soft-input-group">
-                        <label class="soft-label">Fecha</label>
-                        <div class="soft-input-wrapper">
-                            <i class="fa-solid fa-calendar soft-input-icon"></i>
-                            <input type="date" formControlName="date" class="soft-input" required>
-                        </div>
-                    </div>
-
-                    <div class="row-group">
-                        <div class="soft-input-group">
-                            <label class="soft-label">Hora Inicio</label>
-                            <div class="soft-input-wrapper">
-                                <i class="fa-solid fa-clock soft-input-icon"></i>
-                                <input type="time" formControlName="startTime" class="soft-input" required>
-                            </div>
-                        </div>
-
-                        <div class="soft-input-group">
-                            <label class="soft-label">Hora Fin</label>
-                            <div class="soft-input-wrapper">
-                                <i class="fa-solid fa-clock soft-input-icon"></i>
-                                <input type="time" formControlName="endTime" class="soft-input" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-muted" (click)="closeModal()" [disabled]="isSaving">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving">
-                        <i class="fa-solid" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-                        {{ isSaving ? 'Crear Evento' : 'Crear' }}
-                    </button>
-                </div>
-            </form>
+        <!-- Branch Selection -->
+        <div class="form-group" *ngIf="isAdmin || currentUserBranchId">
+            <label class="form-label">Sede</label>
+            <select formControlName="branchId" class="form-control" [attr.disabled]="!isAdmin ? '' : null">
+                <option value="">Seleccione una sede</option>
+                <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+            </select>
         </div>
-    </div>
+
+        <!-- Date -->
+        <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input type="date" formControlName="date" class="form-control" [min]="minDate">
+        </div>
+
+        <!-- Time Range -->
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Hora Inicio</label>
+                <input type="time" formControlName="startTime" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hora Fin</label>
+                <input type="time" formControlName="endTime" class="form-control">
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                <span *ngIf="!isSaving">Guardar</span>
+                <span *ngIf="isSaving"><i class="fa-solid fa-spinner fa-spin"></i> Guardando...</span>
+            </button>
+        </div>
+    </form>
 </div>

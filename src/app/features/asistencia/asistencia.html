@@ -36,7 +36,9 @@
                     </div>
                 </div>
                 <div class="banner-content">
-                    <div class="banner-label">EN CURSO</div>
+                    <div class="banner-label" [class.text-danger]="isEventFinished" [class.text-success]="!isEventFinished">
+                        {{ isEventFinished ? 'EVENTO FINALIZADO' : 'EN CURSO' }}
+                    </div>
                     <h2 class="banner-title">{{ selectedActiveEvent.serviceName }}</h2>
                     <div class="banner-meta">
                         <span class="meta-item">
@@ -82,24 +84,20 @@
             </div>
 
             <!-- 3. Past Event Selector (Admin) -->
+            <!-- 3. Past Event Selector (Calendar Mode) -->
             <div class="past-events-panel fade-in" *ngIf="showPastEvents">
                 <div class="panel-header">
-                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial de Eventos</h3>
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Seleccione un evento pasado</h3>
                     <button class="close-panel-btn" (click)="togglePastEvents()">
                         <i class="fa-solid fa-xmark"></i> Volver
                     </button>
                 </div>
-                <div class="panel-body">
-                    <div class="soft-input-wrapper full-width">
-                        <i class="fa-solid fa-calendar-day soft-input-icon"></i>
-                        <select class="soft-input" [(ngModel)]="selectedEventId" (ngModelChange)="onEventSelect($event)">
-                            <option value="" disabled selected>Seleccione un evento anterior...</option>
-                            <option *ngFor="let event of pastEvents" [value]="event.id">
-                                {{ event.serviceName }} | {{ event.startDateTime | date:'mediumDate' }} - {{ event.startDateTime | date:'shortTime' }} | {{ event.branchName }}
-                            </option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down select-arrow"></i>
-                    </div>
+                <div class="panel-body" style="padding: 0;">
+                    <app-service-calendar 
+                        [isAdmin]="isAdmin" 
+                        [isSelectionMode]="true"
+                        (eventSelected)="selectActiveEvent($event)">
+                    </app-service-calendar>
                 </div>
             </div>
 
@@ -212,9 +210,11 @@
                         <td colspan="7" class="empty-state">No se encontraron integrantes activos</td>
                     </tr>
                     <tr *ngIf="isLoading">
-                        <td colspan="7" class="loading-state">
-                            <div class="spinner"></div>
-                            Cargando integrantes...
+                        <td colspan="6" style="padding: 0; border: none;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div>Cargando integrantes...</div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

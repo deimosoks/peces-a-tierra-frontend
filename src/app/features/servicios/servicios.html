@@ -118,9 +118,11 @@
                         <td colspan="4" class="empty-state">No hay servicios registrados</td>
                     </tr>
                     <tr *ngIf="isLoading">
-                        <td colspan="4" class="loading-state">
-                            <div class="spinner"></div>
-                            Cargando servicios...
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div>Cargando servicios...</div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

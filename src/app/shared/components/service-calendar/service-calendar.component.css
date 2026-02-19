@@ -13,6 +13,7 @@
     padding: 1rem;
     background: var(--bg-main);
     box-shadow: var(--shadow-sm);
+    border-radius: 12px;
 }
 
 /* Header */
@@ -233,9 +234,25 @@
     line-height: 1.2;
 }
 
-.event-pill:hover {
-    background: rgba(99, 102, 241, 0.2);
+.event-pill.clickable:hover {
     transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    filter: brightness(0.95);
+}
+
+.event-pill.disabled-event {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #e2e8f0;
+    color: #94a3b8;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+/* Dark mode for disabled */
+:host-context([data-theme='dark']) .event-pill.disabled-event {
+    background: #334155;
+    color: #64748b;
 }
 
 .event-time {
@@ -287,109 +304,63 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Modal Styles (Reused) */
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-}
-
-.modal-content {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--bg-card);
-    width: 90%;
-    max-width: 500px;
-    border-radius: 16px;
-    padding: 1.5rem;
-    z-index: 1001;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.modal-title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-}
-
-.btn-icon {
-    background: transparent;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    cursor: pointer;
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--bg-input);
-    color: var(--text-main);
-    font-size: 0.95rem;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .calendar-container {
         padding: 0.5rem;
     }
 
+    /* Mobile Header Layout */
     .calendar-header {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .header-left {
         justify-content: space-between;
         width: 100%;
+        margin-bottom: 0.25rem; /* Space below date nav */
     }
     
     .header-actions {
-        justify-content: space-between;
         width: 100%;
+        display: flex;
+        flex-direction: column; /* Stack vertically */
+        gap: 0.75rem;
+    }
+
+    /* Service Filter: Full Width */
+    .service-filter-group {
+        width: 100%;
+    }
+
+    .service-filter-group .soft-input {
+        width: 100%;
+        padding: 0.6rem 0.6rem 0.6rem 2.5rem !important;
+    }
+
+    /* Branch Filter: Full Width */
+    .branch-filter-group {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+    
+    .branch-filter-group select {
+        width: 100% !important;
+    }
+
+    /* New Event Button: Full Width */
+    .btn-new-event {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 0.6rem !important;
+        height: auto !important;
+    }
+    
+    .btn-new-event .desktop-only {
+        display: inline-block !important;
+        margin-left: 0.5rem;
     }
 
     .month-label {
@@ -433,39 +404,5 @@
     
     .desktop-only {
         display: none;
-    }
-
-    /* Reusing the branch filter mobile styles from users panel logic */
-    .branch-filter-group {
-        min-width: auto !important;
-        flex: 0 0 auto !important;
-        width: 42px !important; 
-        position: relative;
-    }
-    
-    .branch-filter-group .soft-input-wrapper {
-        justify-content: center;
-    }
-
-    .branch-filter-group select {
-        padding: 0 !important;
-        color: transparent !important;
-        background-color: var(--bg-input) !important;
-        background-image: none !important;
-        text-align: center;
-        width: 100% !important;
-        direction: rtl; /* Open left */
-    }
-    
-    .branch-filter-group select option {
-        color: var(--text-main) !important;
-        background-color: var(--bg-card) !important;
-        direction: ltr;
-        text-align: left;
-    }
-
-    .branch-filter-group .soft-input-icon {
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
     }
 }

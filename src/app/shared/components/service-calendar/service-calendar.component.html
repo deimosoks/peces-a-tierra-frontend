@@ -1,0 +1,85 @@
+<div class="calendar-container fade-in">
+    <!-- Header -->
+    <div class="calendar-header">
+        <div class="header-left">
+            <div class="calendar-nav">
+                <button class="nav-btn" (click)="prevMonth()">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <h1 class="month-label">{{ currentMonthLabel | titlecase }}</h1>
+                <button class="nav-btn" (click)="nextMonth()">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <button class="nav-btn today-btn" (click)="goToToday()">Hoy</button>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <!-- Service Filter -->
+            <div class="soft-input-group service-filter-group">
+                <div class="soft-input-wrapper">
+                    <i class="fa-solid fa-church soft-input-icon"></i>
+                    <select [(ngModel)]="selectedServiceId" (change)="onFilterChange()" class="soft-input">
+                        <option value="">Todos los servicios</option>
+                        <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Branch Filter (Admin Only) -->
+            <div class="soft-input-group branch-filter-group" *ngIf="isAdmin">
+                <div class="soft-input-wrapper">
+                    <i class="fa-solid fa-building soft-input-icon"></i>
+                    <select [(ngModel)]="selectedBranchId" (change)="onFilterChange()" class="soft-input">
+                        <option value="">Todas las sedes</option>
+                        <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Create Button (Management Mode Only) -->
+            <button class="btn btn-primary btn-new-event" (click)="onCreateClick()" *ngIf="!isSelectionMode && canCreate">
+                <i class="fa-solid fa-plus"></i> <span class="desktop-only">Nuevo Evento</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-wrapper">
+        <!-- Weekday Headers -->
+        <div class="calendar-grid-header">
+            <div class="weekday-cell" *ngFor="let day of weekDays">{{ day }}</div>
+        </div>
+
+        <!-- Days Grid -->
+        <div class="calendar-grid-body">
+            <div class="day-cell" *ngFor="let day of calendarDays" 
+                 [class.not-current-month]="!day.isCurrentMonth"
+                 [class.today]="day.isToday">
+                
+                <div class="day-header">
+                    <span class="day-number">{{ day.date | date:'d' }}</span>
+                </div>
+
+                <div class="day-events">
+                    <div class="event-pill" *ngFor="let event of day.events" 
+                         (click)="onEventClick(event)"
+                         [title]="event.serviceName + ' (' + (event.startDateTime | date:'HH:mm') + ' - ' + (event.endDateTime | date:'HH:mm') + ') \n' + (event.address || event.branchName)"
+                         [class.clickable]="!isSelectionMode || !isFutureEvent(event)"
+                         [class.disabled-event]="isSelectionMode && isFutureEvent(event)">
+                        <span class="event-time">
+                            {{ event.startDateTime | date:'HH:mm' }} - {{ event.endDateTime | date:'HH:mm' }}
+                        </span>
+                        <span class="event-title">{{ event.serviceName }}</span>
+                        <span class="event-branch" *ngIf="isAdmin && !selectedBranchId">{{ event.branchName }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Cargando eventos...</p>
+        </div>
+    </div>
+</div>

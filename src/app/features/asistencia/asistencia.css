@@ -1197,32 +1197,11 @@
         margin-bottom: 0.25rem !important;
     }
 }
-.empty-state,
-.loading-state {
+.empty-state {
     padding: 4rem !important;
     text-align: center;
     color: #94a3b8;
     border: none !important;
-}
-
-.spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid var(--primary);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
 }
 
 /* Management View Specific Styles */
@@ -1866,6 +1845,20 @@
     padding: 1.5rem;
     border: 2px dashed var(--primary);
     background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    height: 600px; /* Fixed height to allow internal scrolling */
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.past-events-panel .panel-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .panel-header {

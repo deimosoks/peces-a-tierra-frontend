@@ -426,9 +426,11 @@
             <td colspan="5" class="empty-state">No se encontraron integrantes</td>
           </tr>
           <tr *ngIf="isLoading">
-            <td colspan="5" class="loading-state">
-              <div class="spinner"></div>
-              Cargando integrantes...
+            <td colspan="8" style="padding: 0; border: none;">
+              <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <div>Cargando integrantes...</div>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -872,10 +874,14 @@
         <!-- Branch (Admin Only) -->
         <div class="filter-section" *ngIf="isAdmin">
           <h3>Sede</h3>
-          <select [(ngModel)]="tempSelectedBranchId" class="premium-input full-width-input">
-            <option value="">Todas las sedes</option>
-            <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
-          </select>
+          <div class="soft-input-wrapper full-width">
+            <i class="fa-solid fa-building soft-input-icon"></i>
+            <select [(ngModel)]="tempSelectedBranchId" class="soft-input">
+              <option value="">Todas las sedes</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
         </div>
 
         <!-- Type & Category -->

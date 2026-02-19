@@ -114,9 +114,11 @@
                         <td colspan="6" class="empty-state">No se encontraron asistencias</td>
                     </tr>
                     <tr *ngIf="isLoading">
-                        <td colspan="6" class="loading-state">
-                            <div class="spinner"></div>
-                            Cargando asistencias...
+                        <td colspan="7" style="padding: 0; border: none;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div>Cargando asistencias...</div>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

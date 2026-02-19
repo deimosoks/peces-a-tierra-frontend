@@ -14,10 +14,12 @@ import { ServiceEventResponseDto } from '../../core/models/service-event.model';
 import { BranchService } from '../../core/services/branch.service';
 import { Branch } from '../../core/models/branch.model';
 
+import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component';
+
 @Component({
   selector: 'app-asistencia',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ServiceCalendarComponent],
   templateUrl: './asistencia.html',
   styleUrl: './asistencia.css',
 })
@@ -161,6 +163,10 @@ export class Asistencia implements OnInit {
       this.selectedActiveEvent = event;
       this.selectedEventId = event.id;
       this.selectServiceFromEvent(event);
+      // If we were in past events mode, close it to show the selected event banner
+      if (this.showPastEvents) {
+          this.showPastEvents = false;
+      }
   }
 
   clearActiveEventSelection() {
@@ -184,7 +190,6 @@ export class Asistencia implements OnInit {
   togglePastEvents() {
     this.showPastEvents = !this.showPastEvents;
     if (this.showPastEvents) {
-        this.loadAllEvents();
         this.selectedEventId = '';
         this.selectedActiveEvent = null; // Clear active event to allow selection
         this.noActiveEvent = false; // Hide warning when in manual mode
@@ -246,6 +251,11 @@ export class Asistencia implements OnInit {
     if (!this.selectedServiceId) return 'Seleccionar Servicio';
     const service = this.services.find(s => s.id === this.selectedServiceId);
     return service ? service.name : 'Servicio no encontrado';
+  }
+
+  get isEventFinished(): boolean {
+      if (!this.selectedActiveEvent) return false;
+      return new Date(this.selectedActiveEvent.endDateTime) < new Date();
   }
 
   getMemberAge(member: Integrante): string | number {

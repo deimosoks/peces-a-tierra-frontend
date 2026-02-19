@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
-import { ServiceEventRequestDto, ServiceEventResponseDto } from '../models/service-event.model';
+import { ServiceEventRequestDto, ServiceEventResponseDto, ServiceEventsFilterRequestDto, ServiceEventPagesResponseDto } from '../models/service-event.model';
 
 @Injectable({
     providedIn: 'root'
@@ -11,8 +11,8 @@ export class ServiceEventService {
     private http = inject(HttpClient);
     private baseUrl = `${API_CONFIG.baseUrl}/services-events`;
 
-    findAll(): Observable<ServiceEventResponseDto[]> {
-        return this.http.get<ServiceEventResponseDto[]>(this.baseUrl);
+    findAll(filter?: ServiceEventsFilterRequestDto): Observable<ServiceEventResponseDto[]> {
+        return this.http.post<ServiceEventResponseDto[]>(`${this.baseUrl}/calendar`, filter);
     }
 
     getActiveEvent(): Observable<ServiceEventResponseDto[]> {

@@ -1,20 +1,21 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { ServiceEventService } from '../../core/services/service-event.service';
 import { AsistenciaService } from '../../core/services/asistencia';
 import { BranchService } from '../../core/services/branch.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { AuthService } from '../../core/services/auth.service';
-import { ServiceEvent, ServiceEventRequestDto } from '../../core/models/service-event.model';
+import { ServiceEvent } from '../../core/models/service-event.model';
 import { IglesiaService } from '../../core/models/asistencia.model';
 import { Branch } from '../../core/models/branch.model';
+import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component';
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ServiceCalendarComponent],
   templateUrl: './eventos.html',
   styleUrl: './eventos.css'
 })
@@ -27,30 +28,31 @@ export class Eventos implements OnInit {
   private confirmationService = inject(ConfirmationService);
   private authService = inject(AuthService);
 
-  // Data
-  events: ServiceEvent[] = [];
-  upcomingEvents: ServiceEvent[] = [];
-  pastEvents: ServiceEvent[] = [];
+  @ViewChild(ServiceCalendarComponent) calendarComponent!: ServiceCalendarComponent;
+
+  // Data needed for Form
   services: IglesiaService[] = [];
   branches: Branch[] = [];
 
   // State
-  isLoading = true;
   isSaving = false;
   showModal = false;
 
   // Permissions
   canCreate = false;
   canCancel = false;
-
   isAdmin = false;
-  currentUserBranchId?: string;
+  
+  currentUserBranchId: string = '';
+
+  // Forms
   form: FormGroup;
+  minDate: string = new Date().toISOString().split('T')[0];
 
   constructor() {
     this.form = this.fb.group({
       serviceId: ['', Validators.required],
-      branchId: [''], // Validator added dynamically based on role
+      branchId: [''], 
       date: [new Date().toISOString().substring(0, 10), Validators.required],
       startTime: ['08:00', Validators.required],
       endTime: ['10:00', Validators.required]
@@ -60,31 +62,21 @@ export class Eventos implements OnInit {
   ngOnInit() {
     this.checkPermissions();
     
-    // Add validator if admin
+    // Set validation for branchId if admin
     if (this.isAdmin) {
         this.form.get('branchId')?.addValidators(Validators.required);
     }
-
-    this.loadEvents();
     
-    if (this.canCreate) {
-      this.loadServices();
-      if (this.isAdmin) {
-          this.loadBranches();
-      } else {
-          // If not admin, try to set branch from user info
-          const user = this.authService.currentUser();
-          if (user?.branchId) {
-              this.currentUserBranchId = user.branchId;
-              this.form.patchValue({ branchId: this.currentUserBranchId });
-          } else if (user?.memberResponseDto?.branch?.id) {
-              // Fallback to memberResponseDto if branchId is not directly on user
-              this.currentUserBranchId = user.memberResponseDto.branch.id;
-              this.form.patchValue({ branchId: this.currentUserBranchId });
-          } else {
-              console.warn('Could not find branch for current user');
-          }
-      }
+    // Load data for form
+    this.loadServices();
+
+    if (this.isAdmin) {
+      this.loadBranches(); 
+    }
+
+    if (!this.isAdmin) {
+         const user = this.authService.currentUser();
+         this.currentUserBranchId = user?.branchId || user?.memberResponseDto?.branch?.id || '';
     }
   }
 
@@ -94,53 +86,15 @@ export class Eventos implements OnInit {
     this.isAdmin = this.authService.can('ADMINISTRATOR');
   }
 
-  loadEvents() {
-    this.isLoading = true;
-    this.eventService.findAll().subscribe({
-      next: (data) => {
-        this.events = data;
-        
-        const now = new Date();
-        
-        this.upcomingEvents = data
-            .filter(e => new Date(e.endDateTime) >= now)
-            .sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime());
-            
-        this.pastEvents = data
-            .filter(e => new Date(e.endDateTime) < now)
-            .sort((a, b) => new Date(b.startDateTime).getTime() - new Date(a.startDateTime).getTime());
-
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading events', err);
-        this.isLoading = false;
-        this.notificationService.error('Error al cargar los eventos');
-      }
-    });
-  }
-
   loadServices() {
-    this.asistenciaService.getServices(true).subscribe({
-      next: (data) => {
-        this.services = data;
-      },
-      error: (err) => {
-        console.error('Error loading services', err);
-      }
-    });
+    this.asistenciaService.getServices(true).subscribe(data => this.services = data);
   }
 
   loadBranches() {
-    this.branchService.findAll().subscribe({
-      next: (data) => {
-        this.branches = data;
-      },
-      error: (err) => {
-        console.error('Error loading branches', err);
-      }
-    });
+    this.branchService.findAll().subscribe(data => this.branches = data);
   }
+
+  // --- Actions forwarded from Child ---
 
   openModal() {
     this.form.reset({
@@ -150,6 +104,11 @@ export class Eventos implements OnInit {
       startTime: '08:00',
       endTime: '10:00'
     });
+    
+    if (!this.isAdmin && this.currentUserBranchId) {
+         this.form.patchValue({ branchId: this.currentUserBranchId });
+    }
+    
     this.showModal = true;
   }
 
@@ -160,16 +119,18 @@ export class Eventos implements OnInit {
   }
 
   save() {
-    if (this.form.invalid || this.isSaving) return;
+    if (this.form.invalid || this.isSaving) {
+        this.form.markAllAsTouched();
+        return;
+    }
     
     this.isSaving = true;
     const formValue = this.form.value;
     
-    // Combine date + time
     const startDateTime = `${formValue.date}T${formValue.startTime}:00`;
     const endDateTime = `${formValue.date}T${formValue.endTime}:00`;
 
-    const dto: ServiceEventRequestDto = {
+    const dto: any = { 
         serviceId: formValue.serviceId,
         branchId: formValue.branchId,
         startDateTime: startDateTime,
@@ -179,37 +140,41 @@ export class Eventos implements OnInit {
     this.eventService.create(dto).subscribe({
       next: () => {
         this.notificationService.success('Evento creado correctamente');
-        this.loadEvents();
+        if (this.calendarComponent) {
+            this.calendarComponent.refresh();
+        }
         this.closeModal();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error saving event', err);
-        this.notificationService.error('Error al crear el evento');
+        this.notificationService.error(err.error?.message || 'Error al crear el evento');
         this.isSaving = false;
       }
     });
   }
 
   async cancelEvent(event: ServiceEvent) {
+    if (!this.canCancel) return;
+    
     const confirmed = await this.confirmationService.confirm({
       title: 'Cancelar/Finalizar Evento',
-      message: `¿Estás seguro de cancelar o finalizar el evento de ${event.serviceName} en ${event.branchName}?`,
+      message: `¿Estás seguro de cancelar o finalizar el evento de ${event.serviceName}?`,
       type: 'danger',
-      confirmText: 'Confirmar'
+      confirmText: 'Sí, Cancelar'
     });
 
     if (confirmed) {
       this.eventService.cancelEvent(event.id).subscribe({
         next: () => {
-          this.notificationService.success('Evento actualizado correctamente');
-          this.loadEvents();
+          this.notificationService.success('Evento cancelado');
+          if (this.calendarComponent) {
+            this.calendarComponent.refresh();
+          }
         },
         error: (err: any) => {
-          console.error('Error cancelling event', err);
           this.notificationService.error('Error al cancelar el evento');
         }
       });
     }
   }
 }
-
