@@ -56,12 +56,12 @@
                 </div>
                 <div class="attendance-body">
                     <div class="category-item" *ngFor="let cat of branch.categories">
-                        <div class="cat-header">
+                        <div class="cat-header clickable" (click)="openAttendanceDetails(branch, cat)">
                             <span class="cat-name">{{ cat.name }}</span>
                             <span class="cat-total">{{ cat.total }}</span>
                         </div>
                         <div class="sub-list" *ngIf="cat.subCategories && cat.subCategories.length > 0">
-                            <div class="sub-item" *ngFor="let sub of cat.subCategories">
+                            <div class="sub-item clickable" *ngFor="let sub of cat.subCategories" (click)="openAttendanceDetails(branch, cat, sub); $event.stopPropagation()">
                                 <span>{{ sub.name }}</span>
                                 <span>{{ sub.total }}</span>
                             </div>
@@ -183,6 +183,69 @@
                 <div class="detail-item full">
                     <label>Dirección:</label>
                     <span>{{ selectedMember.address || '---' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<!-- Attendance Details Modal -->
+<div class="modal-overlay" *ngIf="showAttendanceDetailsModal" (click)="closeAttendanceDetailsModal()">
+    <div class="modal-content details-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ selectedCategoryForDetails }} <small class="branch-subtitle">({{ selectedBranchForDetails }})</small></h2>
+            <button class="close-btn" (click)="closeAttendanceDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div *ngIf="isLoadingDetails" class="loading-spinner" style="
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
+                min-height: 200px !important;
+                background: transparent !important;
+                transform: none !important;
+                animation: none !important;
+            ">
+                <div class="spinner" style="
+                    width: 40px !important;
+                    height: 40px !important;
+                    border: 4px solid rgba(255, 255, 255, 0.1) !important;
+                    border-left-color: #3b82f6 !important;
+                    border-radius: 50% !important;
+                    animation: dashboard-spin 1s linear infinite !important;
+                    margin-bottom: 10px !important;
+                "></div>
+                <span style="
+                    font-size: 0.9rem !important;
+                    color: #94a3b8 !important;
+                    animation: none !important;
+                    transform: none !important;
+                ">Cargando lista...</span>
+            </div>
+
+            <div *ngIf="!isLoadingDetails && attendanceDetails.length === 0" class="empty-state">
+                No hay asistentes registrados en esta categoría hoy.
+            </div>
+
+            <div *ngIf="!isLoadingDetails" class="attendance-groups">
+                <div class="service-group" *ngFor="let group of attendanceDetails">
+                    <h3 class="group-title">
+                        <span><i class="fa-solid fa-church"></i> {{ group.serviceName }}</span>
+                        <span class="service-time">{{ group.serviceDate | date:'shortTime' }}</span>
+                    </h3>
+                    
+                    <div class="attendees-list">
+                        <div class="attendee-item" *ngFor="let person of group.attendees">
+                            <div class="attendee-info">
+                                <span class="name">{{ person.memberCompleteName }}</span>
+                                <span class="time" title="Hora de llegada">
+                                    <i class="fa-regular fa-clock"></i> {{ person.attendanceDate | date:'shortTime' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

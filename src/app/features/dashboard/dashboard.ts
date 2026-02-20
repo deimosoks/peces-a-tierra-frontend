@@ -5,8 +5,10 @@ import { RouterLink } from '@angular/router';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { DashboardService } from '../../core/services/dashboard';
 import { ReporteService } from '../../core/services/reporte';
+import { AsistenciaService } from '../../core/services/asistencia';
 import { DashboardData } from '../../core/models/dashboard.model';
 import { Integrante } from '../../core/models/integrante.model';
+import { AttendanceResponseDto } from '../../core/models/asistencia.model';
 import { ThemeService } from '../../core/services/theme.service';
 import { effect } from '@angular/core';
 
@@ -21,9 +23,17 @@ export class Dashboard implements OnInit {
     private dashboardService = inject(DashboardService);
     private themeService = inject(ThemeService);
     private cdr = inject(ChangeDetectorRef);
+    private asistenciaService = inject(AsistenciaService);
 
     data: DashboardData | null = null;
     isLoading = true;
+
+    // Attendance Details Modal
+    showAttendanceDetailsModal = false;
+    isLoadingDetails = false;
+    attendanceDetails: { serviceName: string, serviceDate: string, attendees: AttendanceResponseDto[] }[] = [];
+    selectedBranchForDetails: string = '';
+    selectedCategoryForDetails: string = '';
 
     // Chart
     public chartOptions: any;
@@ -45,6 +55,7 @@ export class Dashboard implements OnInit {
     }
 
     ngOnInit() {
+        console.log('DASHBOARD COMPONENT LOADED - VERSION: ' + new Date().toISOString());
         this.loadDashboardData();
         this.loadTodayAttendance();
     }
@@ -316,7 +327,12 @@ export class Dashboard implements OnInit {
         data.forEach(d => {
             const branchName = d.branchName || 'Sin Sede';
             if (!branchMap.has(branchName)) {
-                branchMap.set(branchName, { name: branchName, total: 0, categories: new Map<string, any>() });
+                branchMap.set(branchName, { 
+                    name: branchName, 
+                    id: d.branchId, // Capture ID
+                    total: 0, 
+                    categories: new Map<string, any>() 
+                });
             }
             const branch = branchMap.get(branchName);
             branch.total += (d.total || 0);
@@ -348,5 +364,64 @@ export class Dashboard implements OnInit {
             age--;
         }
         return age;
+    }
+    openAttendanceDetails(branch: any, category: any, subCategory: any = null) {
+        this.selectedBranchForDetails = branch.name;
+        this.selectedCategoryForDetails = subCategory ? `${category.name} - ${subCategory.name}` : category.name;
+        this.showAttendanceDetailsModal = true;
+        this.isLoadingDetails = true;
+        console.log('Loading details...'); // Force rebuild
+        this.attendanceDetails = [];
+
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        
+        const filters: any = {
+            startDate: this.toLocalISOString(start),
+            endDate: this.toLocalISOString(end),
+            category: [category.name || category],
+            subCategory: subCategory ? [subCategory.name || subCategory] : []
+        };
+        
+        if (branch.id) {
+             filters.branchId = branch.id;
+        }
+
+        this.asistenciaService.getAttendances(filters, 0).subscribe({
+            next: (res) => {
+                const groups = new Map<string, AttendanceResponseDto[]>();
+                res.attendances.forEach(a => {
+                    const key = `${a.serviceDate}_${a.serviceName}`;
+                    if (!groups.has(key)) {
+                        groups.set(key, []);
+                    }
+                    groups.get(key)!.push(a);
+                });
+
+                this.attendanceDetails = Array.from(groups.entries()).map(([key, list]) => {
+                     const first = list[0];
+                     return {
+                         serviceName: first.serviceName,
+                         serviceDate: first.serviceDate,
+                         attendees: list
+                     };
+                });
+                this.attendanceDetails.sort((a, b) => new Date(a.serviceDate).getTime() - new Date(b.serviceDate).getTime());
+                
+                this.isLoadingDetails = false;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error('Error details:', err);
+                this.isLoadingDetails = false;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    closeAttendanceDetailsModal() {
+        this.showAttendanceDetailsModal = false;
+        this.attendanceDetails = [];
     }
 }

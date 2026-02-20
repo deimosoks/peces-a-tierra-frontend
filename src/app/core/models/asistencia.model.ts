@@ -45,6 +45,8 @@ export interface AttendanceFiltersRequestDto {
     endDate?: string;
     branchId?: string;
     memberId?: string;
+    category?: string[];
+    subCategory?: string[];
 }
 
 export interface AttendanceInvalidateDto {
