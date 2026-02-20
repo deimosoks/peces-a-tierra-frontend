@@ -136,7 +136,7 @@
                         alt="">
                     <div class="bday-info">
                         <span class="bday-name">{{ member.completeName }}</span>
-                        <span class="bday-date">{{ member.birthdate | date:'longDate' }}</span>
+                        <span class="bday-date">{{ member.birthdate | date:'longDate' }} ({{ calculateAge(member.birthdate) }} años)</span>
                     </div>
                     <button class="view-btn" (click)="viewMember(member)">
                         <i class="fa-solid fa-eye"></i>

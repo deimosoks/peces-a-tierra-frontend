@@ -223,7 +223,13 @@ export class Asistencia implements OnInit {
         const timePart = event.startDateTime.substring(11, 16);
         
         this.serviceDate = `${datePart}T${timePart}`;
-        this.attendanceDate = this.getNowForInput(); // default attendance time to now
+        
+        // If event is past, default attendance time to service start time
+        if (new Date(event.endDateTime) < new Date()) {
+            this.attendanceDate = `${datePart}T${timePart}`;
+        } else {
+            this.attendanceDate = this.getNowForInput(); // default attendance time to now
+        }
     }
   }
 
@@ -475,7 +481,16 @@ export class Asistencia implements OnInit {
 
     // Refresh attendance date if automatic
     if (!this.isManualAttendanceTime) {
-      this.attendanceDate = this.getNowForInput();
+      if (this.selectedActiveEvent && new Date(this.selectedActiveEvent.endDateTime) < new Date()) {
+          // If event is past (finished), use its start date/time
+          // Extract date part YYYY-MM-DD
+          const startDateTime = this.selectedActiveEvent.startDateTime;
+          // Format needs to be ISO-like for backend LocalDateTime (e.g. 2023-10-27T10:00:00)
+          // Adjust length if necessary or just use as is if it's already in correct format
+          this.attendanceDate = startDateTime.length > 16 ? startDateTime.substring(0, 16) : startDateTime;
+      } else {
+          this.attendanceDate = this.getNowForInput();
+      }
     }
 
     // Ensure backend compatibility (adding :00 for seconds)

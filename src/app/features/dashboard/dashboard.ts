@@ -54,6 +54,20 @@ export class Dashboard implements OnInit {
         this.dashboardService.getDashboardData().subscribe({
             next: (res) => {
                 this.data = res;
+                // Sort birthdays by upcoming date (ignoring year)
+                if (this.data && this.data.membersBirthdays) {
+                    this.data.membersBirthdays.sort((a, b) => {
+                        if (!a.birthdate) return 1;
+                        if (!b.birthdate) return -1;
+                        const dateA = new Date(a.birthdate);
+                        const dateB = new Date(b.birthdate);
+                        // Compare by month and day
+                        const monthA = dateA.getMonth();
+                        const monthB = dateB.getMonth();
+                        if (monthA !== monthB) return monthA - monthB;
+                        return dateA.getDate() - dateB.getDate();
+                    });
+                }
                 this.prepareChart(res.lastWeekReport);
                 this.isLoading = false;
                 this.cdr.detectChanges();
@@ -323,5 +337,16 @@ export class Dashboard implements OnInit {
             ...b,
             categories: Array.from(b.categories.values())
         }));
+    }
+    calculateAge(birthdate: string | Date | undefined): number {
+        if (!birthdate) return 0;
+        const birth = new Date(birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
     }
 }

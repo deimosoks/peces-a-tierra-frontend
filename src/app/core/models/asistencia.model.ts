@@ -23,6 +23,7 @@ export interface AttendanceResponseDto {
     memberCategory: MemberCategoryResponseDto;
     memberType: MemberTypeResponseDto;
     attendanceDate: string;
+    serviceDate: string; // Added serviceDate
     branchName: string;
     invalid: boolean;
     note: string;

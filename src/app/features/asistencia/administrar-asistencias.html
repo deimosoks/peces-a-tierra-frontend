@@ -52,7 +52,7 @@
                         </td>
                         <td>{{ att.serviceName }}</td>
                         <td>{{ att.branchName }}</td>
-                        <td class="desktop-only">{{ att.attendanceDate | date:'short' }}</td>
+                        <td class="desktop-only">{{ att.serviceDate | date:'short' }}</td>
                         <td class="desktop-only">{{ att.attendanceDate | date:'shortTime' }}</td>
                         <td class="text-center desktop-only">
                             <span class="status-indicator" [class.invalid]="att.invalid">
@@ -183,7 +183,7 @@
                 </div>
                 <div class="detail-item">
                     <label>Fecha del Servicio:</label>
-                    <span>{{ attendanceDetails.attendanceDate | date:'medium' }}</span>
+                    <span>{{ attendanceDetails.serviceDate | date:'medium' }}</span>
                 </div>
                 <div class="detail-item">
                     <label>Hora de Llegada:</label>
