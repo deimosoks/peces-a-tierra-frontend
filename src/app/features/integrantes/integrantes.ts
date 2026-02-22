@@ -129,10 +129,12 @@ export class Integrantes implements OnInit {
             this.integranteForm.reset({
                 active: true,
                 gender: 'HOMBRE', // Match availableGenders value
-                branchId: ''
+                branchId: this.isAdmin ? '' : this.currentUserBranchId
             });
             this.filteredSubCategories = [];
         }
+
+        this.initializeGeocoder();
     }
     filters: MemberFilterRequestDto = { onlyActive: true };
 
@@ -188,6 +190,7 @@ export class Integrantes implements OnInit {
   // Remove hardcoded arrays - now using availableTypes and availableCategories
   selectedFile: File | null = null;
   imagePreview: string | null = null;
+  currentUserBranchId: string = '';
 
   ngOnInit() {
     this.checkPermissions();
@@ -196,7 +199,12 @@ export class Integrantes implements OnInit {
     this.loadMembers();
     if (this.isAdmin) {
         this.loadBranches();
+        this.integranteForm.get('branchId')?.setValidators([Validators.required]);
+    } else {
+        const user = this.authService.currentUser();
+        this.currentUserBranchId = user?.branchId || user?.memberResponseDto?.branch?.id || '';
     }
+    this.integranteForm.get('branchId')?.updateValueAndValidity();
   }
 
   isAdmin = false;
@@ -747,7 +755,6 @@ onCategoryChange() {
   openFormModal() {
     this.openModal(); // Reuse openModal logic for new member
     this.cdr.detectChanges(); // Ensure DOM is updated
-    this.initializeGeocoder();
   }
 
   // closeFormModal is handled by closeFormModal() at line 378

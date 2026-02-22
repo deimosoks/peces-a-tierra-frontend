@@ -3,15 +3,25 @@
     [isSelectionMode]="false"
     [canCreate]="canCreate"
     (eventAction)="cancelEvent($event)"
-    (createEvent)="openModal()">
+    (createEvent)="openModal()"
+    (daySelected)="onDaySelected($event)">
 </app-service-calendar>
 
 <!-- Modal Form (Only needed here, child handles calendar) -->
 <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+
+<!-- Loading Overlay -->
+<div class="modal-loading-overlay" *ngIf="isSaving && showModal">
+    <div class="spinner-wrapper">
+        <div class="spinner-circle"></div>
+        <p>Guardando evento...</p>
+    </div>
+</div>
+
 <div class="modal-content" *ngIf="showModal">
     <div class="modal-header">
         <h2 class="modal-title">Nuevo Evento</h2>
-        <button class="btn-icon" (click)="closeModal()">
+        <button class="btn-icon" (click)="closeModal()" [disabled]="isSaving">
             <i class="fa-solid fa-times"></i>
         </button>
     </div>
@@ -38,7 +48,7 @@
         <!-- Date -->
         <div class="form-group">
             <label class="form-label">Fecha</label>
-            <input type="date" formControlName="date" class="form-control" [min]="minDate">
+            <input type="date" formControlName="date" class="form-control">
         </div>
 
         <!-- Time Range -->

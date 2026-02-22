@@ -359,7 +359,20 @@
             <p style="margin-bottom: 1rem; color: #64748b;">Por favor ingrese los datos faltantes para completar el certificado de <strong>{{ selectedBaptism?.memberName }}</strong>.</p>
             
             <div class="form-group">
-                <label>No. Cédula *</label>
+                <label>Tipo de Documento *</label>
+                <select [(ngModel)]="certDocumentType" class="form-control">
+                    <option value="CC">Cédula de Ciudadanía</option>
+                    <option value="TI">Tarjeta de Identidad</option>
+                    <option value="CE">Cédula de Extranjería</option>
+                    <option value="PA">Pasaporte</option>
+                    <option value="RC">Registro Civil</option>
+                    <option value="PEP">Permiso Especial de Permanencia</option>
+                    <option value="PPT">Permiso por Protección Temporal</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>No. Documento *</label>
                 <input type="text" [(ngModel)]="certCedula" class="form-control" placeholder="Ej: 1.234.567.890">
             </div>
 

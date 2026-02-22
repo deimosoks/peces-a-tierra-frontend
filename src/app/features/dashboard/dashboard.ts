@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -11,6 +11,8 @@ import { Integrante } from '../../core/models/integrante.model';
 import { AttendanceResponseDto } from '../../core/models/asistencia.model';
 import { ThemeService } from '../../core/services/theme.service';
 import { effect } from '@angular/core';
+import { interval, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-dashboard',
@@ -19,11 +21,12 @@ import { effect } from '@angular/core';
     templateUrl: './dashboard.html',
     styleUrl: './dashboard.css'
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
     private dashboardService = inject(DashboardService);
     private themeService = inject(ThemeService);
     private cdr = inject(ChangeDetectorRef);
     private asistenciaService = inject(AsistenciaService);
+    private destroy$ = new Subject<void>();
 
     data: DashboardData | null = null;
     isLoading = true;
@@ -58,6 +61,20 @@ export class Dashboard implements OnInit {
         console.log('DASHBOARD COMPONENT LOADED - VERSION: ' + new Date().toISOString());
         this.loadDashboardData();
         this.loadTodayAttendance();
+        this.startPolling();
+    }
+
+    startPolling() {
+        interval(2000)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.loadTodayAttendance();
+            });
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     loadDashboardData() {

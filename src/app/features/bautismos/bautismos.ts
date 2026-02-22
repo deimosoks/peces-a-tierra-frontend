@@ -340,6 +340,7 @@ export class Bautismos implements OnInit {
   showCertificateModal = false;
   certCedula = '';
   certExpedition = '';
+  certDocumentType = 'CC'; // Default to CC
 
   downloadCertificate(baptism: BaptismResponseDto) {
     if (baptism.invalid) {
@@ -349,6 +350,7 @@ export class Bautismos implements OnInit {
     this.selectedBaptism = baptism;
     this.certCedula = '';
     this.certExpedition = '';
+    this.certDocumentType = 'CC'; // Reset to default
     this.showCertificateModal = true;
   }
 
@@ -363,7 +365,7 @@ export class Bautismos implements OnInit {
   async confirmDownloadCertificate() {
     if (!this.selectedBaptism) return;
     
-    if (!this.certCedula || !this.certExpedition) {
+    if (!this.certCedula || !this.certExpedition || !this.certDocumentType) {
         this.notificationService.error('Debe completar todos los campos para el certificado');
         return;
     }
@@ -372,7 +374,8 @@ export class Bautismos implements OnInit {
         await this.certificateService.generateBaptismCertificate(
             this.selectedBaptism, 
             this.certCedula, 
-            this.certExpedition
+            this.certExpedition,
+            this.certDocumentType
         );
         this.notificationService.success('Certificado generado correctamente');
         this.closeCertificateModal();

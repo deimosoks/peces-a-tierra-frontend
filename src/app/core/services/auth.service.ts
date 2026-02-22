@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, of, throwError, BehaviorSubject, map, switchMap } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
-import { LoginRequest, LoginResponse, UserInfo } from '../models/auth.model';
+import { LoginRequest, LoginResponse, UserInfo, ChanggePasswordRequest } from '../models/auth.model';
 
 @Injectable({
     providedIn: 'root'
@@ -57,6 +57,10 @@ export class AuthService {
 
         this.clearSession();
         this.router.navigate(['/login']);
+    }
+
+    changgePassword(dto: ChanggePasswordRequest): Observable<void> {
+        return this.http.post<void>(`${this.baseUrl}/changge-password`, dto);
     }
 
     refreshToken(): Observable<LoginResponse> {

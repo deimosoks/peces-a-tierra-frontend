@@ -81,9 +81,63 @@
             <i class="fa-solid fa-download"></i>
             <span>Instalar App</span>
         </button>
+        <button class="nav-item password-btn" (click)="openChangePasswordModal()">
+            <i class="fa-solid fa-key"></i>
+            <span>Cambiar Contraseña</span>
+        </button>
         <button class="nav-item logout-btn" (click)="logout()">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Cerrar Sesión</span>
         </button>
     </div>
 </aside>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" *ngIf="showChangePasswordModal" (click)="!isSavingPassword && closeChangePasswordModal()">
+    <!-- Loading Overlay -->
+    <div class="modal-loading-overlay" *ngIf="isSavingPassword" (click)="$event.stopPropagation()">
+        <div class="spinner-wrapper">
+            <div class="spinner-circle"></div>
+            <p>Cambiando contraseña...</p>
+        </div>
+    </div>
+
+    <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Cambiar Contraseña</h2>
+            <button class="close-btn" (click)="closeChangePasswordModal()" [disabled]="isSavingPassword">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <form [formGroup]="changePasswordForm" (ngSubmit)="onSubmitChangePassword()">
+                <div class="form-group">
+                    <label>Contraseña Anterior *</label>
+                    <input type="password" formControlName="oldPassword" class="form-control" placeholder="Ingrese su contraseña actual">
+                </div>
+
+                <div class="form-group">
+                    <label>Nueva Contraseña *</label>
+                    <input type="password" formControlName="password" class="form-control" placeholder="Mínimo 8 caracteres">
+                    <small class="text-error" *ngIf="changePasswordForm.get('password')?.errors?.['minlength'] && changePasswordForm.get('password')?.touched">
+                        Mínimo 8 caracteres.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirmar Nueva Contraseña *</label>
+                    <input type="password" formControlName="confirmPassword" class="form-control" placeholder="Repita la nueva contraseña">
+                    <small class="text-error" *ngIf="changePasswordForm.hasError('mismatch') && changePasswordForm.get('confirmPassword')?.touched">
+                        Las contraseñas no coinciden.
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-muted" (click)="closeChangePasswordModal()" [disabled]="isSavingPassword">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="changePasswordForm.invalid || isSavingPassword">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

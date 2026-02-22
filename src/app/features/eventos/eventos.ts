@@ -47,7 +47,6 @@ export class Eventos implements OnInit {
 
   // Forms
   form: FormGroup;
-  minDate: string = new Date().toISOString().split('T')[0];
 
   constructor() {
     this.form = this.fb.group({
@@ -96,11 +95,11 @@ export class Eventos implements OnInit {
 
   // --- Actions forwarded from Child ---
 
-  openModal() {
+  openModal(date?: string) {
     this.form.reset({
       serviceId: '',
       branchId: this.isAdmin ? '' : (this.currentUserBranchId || ''),
-      date: new Date().toISOString().substring(0, 10),
+      date: date || new Date().toISOString().substring(0, 10),
       startTime: '08:00',
       endTime: '10:00'
     });
@@ -110,6 +109,12 @@ export class Eventos implements OnInit {
     }
     
     this.showModal = true;
+  }
+
+  onDaySelected(date: string) {
+    if (this.canCreate) {
+      this.openModal(date);
+    }
   }
 
   closeModal() {

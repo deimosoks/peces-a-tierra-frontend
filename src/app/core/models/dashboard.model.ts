@@ -4,6 +4,6 @@ import { ReportData } from './reporte.model';
 export interface DashboardData {
     totalMember: number;
     membersBirthdays: Integrante[];
-    lastServiceAssistance: number;
+    totalBaptisms: number;
     lastWeekReport: ReportData[];
 }

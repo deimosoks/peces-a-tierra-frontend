@@ -55,7 +55,9 @@
         <div class="calendar-grid-body">
             <div class="day-cell" *ngFor="let day of calendarDays" 
                  [class.not-current-month]="!day.isCurrentMonth"
-                 [class.today]="day.isToday">
+                 [class.today]="day.isToday"
+                 (click)="onDayClick(day)"
+                 style="cursor: pointer;">
                 
                 <div class="day-header">
                     <span class="day-number">{{ day.date | date:'d' }}</span>
@@ -63,7 +65,7 @@
 
                 <div class="day-events">
                     <div class="event-pill" *ngFor="let event of day.events" 
-                         (click)="onEventClick(event)"
+                         (click)="onEventClick(event, $event)"
                          [title]="event.serviceName + ' (' + (event.startDateTime | date:'HH:mm') + ' - ' + (event.endDateTime | date:'HH:mm') + ') \n' + (event.address || event.branchName)"
                          [class.clickable]="!isSelectionMode || !isFutureEvent(event)"
                          [class.disabled-event]="isSelectionMode && isFutureEvent(event)">

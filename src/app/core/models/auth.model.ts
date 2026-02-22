@@ -50,3 +50,8 @@ export enum Permission {
     BAPTISM_CREATE = 'BAPTISM_CREATE',
     BAPTISM_INVALIDATE = 'BAPTISM_INVALIDATE'
 }
+export interface ChanggePasswordRequest {
+    oldPassword: string;
+    password: string;
+    confirmPassword: string;
+}

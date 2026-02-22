@@ -459,18 +459,19 @@
 
 <!-- Form Modal -->
 <div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
+  
+  <!-- Loading Overlay -->
+  <div class="modal-loading-overlay" *ngIf="isSaving && showFormModal">
+    <div class="spinner-wrapper">
+      <div class="spinner-circle"></div>
+      <p>Guardando integrante...</p>
+    </div>
+  </div>
+
   <div class="modal-content form-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ isEditing ? 'Editar Integrante' : 'Nuevo Integrante' }}</h2>
       <button class="close-btn" (click)="closeFormModal()" [disabled]="isSaving">&times;</button>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="modal-loading-overlay" *ngIf="isSaving">
-      <div class="spinner-wrapper">
-        <div class="spinner-circle"></div>
-        <p>Procesando...</p>
-      </div>
     </div>
 
     <div class="modal-body">
@@ -514,9 +515,12 @@
           <div class="form-group" *ngIf="isAdmin">
             <label for="branchId">Sede *</label>
             <select id="branchId" formControlName="branchId">
-              <option value="">Seleccione una sede</option>
+              <option value="" disabled>Seleccione una sede</option>
               <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
             </select>
+            <small class="text-error" *ngIf="integranteForm.get('branchId')?.invalid && integranteForm.get('branchId')?.touched">
+              La sede es requerida.
+            </small>
           </div>
           <div class="form-group">
             <label for="typeId">Tipo *</label>

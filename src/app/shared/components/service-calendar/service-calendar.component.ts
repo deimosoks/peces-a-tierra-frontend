@@ -38,6 +38,7 @@ export class ServiceCalendarComponent implements OnInit {
   @Output() eventSelected = new EventEmitter<ServiceEvent>();
   @Output() eventAction = new EventEmitter<ServiceEvent>(); // For cancel/delete in management mode
   @Output() createEvent = new EventEmitter<void>();
+  @Output() daySelected = new EventEmitter<string>();
 
   // Calendar State
   currentDate: Date = new Date();
@@ -100,11 +101,13 @@ export class ServiceCalendarComponent implements OnInit {
     
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - startDate.getDay());
+    startDate.setHours(0, 0, 0, 0);
 
     const endDate = new Date(lastDay);
     if (endDate.getDay() < 6) {
         endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
     }
+    endDate.setHours(23, 59, 59, 999);
 
     const days: CalendarDay[] = [];
     let loopDate = new Date(startDate);
@@ -192,7 +195,8 @@ export class ServiceCalendarComponent implements OnInit {
     return new Date(event.startDateTime) > new Date();
   }
 
-  onEventClick(event: ServiceEvent) {
+  onEventClick(event: ServiceEvent, mouseEvent: MouseEvent) {
+    mouseEvent.stopPropagation();
     // Only block future events if we are in selection mode (Attendance)
     if (this.isSelectionMode && this.isFutureEvent(event)) {
         return;
@@ -207,5 +211,14 @@ export class ServiceCalendarComponent implements OnInit {
 
   onCreateClick() {
     this.createEvent.emit();
+  }
+
+  onDayClick(day: CalendarDay) {
+    if (!this.isSelectionMode && this.canCreate) {
+      const year = day.date.getFullYear();
+      const month = String(day.date.getMonth() + 1).padStart(2, '0');
+      const date = String(day.date.getDate()).padStart(2, '0');
+      this.daySelected.emit(`${year}-${month}-${date}`);
+    }
   }
 }

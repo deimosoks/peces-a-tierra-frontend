@@ -676,18 +676,17 @@ button {
 
 /* Global Modal Loading Overlay */
 .modal-loading-overlay {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background: var(--bg-card-tp);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    border-radius: 12px; /* Matches card/modal radius */
-    backdrop-filter: blur(2px);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
     animation: fadeIn 0.2s ease-out;
 }
 

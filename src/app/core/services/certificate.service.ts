@@ -9,9 +9,9 @@ export class CertificateService {
 
   constructor() { }
 
-  async generateBaptismCertificate(baptism: BaptismResponseDto, cedula: string, expeditionPlace: string) {
+  async generateBaptismCertificate(baptism: BaptismResponseDto, cedula: string, expeditionPlace: string, documentType: string = 'CC') {
     const doc = new jsPDF({
-      orientation: 'portrait', // The image provided (Step 2384) looks like PORTRAIT, not landscape.
+      orientation: 'portrait',
       unit: 'mm',
       format: 'letter'
     });
@@ -30,12 +30,6 @@ export class CertificateService {
     // --- Dynamic Text Overlay ---
     
     // 1. Date (Top Left based on reference image Step 2331)
-    // "Barranquilla, 01 de febrero de 2026"
-    // Coordinates guess: x=20, y=70 (based on previous code)
-    // In portrait, y might be different. Let's estimate from standard letter size (216x279mm).
-    // The "CERTIFICAMOS:" is roughly in the middle vertical.
-    // The date line is above that.
-    
     const dateStr = `Barranquilla, ${this.formatDateFull(new Date())}`;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
@@ -48,9 +42,10 @@ export class CertificateService {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
     const memberName = baptism.memberName.toUpperCase();
+    const docTypeName = this.getDocumentTypeName(documentType);
     
     // Dynamic Body
-    const bodyText = `Que el señor(a) ${memberName}, identificado(a) con cédula de ciudadanía No. ${cedula} expedida en ${expeditionPlace}, recibió el Bautismo en agua en conformidad con el mandato del Señor Jesucristo (Mateo 28:19), el día ${this.formatDateFull(new Date(baptism.date))}, siendo miembro activo de nuestra congregación.`;
+    const bodyText = `Que el señor(a) ${memberName}, identificado(a) con ${docTypeName} No. ${cedula} expedida en ${expeditionPlace}, recibió el Bautismo en agua en conformidad con el mandato del Señor Jesucristo (Mateo 28:19), el día ${this.formatDateFull(new Date(baptism.date))}, siendo miembro activo de nuestra congregación.`;
     
     // Split text to fit width (keeping margins)
     const margin = 20; // Reduced margin slightly for "more left"
@@ -88,5 +83,18 @@ export class CertificateService {
   private formatDateFull(date: Date): string {
     const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
     return date.toLocaleDateString('es-ES', options);
+  }
+
+  private getDocumentTypeName(type: string): string {
+    switch (type) {
+      case 'CC': return 'Cédula de Ciudadanía';
+      case 'TI': return 'Tarjeta de Identidad';
+      case 'CE': return 'Cédula de Extranjería';
+      case 'PA': return 'Pasaporte';
+      case 'RC': return 'Registro Civil';
+      case 'PEP': return 'Permiso Especial de Permanencia';
+      case 'PPT': return 'Permiso por Protección Temporal';
+      default: return 'Documento de Identidad';
+    }
   }
 }
