@@ -7,8 +7,25 @@
                 <i class="fa-solid fa-sliders"></i>
                 Filtros Avanzados
             </button>
+            <div class="export-dropdown-wrapper">
+                <button class="btn btn-action-soft export-btn" (click)="toggleExportDropdown($event)" [disabled]="isExporting">
+                    <i class="fa-solid" [class.fa-file-export]="!isExporting" [class.fa-spinner]="isExporting" [class.fa-spin]="isExporting"></i>
+                    {{ isExporting ? 'Exportando...' : 'Exportar' }}
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 4px;"></i>
+                </button>
+                <div class="export-dropdown-menu" *ngIf="showExportDropdown" (click)="$event.stopPropagation()">
+                    <button class="dropdown-item" (click)="exportData('excel')">
+                        <i class="fa-solid fa-file-excel text-success"></i>
+                        <span>Exportar a Excel</span>
+                    </button>
+                    <button class="dropdown-item" (click)="exportData('pdf')">
+                        <i class="fa-solid fa-file-pdf text-danger"></i>
+                        <span>Exportar a PDF</span>
+                    </button>
+                </div>
+            </div>
             <div class="active-filters-chips"
-                *ngIf="selectedMemberName || filters.serviceId || filters.startDate || filters.endDate || filters.branchId">
+                *ngIf="selectedMemberName || filters.serviceId || filters.startDate || filters.endDate || filters.branchId || selectedEventLabel">
                 <span class="filter-chip" *ngIf="selectedMemberName">
                     {{ selectedMemberName }}
                     <button (click)="clearMemberFilter()">&times;</button>
@@ -16,6 +33,10 @@
                 <span class="filter-chip" *ngIf="filters.branchId">
                      <i class="fa-solid fa-building"></i> {{ getBranchName(filters.branchId) }}
                      <button (click)="filters.branchId = ''; onSearch()">&times;</button>
+                </span>
+                <span class="filter-chip" *ngIf="selectedEventLabel">
+                    <i class="fa-solid fa-calendar-check"></i> {{ selectedEventLabel }}
+                    <button (click)="clearEventFilter()">&times;</button>
                 </span>
             </div>
         </div>
@@ -307,6 +328,21 @@
                     </div>
                 </div>
 
+                <!-- Event Filter (Consolidated) -->
+                <div class="input-with-label">
+                    <label>Evento Específico</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <div class="event-selection-display" (click)="openCalendarModal()">
+                            <span *ngIf="!selectedEventLabel" class="placeholder-text">Seleccionar evento en calendario...</span>
+                            <span *ngIf="selectedEventLabel" class="selected-text">{{ selectedEventLabel }}</span>
+                        </div>
+                        <button *ngIf="filters.eventId" class="clear-selection-btn" (click)="clearEventFilter(); $event.stopPropagation()">
+                            &times;
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Date Range -->
                 <div class="date-range-grid">
                     <div class="input-with-label">
@@ -333,6 +369,23 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 Aplicar Filtros
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Selection Modal -->
+<div class="modal-overlay" *ngIf="showCalendarModal" (click)="closeCalendarModal()">
+    <div class="modal-content calendar-selection-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Seleccionar Evento</h2>
+            <button class="close-btn" (click)="closeCalendarModal()">&times;</button>
+        </div>
+        <div class="modal-body calendar-modal-body">
+            <app-service-calendar 
+                [isAdmin]="isAdmin" 
+                [isSelectionMode]="true"
+                (eventSelected)="onEventSelected($event)">
+            </app-service-calendar>
         </div>
     </div>
 </div>

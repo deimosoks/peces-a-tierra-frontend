@@ -47,4 +47,8 @@ export class AsistenciaService {
   invalidateAttendance(dto: AttendanceInvalidateDto): Observable<AttendanceResponseDto> {
     return this.http.patch<AttendanceResponseDto>(`${this.baseUrl}/attendances/invalidate`, dto);
   }
+
+  exportAttendances(filters: AttendanceFiltersRequestDto): Observable<AttendanceResponseDto[]> {
+    return this.http.post<AttendanceResponseDto[]>(`${this.baseUrl}/attendances/export`, filters);
+  }
 }

@@ -12,11 +12,17 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 import { BranchService } from '../../core/services/branch.service'; // Added import
 import { Branch } from '../../core/models/branch.model'; // Added import
+import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component';
+import { ServiceEvent } from '../../core/models/service-event.model';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-administrar-asistencias',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ServiceCalendarComponent],
   templateUrl: './administrar-asistencias.html',
   styleUrl: './asistencia.css',
 })
@@ -30,12 +36,15 @@ export class AdministrarAsistencias implements OnInit {
   // Filters & State
   filters: AttendanceFiltersRequestDto = {
     serviceId: '', // Renamed from serviceEventId
+    eventId: '',
     startDate: '',
     endDate: '',
     memberId: '',
     branchId: ''
   };
   showFilterModal = false;
+  showCalendarModal = false;
+  selectedEventLabel = '';
 
   // Member Search State
   memberSearchQuery: string = '';
@@ -65,6 +74,8 @@ export class AdministrarAsistencias implements OnInit {
   showDetailsModal = false;
   attendanceDetails?: AttendanceResponseDto;
   activeDropdownId: string | null = null;
+  showExportDropdown = false;
+  isExporting = false;
 
   ngOnInit() {
     this.checkPermissions();
@@ -141,6 +152,7 @@ export class AdministrarAsistencias implements OnInit {
     // Formatting dates for backend if they exist
     const searchFilters: AttendanceFiltersRequestDto = {
       serviceId: this.filters.serviceId || undefined,
+      eventId: this.filters.eventId || undefined,
       startDate: this.filters.startDate ? `${this.filters.startDate}:00` : undefined,
       endDate: this.filters.endDate ? `${this.filters.endDate}:00` : undefined,
       memberId: this.filters.memberId || undefined,
@@ -174,6 +186,28 @@ export class AdministrarAsistencias implements OnInit {
 
   closeFilterModal() {
     this.showFilterModal = false;
+  }
+
+  openCalendarModal() {
+    this.showCalendarModal = true;
+  }
+
+  closeCalendarModal() {
+    this.showCalendarModal = false;
+  }
+
+  onEventSelected(event: ServiceEvent) {
+    this.filters.eventId = event.id;
+    const eventTime = new Date(event.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const eventDate = new Date(event.startDateTime).toLocaleDateString();
+    this.selectedEventLabel = `${event.serviceName} (${eventDate} ${eventTime})`;
+    this.showCalendarModal = false;
+  }
+
+  clearEventFilter() {
+    this.filters.eventId = '';
+    this.selectedEventLabel = '';
+    this.onSearch();
   }
 
   nextPage() {
@@ -271,5 +305,100 @@ export class AdministrarAsistencias implements OnInit {
     if (!id) return '';
     const branch = this.branches.find(b => b.id === id);
     return branch ? branch.name : 'Desconocido';
+  }
+
+  exportData(format: 'excel' | 'pdf') {
+    this.isExporting = true;
+    this.showExportDropdown = false;
+
+    const searchFilters: AttendanceFiltersRequestDto = {
+      serviceId: this.filters.serviceId || undefined,
+      eventId: this.filters.eventId || undefined,
+      startDate: this.filters.startDate ? `${this.filters.startDate}:00` : undefined,
+      endDate: this.filters.endDate ? `${this.filters.endDate}:00` : undefined,
+      memberId: this.filters.memberId || undefined,
+      branchId: this.filters.branchId || undefined
+    };
+
+    this.asistenciaService.exportAttendances(searchFilters).subscribe({
+      next: (data) => {
+        if (format === 'excel') {
+          this.downloadExcel(data);
+        } else {
+          this.downloadPDF(data);
+        }
+        this.isExporting = false;
+        this.notificationService.success(`Asistencias exportadas a ${format === 'excel' ? 'Excel' : 'PDF'}`);
+      },
+      error: (err) => {
+        console.error('Error exporting attendances:', err);
+        this.isExporting = false;
+        this.notificationService.error('Error al exportar las asistencias');
+      }
+    });
+  }
+
+  private downloadExcel(data: AttendanceResponseDto[]) {
+    const worksheetData = data.map(att => ({
+      'Integrante': att.memberCompleteName,
+      'Servicio': att.serviceName,
+      'Sede': att.branchName,
+      'Categoría': att.memberCategory?.name || '',
+      'Sub-Categoría': att.subCategory?.name || '',
+      'Fecha Servicio': formatDate(att.serviceDate, 'dd/MM/yyyy HH:mm', 'en-US'),
+      'Hora Llegada': formatDate(att.attendanceDate, 'HH:mm', 'en-US'),
+      'Estado': att.invalid ? 'Inválida' : 'Válida',
+      'Registrada Por': att.registeredBy,
+      'Nota': att.note || ''
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencias');
+    
+    // Auto-size columns
+    const max_width = worksheetData.reduce((w, r) => Math.max(w, ...Object.values(r).map(v => v ? v.toString().length : 0)), 10);
+    worksheet['!cols'] = Object.keys(worksheetData[0]).map(() => ({ wch: max_width + 5 }));
+
+    XLSX.writeFile(workbook, `Asistencias_${formatDate(new Date(), 'yyyyMMdd_HHmm', 'en-US')}.xlsx`);
+  }
+
+  private downloadPDF(data: AttendanceResponseDto[]) {
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    // Header
+    doc.setFontSize(18);
+    doc.text('Reporte de Asistencias', 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generado el: ${formatDate(new Date(), 'dd/MM/yyyy HH:mm', 'en-US')}`, 14, 30);
+    
+    const tableData = data.map(att => [
+      att.memberCompleteName,
+      att.serviceName,
+      att.branchName,
+      att.memberCategory?.name || '',
+      att.serviceDate ? formatDate(att.serviceDate, 'dd/MM/yyyy HH:mm', 'en-US') : '',
+      att.attendanceDate ? formatDate(att.attendanceDate, 'HH:mm', 'en-US') : '',
+      att.invalid ? 'Inválida' : 'Válida'
+    ]);
+
+    autoTable(doc, {
+      startY: 35,
+      head: [['Integrante', 'Servicio', 'Sede', 'Categoría', 'Fecha Serv.', 'Llegada', 'Estado']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [63, 81, 181], textColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { top: 35 },
+    });
+
+    doc.save(`Asistencias_${formatDate(new Date(), 'yyyyMMdd_HHmm', 'en-US')}.pdf`);
+  }
+
+  toggleExportDropdown(event: Event) {
+    event.stopPropagation();
+    this.showExportDropdown = !this.showExportDropdown;
+    this.activeDropdownId = null;
   }
 }

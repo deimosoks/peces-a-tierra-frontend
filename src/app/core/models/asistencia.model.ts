@@ -41,6 +41,7 @@ export interface AttendancePagesResponseDto {
 
 export interface AttendanceFiltersRequestDto {
     serviceId?: string; // Updated from serviceEventId to match backend
+    eventId?: string;   // Added
     startDate?: string;
     endDate?: string;
     branchId?: string;
