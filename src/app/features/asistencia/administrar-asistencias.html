@@ -24,8 +24,9 @@
                     </button>
                 </div>
             </div>
-            <div class="active-filters-chips"
-                *ngIf="selectedMemberName || filters.serviceId || filters.startDate || filters.endDate || filters.branchId || selectedEventLabel">
+        </div>
+        <div class="active-filters-row" *ngIf="selectedMemberName || filters.serviceId || filters.startDate || filters.endDate || filters.branchId || selectedEventLabel">
+            <div class="active-filters-chips">
                 <span class="filter-chip" *ngIf="selectedMemberName">
                     {{ selectedMemberName }}
                     <button (click)="clearMemberFilter()">&times;</button>

@@ -5,6 +5,7 @@ export interface ReportFilters {
     categories?: string[];
     subCategories?: string[]; // Added subCategories
     branchIds?: string[]; // Added branchIds
+    eventId?: string;     // Added eventId
     groupBy?: string[];   // Added groupBy
     serviceIds?: string[];
     startDate?: string; // LocalDateTime ISO

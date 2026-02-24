@@ -15,51 +15,96 @@
         </div>
 
         <div class="card-body-scroll">
-            <!-- KPI Grid -->
-            <div class="stats-grid" *ngIf="reportData.length > 0">
-                <div class="stat-card">
-                    <div class="stat-icon total">
-                        <i class="fa-solid fa-users"></i>
+            <!-- Widgets Dashboard -->
+            <div class="widgets-grid" *ngIf="reportData.length > 0">
+                <!-- Sede Widget -->
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <div class="widget-title">
+                            <i class="fa-solid fa-building-circle-check"></i>
+                            <span>Asistencia por Sede</span>
+                        </div>
                     </div>
-                    <div class="stat-info">
-                        <span class="stat-label">Asistencia Total</span>
-                        <h2 class="stat-value">{{stats.totalAttendance}}</h2>
-                        <span class="stat-trend positive">
-                            En el periodo
-                        </span>
+                    <div class="widget-content">
+                        <table class="widget-table">
+                            <thead>
+                                <tr><th>Sede</th><th>Total</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of branchWidgetData">
+                                    <td>{{item.name}}</td>
+                                    <td><span class="value-badge">{{item.total}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon peak">
-                        <i class="fa-solid fa-arrow-trend-up"></i>
+                <!-- Categoría Widget -->
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <div class="widget-title">
+                            <i class="fa-solid fa-tags"></i>
+                            <span>Top Categorías</span>
+                        </div>
                     </div>
+                    <div class="widget-content">
+                        <table class="widget-table">
+                            <thead>
+                                <tr><th>Categoría</th><th>Total</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of categoryWidgetData">
+                                    <td>{{item.name}}</td>
+                                    <td><span class="value-badge">{{item.total}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Type/Trend Widget -->
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <div class="widget-title">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                            <span>Distribución por Tipo</span>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <table class="widget-table">
+                            <thead>
+                                <tr><th>Tipo</th><th>Total</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of topMembersWidgetData">
+                                    <td>{{item.name}}</td>
+                                    <td><span class="value-badge">{{item.total}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Summary Bar (Compact) -->
+            <div class="stats-grid compact-stats" *ngIf="reportData.length > 0">
+                <div class="stat-card mini">
+                    <div class="stat-info">
+                        <span class="stat-label">Total Gral</span>
+                        <h2 class="stat-value mini">{{stats.totalAttendance}}</h2>
+                    </div>
+                </div>
+                <div class="stat-card mini">
                     <div class="stat-info">
                         <span class="stat-label">Pico Máximo</span>
-                        <h2 class="stat-value">{{stats.peakAttendance}}</h2>
-                        <span class="stat-trend">Un solo servicio</span>
+                        <h2 class="stat-value mini">{{stats.peakAttendance}}</h2>
                     </div>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon avg">
-                        <i class="fa-solid fa-chart-simple"></i>
-                    </div>
+                <div class="stat-card mini">
                     <div class="stat-info">
                         <span class="stat-label">Promedio</span>
-                        <h2 class="stat-value">{{stats.avgAttendance}}</h2>
-                        <span class="stat-trend text-muted">Por servicio</span>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon cat">
-                        <i class="fa-solid fa-medal"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-label">Top Categoría</span>
-                        <h2 class="stat-value">{{stats.topCategory.name}}</h2>
-                        <span class="stat-trend">{{stats.topCategory.value}} integrantes</span>
+                        <h2 class="stat-value mini">{{stats.avgAttendance}}</h2>
                     </div>
                 </div>
             </div>
@@ -177,6 +222,18 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- Event Filter -->
+                <div class="form-group premium-group">
+                    <label><i class="fa-solid fa-calendar-check"></i> Evento Específico</label>
+                    <div class="event-selection-display" (click)="openCalendarModal()">
+                        <span *ngIf="!selectedEventLabel" class="placeholder-text">Seleccionar evento en calendario...</span>
+                        <span *ngIf="selectedEventLabel" class="selected-text">{{ selectedEventLabel }}</span>
+                    </div>
+                    <button *ngIf="filters.eventId" class="clear-selection-btn-report" (click)="clearEventFilter(); $event.stopPropagation()">
+                        &times;
+                    </button>
+                </div>
                 
                 <!-- Grouping Options -->
                 <div class="form-group premium-group">
@@ -184,12 +241,25 @@
                     <div class="grouping-options-grid">
                          <label class="premium-checkbox" *ngFor="let opt of groupByOptions">
                             <input type="checkbox" [value]="opt.id" 
-                                (change)="filters.groupBy = filters.groupBy || []; $event.target.checked ? filters.groupBy.push(opt.id) : filters.groupBy.splice(filters.groupBy.indexOf(opt.id), 1)"
+                                (change)="onGroupByChange(opt.id, $event)"
                                 [checked]="filters.groupBy?.includes(opt.id)">
                             <span class="checkmark"></span>
                             {{ opt.label }}
                         </label>
                     </div>
+                </div>
+
+                <!-- Separation Toggle for Visualization -->
+                <div class="form-group premium-group">
+                    <label class="premium-checkbox">
+                        <input type="checkbox" [(ngModel)]="separateByDate" (change)="updateChart()">
+                        <span class="checkmark"></span>
+                        <i class="fa-solid fa-calendar-day" style="margin-right: 5px;"></i>
+                        Separar por Fecha de Servicio (Vista Dashboard)
+                    </label>
+                    <small class="text-muted" style="display: block; margin-top: 5px; font-size: 0.75rem;">
+                        Muestra cada servicio por separado con su desglose de categorías, tal como en el inicio.
+                    </small>
                 </div>
 
                 <div class="form-group premium-group search-member-group">
@@ -286,6 +356,19 @@
                             </select>
                         </div>
                     </div>
+                    
+                    <div class="export-extra-options">
+                        <label class="premium-checkbox">
+                            <input type="checkbox" [(ngModel)]="includeTotals">
+                            <span class="checkmark"></span>
+                            Incluir Totales y Promedios
+                        </label>
+                        <label class="premium-checkbox">
+                            <input type="checkbox" [(ngModel)]="separateByDate">
+                            <span class="checkmark"></span>
+                            Separar por Fecha de Servicio
+                        </label>
+                    </div>
                 </div>
 
                 <div class="column-selection-list" cdkDropList (cdkDropListDropped)="dropColumn($event)">
@@ -322,6 +405,23 @@
                     Exportar a PDF
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Selection Modal -->
+<div class="modal-overlay" *ngIf="showCalendarModal" (click)="closeCalendarModal()">
+    <div class="modal-content calendar-selection-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Seleccionar Evento</h3>
+            <button class="btn-close" (click)="closeCalendarModal()">&times;</button>
+        </div>
+        <div class="modal-body calendar-modal-body">
+            <app-service-calendar 
+                [isAdmin]="true" 
+                [isSelectionMode]="true"
+                (eventSelected)="onEventSelected($event)">
+            </app-service-calendar>
         </div>
     </div>
 </div>

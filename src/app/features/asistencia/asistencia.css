@@ -76,13 +76,20 @@
 
 .asistencia-header-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-color);
     flex-wrap: wrap;
     gap: 1rem;
+}
+
+.active-filters-row {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--border-color);
+    width: 100%;
 }
 
 .active-filters-chips {

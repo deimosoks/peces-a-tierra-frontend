@@ -11,6 +11,8 @@ import { BranchService } from '../../core/services/branch.service';
 import { Branch } from '../../core/models/branch.model';
 import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
 import { ReportService, ReportColumn } from '../../core/services/report.service';
+import { ServiceEvent } from '../../core/models/service-event.model'; // Added
+import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component'; // Added
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { NotificationService } from '../../core/services/notification.service';
 import { MemberConfigService } from '../../core/services/member-config.service';
@@ -44,7 +46,7 @@ export type ChartOptions = {
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, DragDropModule],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, DragDropModule, ServiceCalendarComponent],
   templateUrl: './reportes.html',
   styleUrl: './reportes.css',
   providers: [DatePipe]
@@ -65,11 +67,17 @@ export class Reportes implements OnInit {
 
   // States
   showFilterModal = false;
+  showCalendarModal = false; // Added
   isLoading = false;
   renderChart = false;
   services: IglesiaService[] = [];
   branches: Branch[] = [];
   reportData: ReportData[] = [];
+
+  // Widget Data
+  branchWidgetData: { name: string, total: number }[] = [];
+  categoryWidgetData: { name: string, total: number }[] = [];
+  topMembersWidgetData: { name: string, total: number }[] = [];
 
   protected readonly Math = Math;
 
@@ -97,8 +105,11 @@ export class Reportes implements OnInit {
     groupBy: ['BRANCH'], // Default: Por Sede
     startDate: '', // Will be set in ngOnInit
     endDate: '',   // Will be set in ngOnInit
-    userId: ''
+    userId: '',
+    eventId: '' // Added
   };
+
+  selectedEventLabel = ''; // Added
 
   groupByOptions = [
     { id: 'BRANCH', label: 'Por Sede' },
@@ -127,6 +138,8 @@ export class Reportes implements OnInit {
     { id: 'total', label: 'Total', visible: true, order: 6 }
   ];
   groupBy: string = '';
+  includeTotals = true; // Added
+  separateByDate = false; // Added
 
   // Enums (Now dynamic)
   tipos: MemberTypeResponseDto[] = [];
@@ -140,6 +153,15 @@ export class Reportes implements OnInit {
 
   // Chart
   public chartOptions: any;
+
+  private themeEffect = effect(() => {
+    const isDark = this.themeService.isDarkMode();
+    if (this.reportData.length > 0) {
+      this.updateChart();
+    } else {
+      this.chartOptions = this.getPremiumChartOptions([], [], isDark);
+    }
+  });
 
   ngOnInit() {
     this.adjustPageSize();
@@ -159,16 +181,6 @@ export class Reportes implements OnInit {
 
     // Default Analytics: Load data immediately
     this.applyFilters();
-
-    // Effect to react to theme changes
-    effect(() => {
-      const isDark = this.themeService.isDarkMode();
-      if (this.reportData.length > 0) {
-        this.updateChart();
-      } else {
-        this.chartOptions = this.getPremiumChartOptions([], [], isDark);
-      }
-    });
   }
 
   private toLocalISOString(date: Date): string {
@@ -257,7 +269,11 @@ export class Reportes implements OnInit {
           borderRadius: 6,
           dataLabels: {
             total: {
-              enabled: false
+              enabled: true,
+              style: {
+                fontWeight: 900,
+                color: isDark ? '#ffffff' : '#000000'
+              }
             }
           }
         },
@@ -287,6 +303,13 @@ export class Reportes implements OnInit {
         categories: safeCategories,
         labels: {
           show: true,
+          formatter: (val: string) => {
+            if (this.separateByDate && val && val.includes('-')) {
+              const day = val.split(' ')[0].split('-')[2];
+              return day || val;
+            }
+            return val;
+          },
           rotate: -90,
           rotateAlways: true,
           style: {
@@ -410,7 +433,8 @@ export class Reportes implements OnInit {
       subCategories: this.filters.subCategory ? [this.filters.subCategory] : undefined,
       serviceIds: this.filters.serviceId ? [this.filters.serviceId] : undefined,
       branchIds: this.filters.branchId ? [this.filters.branchId] : undefined, // Added branchId
-      groupBy: this.filters.groupBy && this.filters.groupBy.length > 0 ? this.filters.groupBy : undefined // Added groupBy
+      eventId: this.filters.eventId || undefined, // Added eventId
+      groupBy: this.getFinalGroupBy() // Uses helper to combine filters.groupBy + chartBreakdown
     };
 
     const formatDateTime = (val: string) => {
@@ -433,6 +457,7 @@ export class Reportes implements OnInit {
         this.reporteService.lastFilters = { ...this.filters };
         this.reporteService.lastStats = { ...this.stats };
         
+        this.calculateWidgetData(); // Added
         this.updateChart();
         this.isLoading = false;
         this.closeFilterModal();
@@ -456,7 +481,7 @@ export class Reportes implements OnInit {
 
     // Determine X-Axis labels based on grouping match
     // Default X-Axis is Time/Service unless grouped by something else exclusively
-    const hasTimeGrouping = !this.filters.groupBy || this.filters.groupBy.includes('DATE') || this.filters.groupBy.includes('SERVICE');
+    const hasTimeGrouping = !this.filters.groupBy || this.filters.groupBy.includes('DATE') || this.filters.groupBy.includes('SERVICE') || this.separateByDate;
 
     const xAxisMap = new Map<string, string>();
     
@@ -466,12 +491,13 @@ export class Reportes implements OnInit {
 
       if (hasTimeGrouping) {
         key = d.serviceTime || `${d.date}_${d.serviceName}`;
-         let displayInfo = d.date || '';
+        
+        let displayInfo = d.date || '';
         if (d.serviceTime && d.serviceTime.includes('T')) {
           const time = d.serviceTime.split('T')[1].substring(0, 5);
           displayInfo = `${d.date} ${time}`;
         }
-        display = `${displayInfo} - ${d.serviceName || 'N/A'}`;
+        display = `${displayInfo} ${d.serviceName ? '- ' + d.serviceName : ''}`;
       } else {
         // If not grouped by time, use primary grouping as X-axis (e.g. Branch Name)
         if (this.filters.groupBy.includes('BRANCH')) {
@@ -496,11 +522,21 @@ export class Reportes implements OnInit {
 
     // Determine Series (Stacking)
     // If grouped by Category/Sub/Type/Branch (and they are not X-axis), they become series
-    // Logic: 
+    // Logic:
     // - If X is Time -> Series are Categories/Branches
-    // - If X is Branch -> Series are Categories
-    
+
     const getSeriesName = (d: any) => {
+        // If separation is active, stack by category ONLY if data is available
+        if (this.separateByDate) {
+            if (d.category) {
+                const cat = typeof d.category === 'string' ? d.category : (d.category?.name || 'Sin Categoría');
+                const sub = d.subCategory;
+                return sub ? `${cat} • ${sub}` : cat;
+            }
+            return 'Total';
+        }
+
+        // Default logic for other groupings
         let parts = [];
         if (this.filters.groupBy?.includes('BRANCH') && hasTimeGrouping) parts.push(d.branchName || '-');
         if (this.filters.groupBy?.includes('CATEGORY')) {
@@ -512,7 +548,7 @@ export class Reportes implements OnInit {
             const typeName = typeof d.typePeople === 'string' ? d.typePeople : (d.typePeople?.name || '-');
             parts.push(typeName);
         }
-        
+
         return parts.length > 0 ? parts.join(' • ') : 'Total';
     };
 
@@ -527,9 +563,9 @@ export class Reportes implements OnInit {
              if (hasTimeGrouping) {
                  const dKey = d.serviceTime || `${d.date}_${d.serviceName}`;
                  xMatch = dKey === key;
-             } else if (this.filters.groupBy.includes('BRANCH')) {
+             } else if (this.filters.groupBy?.includes('BRANCH')) {
                  xMatch = (d.branchName || 'Sin Sede') === key;
-             } else if (this.filters.groupBy.includes('CATEGORY')) {
+             } else if (this.filters.groupBy?.includes('CATEGORY')) {
                   const dKey = typeof d.category === 'string' ? d.category : (d.category?.name || 'Sin Categoría');
                   xMatch = dKey === key;
              } else {
@@ -537,8 +573,7 @@ export class Reportes implements OnInit {
              }
 
              // 2. Match Series
-             const sName = getSeriesName(d);
-             return xMatch && sName === seriesName;
+             return xMatch && getSeriesName(d) === seriesName;
         });
 
         return matches.reduce((sum, item) => sum + (item.total || 0), 0);
@@ -631,6 +666,49 @@ export class Reportes implements OnInit {
     };
   }
 
+  getFinalGroupBy(): string[] | undefined {
+    let groups = this.filters.groupBy ? [...this.filters.groupBy] : [];
+    
+    return groups.length > 0 ? groups : undefined;
+  }
+
+  private calculateWidgetData() {
+    // 1. Branch Data
+    const branchMap = new Map<string, number>();
+    this.reportData.forEach(d => {
+      const name = d.branchName || 'Sin Sede';
+      branchMap.set(name, (branchMap.get(name) || 0) + (d.total || 0));
+    });
+    this.branchWidgetData = Array.from(branchMap.entries())
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+
+    // 2. Category Data
+    const categoryMap = new Map<string, number>();
+    this.reportData.forEach(d => {
+      const name = typeof d.category === 'string' ? d.category : (d.category?.name || 'Sin Categoría');
+      categoryMap.set(name, (categoryMap.get(name) || 0) + (d.total || 0));
+    });
+    this.categoryWidgetData = Array.from(categoryMap.entries())
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+
+    // 3. Top Series/Trends (if any other dimension exists, otherwise just repeat category/branch)
+    // Actually, if we had member specific data in reportData, we'd use it. 
+    // For now let's use Type of People as the 3rd widget if relevant.
+    const typeMap = new Map<string, number>();
+    this.reportData.forEach(d => {
+       const name = typeof d.typePeople === 'string' ? d.typePeople : (d.typePeople?.name || 'Otro');
+       typeMap.set(name, (typeMap.get(name) || 0) + (d.total || 0));
+    });
+    this.topMembersWidgetData = Array.from(typeMap.entries())
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+  }
+
   private resetStats() {
     this.stats = {
       totalAttendance: 0,
@@ -675,9 +753,9 @@ export class Reportes implements OnInit {
     });
 
     if (format === 'excel') {
-      this.reportService.exportToExcel(this.reportData, columnsWithData, fileName, this.groupBy || undefined);
+      this.reportService.exportToExcel(this.reportData, columnsWithData, fileName, this.groupBy || (this.separateByDate ? 'date' : undefined), this.includeTotals, this.separateByDate);
     } else {
-      this.reportService.exportToPdf(this.reportData, columnsWithData, fileName, 'Reporte de Asistencias', this.groupBy || undefined);
+      this.reportService.exportToPdf(this.reportData, columnsWithData, fileName, 'Reporte de Asistencias', this.groupBy || (this.separateByDate ? 'date' : undefined), this.includeTotals, this.separateByDate);
     }
 
     this.exportLoading = false;
@@ -686,5 +764,43 @@ export class Reportes implements OnInit {
 
   downloadReport() {
     this.openReportModal();
+  }
+
+  // Event Selection Methods
+  openCalendarModal() {
+    this.showCalendarModal = true;
+  }
+
+  closeCalendarModal() {
+    this.showCalendarModal = false;
+  }
+
+  onEventSelected(event: ServiceEvent) {
+    this.filters.eventId = event.id;
+    const eventTime = new Date(event.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const eventDate = new Date(event.startDateTime).toLocaleDateString();
+    this.selectedEventLabel = `${event.serviceName} (${eventDate} ${eventTime})`;
+    this.showCalendarModal = false;
+  }
+
+  onGroupByChange(id: string, event: any) {
+    const checked = event.target.checked;
+    if (!this.filters.groupBy) this.filters.groupBy = [];
+    
+    if (checked) {
+      if (!this.filters.groupBy.includes(id)) {
+        this.filters.groupBy.push(id);
+      }
+    } else {
+      const index = this.filters.groupBy.indexOf(id);
+      if (index !== -1) {
+        this.filters.groupBy.splice(index, 1);
+      }
+    }
+  }
+
+  clearEventFilter() {
+    this.filters.eventId = '';
+    this.selectedEventLabel = '';
   }
 }

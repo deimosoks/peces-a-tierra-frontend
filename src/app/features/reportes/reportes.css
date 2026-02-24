@@ -711,7 +711,7 @@
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-main);
     margin: 0;
 }
 
@@ -725,9 +725,9 @@
     align-items: flex-start;
     gap: 0.75rem;
     padding: 1rem;
-    background: #eff6ff;
+    background: var(--bg-input);
     border-radius: 10px;
-    color: #1e40af;
+    color: var(--primary);
     font-size: 0.85rem;
 }
 
@@ -737,7 +737,7 @@
 
 .report-footer {
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border-color);
 }
 
 .export-actions {
@@ -784,7 +784,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(var(--bg-card-rgb), 0.82);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -833,4 +833,171 @@
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+/* Dashboard Widgets Layout */
+.widgets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.widget-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.widget-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.widget-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.widget-title i {
+    color: var(--primary);
+}
+
+.widget-content {
+    flex: 1;
+}
+
+/* Event Selection Display (Sync with Attendance) */
+.event-selection-display {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-input);
+    cursor: pointer;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.event-selection-display:hover {
+    border-color: var(--primary);
+    background: var(--bg-card);
+}
+
+.event-selection-display .placeholder-text {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.event-selection-display .selected-text {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.clear-selection-btn-report {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--border-color);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    z-index: 10;
+}
+
+/* Export Extra Options */
+.export-extra-options {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-input);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.export-extra-options .premium-checkbox {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+/* Calendar Modal Specifics (for Reports) */
+.calendar-selection-modal {
+    max-width: 900px !important;
+    width: 95% !important;
+    height: 90vh !important;
+}
+
+.calendar-modal-body {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.calendar-modal-body app-service-calendar {
+    flex: 1;
+    min-height: 0;
+}
+
+.widget-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.widget-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 0.5rem;
+    text-transform: uppercase;
+}
+
+.widget-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.widget-table tr:last-child td {
+    border-bottom: none;
+}
+
+.value-badge {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 700;
 }

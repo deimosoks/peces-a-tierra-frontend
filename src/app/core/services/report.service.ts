@@ -15,13 +15,14 @@ export interface ReportColumn {
 })
 export class ReportService {
 
-    exportToExcel(data: any[], columns: ReportColumn[], fileName: string, groupBy?: string) {
+    exportToExcel(data: any[], columns: ReportColumn[], fileName: string, groupBy?: string, includeTotals = false, separateByDate = false) {
         const visibleColumns = this.getOrderedVisibleColumns(columns);
         const workbook = XLSX.utils.book_new();
 
+        const sheetData: any[] = [];
+
         if (groupBy) {
-            const groups = this.groupData(data, groupBy);
-            const sheetData: any[] = [];
+            const groups = this.groupData(data, groupBy, separateByDate);
 
             Object.keys(groups).forEach(groupKey => {
                 // Add Header for Group
@@ -29,6 +30,13 @@ export class ReportService {
                 // Add Data for Group
                 const formattedGroupData = this.formatDataForExport(groups[groupKey], visibleColumns);
                 sheetData.push(...formattedGroupData);
+
+                if (includeTotals) {
+                    const groupTotals = this.calculateSummary(groups[groupKey], visibleColumns);
+                    sheetData.push(groupTotals.total);
+                    sheetData.push(groupTotals.average);
+                }
+
                 // Empty row
                 sheetData.push({});
             });
@@ -37,28 +45,32 @@ export class ReportService {
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
         } else {
             const filteredData = this.formatDataForExport(data, visibleColumns);
-            const worksheet = XLSX.utils.json_to_sheet(filteredData);
+            sheetData.push(...filteredData);
+
+            if (includeTotals) {
+                const totalStats = this.calculateSummary(data, visibleColumns);
+                sheetData.push({});
+                sheetData.push(totalStats.total);
+                sheetData.push(totalStats.average);
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(sheetData);
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
         }
 
         XLSX.writeFile(workbook, `${fileName}.xlsx`);
     }
 
-    exportToPdf(data: any[], columns: ReportColumn[], fileName: string, title: string, groupBy?: string) {
+    exportToPdf(data: any[], columns: ReportColumn[], fileName: string, title: string, groupBy?: string, includeTotals = false, separateByDate = false) {
         const visibleColumns = this.getOrderedVisibleColumns(columns);
         const doc = new jsPDF();
 
-        // Header
-        doc.setFontSize(18);
-        doc.text(title, 14, 22);
-        doc.setFontSize(11);
-        doc.setTextColor(100);
-        doc.text(`Generado el: ${new Date().toLocaleString()}`, 14, 30);
+        // ... [OMITTED HEADERS] ...
 
         const headers = [visibleColumns.map(col => col.label)];
 
         if (groupBy) {
-            const groups = this.groupData(data, groupBy);
+            const groups = this.groupData(data, groupBy, separateByDate);
             let currentY = 35;
 
             Object.keys(groups).forEach((groupKey, index) => {
@@ -79,6 +91,12 @@ export class ReportService {
                 const groupData = this.formatDataForExport(groups[groupKey], visibleColumns);
                 const body = groupData.map(row => visibleColumns.map(col => row[col.label]));
 
+                if (includeTotals) {
+                    const stats = this.calculateSummary(groups[groupKey], visibleColumns);
+                    body.push(visibleColumns.map(col => stats.total[col.label]));
+                    body.push(visibleColumns.map(col => stats.average[col.label]));
+                }
+
                 autoTable(doc, {
                     startY: currentY,
                     head: headers,
@@ -98,6 +116,12 @@ export class ReportService {
             const filteredData = this.formatDataForExport(data, visibleColumns);
             const body = filteredData.map(row => visibleColumns.map(col => row[col.label]));
 
+            if (includeTotals) {
+                const stats = this.calculateSummary(data, visibleColumns);
+                body.push(visibleColumns.map(col => stats.total[col.label]));
+                body.push(visibleColumns.map(col => stats.average[col.label]));
+            }
+
             autoTable(doc, {
                 startY: 35,
                 head: headers,
@@ -111,9 +135,42 @@ export class ReportService {
         doc.save(`${fileName}.pdf`);
     }
 
-    private groupData(data: any[], key: string): { [key: string]: any[] } {
+    private calculateSummary(data: any[], columns: ReportColumn[]) {
+        const totalValue = data.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+        const avgValue = data.length > 0 ? Math.round(totalValue / data.length) : 0;
+
+        const totalRow: any = {};
+        const avgRow: any = {};
+
+        columns.forEach((col, index) => {
+            if (index === 0) {
+                totalRow[col.label] = 'TOTAL';
+                avgRow[col.label] = 'PROMEDIO';
+            } else if (col.id === 'total') {
+                totalRow[col.label] = totalValue;
+                avgRow[col.label] = avgValue;
+            } else {
+                totalRow[col.label] = '';
+                avgRow[col.label] = '';
+            }
+        });
+
+        return { total: totalRow, average: avgRow };
+    }
+
+    private groupData(data: any[], key: string, separateByDate = false): { [key: string]: any[] } {
         return data.reduce((groups, item) => {
-            const val = this.resolveValue(item, key) || 'Sin Valor';
+            let val = this.resolveValue(item, key) || 'Sin Valor';
+            
+            // Special handling for service separation in reports
+            if (separateByDate && key === 'date') {
+                const datePart = item.date || (item.serviceTime ? item.serviceTime.split('T')[0] : '');
+                const servicePart = item.serviceName || '';
+                if (servicePart) {
+                    val = `${datePart} (${servicePart})`;
+                }
+            }
+            
             if (!groups[val]) groups[val] = [];
             groups[val].push(item);
             return groups;
@@ -166,6 +223,10 @@ export class ReportService {
         // Basic formatting for dates or nested objects if needed
         if (path === 'attendanceDate' || path === 'serviceDate') {
             val = new Date(item[path] || item.id?.[path]).toLocaleString();
+        } else if (path === 'date') {
+            const dateStr = item.date || (item.serviceTime ? item.serviceTime.split('T')[0] : '');
+            const serviceName = item.serviceName || '';
+            val = serviceName ? `${dateStr} (${serviceName})` : dateStr;
         } else if (path === 'date' && item.serviceTime) {
             val = new Date(item.serviceTime).toLocaleString();
         } else if (path.includes('.')) {
