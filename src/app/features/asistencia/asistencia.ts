@@ -6,7 +6,8 @@ import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { IglesiaService, AttendanceCreateDto } from '../../core/models/asistencia.model';
-import { Integrante, MemberFilterRequestDto, MemberPagesResponseDto } from '../../core/models/integrante.model';
+import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
+import { PagesResponseDto } from '../../core/models/pagination.model';
 import { MemberCategoryResponseDto } from '../../core/models/member-config.model';
 import { MemberConfigService } from '../../core/services/member-config.service';
 import { ServiceEventService } from '../../core/services/service-event.service';
@@ -68,6 +69,7 @@ export class Asistencia implements OnInit {
   // Pagination
   currentPage = 0;
   totalPages = 0;
+  totalElements = 0;
   isLoading = false;
 
   // Advanced Filters State
@@ -309,10 +311,12 @@ export class Asistencia implements OnInit {
     }
 
     this.integranteService.searchMembers(filterRequest, this.currentPage).subscribe({
-      next: (res: MemberPagesResponseDto) => {
-        this.members = res.members;
-        this.totalPages = res.pages;
+      next: (res: PagesResponseDto<Integrante>) => {
+        this.members = res.data;
+        this.totalPages = res.totalPages;
+        this.totalElements = res.totalElements;
         this.isLoading = false;
+        this.scrollToTop();
       },
       error: () => this.isLoading = false
     });
@@ -602,5 +606,12 @@ export class Asistencia implements OnInit {
     return this.memberNotes.has(memberId);
   }
 
-
+  private scrollToTop() {
+    const selectors = ['.page-container', '.table-container', '.full-table', '.list-container'];
+    selectors.forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }

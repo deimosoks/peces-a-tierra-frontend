@@ -24,7 +24,3 @@ export interface UserStats {
     totalUsersActives: number;
 }
 
-export interface UserPagesResponseDto {
-    users: User[];
-    pages: number;
-}

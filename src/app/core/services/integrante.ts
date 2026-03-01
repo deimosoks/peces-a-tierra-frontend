@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Integrante, MemberPagesResponseDto, MemberFilterRequestDto, MemberExportDto, MemberNoteRequestDto, MemberNoteResponseDto } from '../models/integrante.model';
+import { Integrante, MemberFilterRequestDto, MemberExportDto, MemberNoteRequestDto, MemberNoteResponseDto } from '../models/integrante.model';
+import { PagesResponseDto, ExportResponseDto } from '../models/pagination.model';
 import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
@@ -11,9 +12,9 @@ export class IntegranteService {
   private http = inject(HttpClient);
   private baseUrl = API_CONFIG.baseUrl;
 
-  searchMembers(filterRequest: MemberFilterRequestDto, page: number): Observable<MemberPagesResponseDto> {
+  searchMembers(filterRequest: MemberFilterRequestDto, page: number): Observable<PagesResponseDto<Integrante>> {
     const params = new HttpParams().set('page', page.toString());
-    return this.http.post<MemberPagesResponseDto>(
+    return this.http.post<PagesResponseDto<Integrante>>(
       `${this.baseUrl}/members/search`, 
       filterRequest, 
       { params }
@@ -42,8 +43,8 @@ export class IntegranteService {
     return this.http.delete<void>(`${this.baseUrl}/members/${id}`);
   }
 
-  exportMembers(filterRequest: MemberFilterRequestDto): Observable<MemberExportDto[]> {
-    return this.http.post<MemberExportDto[]>(`${this.baseUrl}/members/export`, filterRequest);
+  exportMembers(filterRequest: MemberFilterRequestDto): Observable<ExportResponseDto<MemberExportDto>> {
+    return this.http.post<ExportResponseDto<MemberExportDto>>(`${this.baseUrl}/members/export`, filterRequest);
   }
 
   createNote(noteRequest: MemberNoteRequestDto): Observable<MemberNoteResponseDto> {

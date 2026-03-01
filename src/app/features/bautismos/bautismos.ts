@@ -5,6 +5,7 @@ import { BaptismService } from '../../core/services/baptism.service';
 import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
 import { BaptismResponseDto, BaptismFilterRequestDto, BaptismRequestDto, BaptismInvalidRequestDto } from '../../core/models/baptism.model';
+import { PagesResponseDto } from '../../core/models/pagination.model';
 import { Integrante } from '../../core/models/integrante.model';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -39,6 +40,7 @@ export class Bautismos implements OnInit {
   isAdmin = false;
 
   totalPages = 0;
+  totalElements = 0;
   currentPage = 0;
   isLoading = false;
   activeDropdownId: string | null = null;
@@ -126,10 +128,12 @@ export class Bautismos implements OnInit {
     };
 
     this.baptismService.search(filterRequest, this.currentPage).subscribe({
-      next: (res) => {
-        this.baptisms = res.baptisms;
-        this.totalPages = res.pages;
+      next: (res: PagesResponseDto<BaptismResponseDto>) => {
+        this.baptisms = res.data;
+        this.totalPages = res.totalPages;
+        this.totalElements = res.totalElements;
         this.isLoading = false;
+        this.scrollToTop();
       },
       error: (err) => {
         console.error('Error loading baptisms:', err);
@@ -199,8 +203,8 @@ export class Bautismos implements OnInit {
       query: this.memberSearchQuery,
       onlyActive: true
     }, 0).subscribe({
-      next: (res) => {
-        this.memberSearchResults = res.members.slice(0, 10);
+      next: (res: PagesResponseDto<Integrante>) => {
+        this.memberSearchResults = res.data.slice(0, 10);
         this.showMemberSearchDropdown = true;
       },
       error: (err) => {
@@ -529,5 +533,14 @@ export class Bautismos implements OnInit {
 
   closeMobileFilterModal() {
     this.showMobileFilterModal = false;
+  }
+
+  private scrollToTop() {
+    const selectors = ['.page-container', '.table-container', '.full-table', '.list-container'];
+    selectors.forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }

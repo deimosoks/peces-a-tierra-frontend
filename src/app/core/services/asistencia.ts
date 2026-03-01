@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { IglesiaService, AttendanceCreateDto, AttendancePagesResponseDto, AttendanceResponseDto, AttendanceFiltersRequestDto, AttendanceInvalidateDto } from '../models/asistencia.model';
+import { IglesiaService, AttendanceCreateDto, AttendanceResponseDto, AttendanceFiltersRequestDto, AttendanceInvalidateDto } from '../models/asistencia.model';
+import { PagesResponseDto, ExportResponseDto } from '../models/pagination.model';
 import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
@@ -37,18 +38,18 @@ export class AsistenciaService {
     return this.http.post(`${this.baseUrl}/attendances`, attendances);
   }
 
-  getAttendances(filters: AttendanceFiltersRequestDto, page: number): Observable<AttendancePagesResponseDto> {
+  getAttendances(filters: AttendanceFiltersRequestDto, page: number): Observable<PagesResponseDto<AttendanceResponseDto>> {
     const params = new HttpParams().set('page', page.toString());
 
     // Updated to POST /search to match backend change and support RequestBody
-    return this.http.post<AttendancePagesResponseDto>(`${this.baseUrl}/attendances/search`, filters, { params });
+    return this.http.post<PagesResponseDto<AttendanceResponseDto>>(`${this.baseUrl}/attendances/search`, filters, { params });
   }
 
   invalidateAttendance(dto: AttendanceInvalidateDto): Observable<AttendanceResponseDto> {
     return this.http.patch<AttendanceResponseDto>(`${this.baseUrl}/attendances/invalidate`, dto);
   }
 
-  exportAttendances(filters: AttendanceFiltersRequestDto): Observable<AttendanceResponseDto[]> {
-    return this.http.post<AttendanceResponseDto[]>(`${this.baseUrl}/attendances/export`, filters);
+  exportAttendances(filters: AttendanceFiltersRequestDto): Observable<ExportResponseDto<AttendanceResponseDto>> {
+    return this.http.post<ExportResponseDto<AttendanceResponseDto>>(`${this.baseUrl}/attendances/export`, filters);
   }
 }

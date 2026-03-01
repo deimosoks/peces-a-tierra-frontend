@@ -8,6 +8,7 @@ import { ReporteService } from '../../core/services/reporte';
 import { AsistenciaService } from '../../core/services/asistencia';
 import { DashboardData } from '../../core/models/dashboard.model';
 import { Integrante } from '../../core/models/integrante.model';
+import { PagesResponseDto } from '../../core/models/pagination.model';
 import { AttendanceResponseDto } from '../../core/models/asistencia.model';
 import { ThemeService } from '../../core/services/theme.service';
 import { effect } from '@angular/core';
@@ -172,7 +173,17 @@ export class Dashboard implements OnInit, OnDestroy {
             plotOptions: {
                 bar: {
                     borderRadius: 8,
-                    columnWidth: '60%'
+                    columnWidth: '60%',
+                    dataLabels: {
+                        total: {
+                            enabled: true,
+                            style: {
+                                fontWeight: 900,
+                                fontSize: '12px',
+                                color: isDark ? '#cbd5e1' : '#64748b'
+                            }
+                        }
+                    }
                 }
             },
             xaxis: {
@@ -252,6 +263,22 @@ export class Dashboard implements OnInit, OnDestroy {
                 tooltip: {
                     ...this.chartOptions.tooltip,
                     theme: isDark ? 'dark' : 'light'
+                },
+                plotOptions: {
+                    ...this.chartOptions.plotOptions,
+                    bar: {
+                        ...this.chartOptions.plotOptions?.bar,
+                        dataLabels: {
+                            ...this.chartOptions.plotOptions?.bar?.dataLabels,
+                            total: {
+                                ...this.chartOptions.plotOptions?.bar?.dataLabels?.total,
+                                style: {
+                                    ...this.chartOptions.plotOptions?.bar?.dataLabels?.total?.style,
+                                    color: isDark ? '#cbd5e1' : '#64748b'
+                                }
+                            }
+                        }
+                    }
                 }
             };
             this.cdr.detectChanges();
@@ -398,7 +425,8 @@ export class Dashboard implements OnInit, OnDestroy {
             startDate: this.toLocalISOString(start),
             endDate: this.toLocalISOString(end),
             category: [category.name || category],
-            subCategory: subCategory ? [subCategory.name || subCategory] : []
+            subCategory: subCategory ? [subCategory.name || subCategory] : [],
+            invalid: false
         };
         
         if (branch.id) {
@@ -406,9 +434,9 @@ export class Dashboard implements OnInit, OnDestroy {
         }
 
         this.asistenciaService.getAttendances(filters, 0).subscribe({
-            next: (res) => {
+            next: (res: PagesResponseDto<AttendanceResponseDto>) => {
                 const groups = new Map<string, AttendanceResponseDto[]>();
-                res.attendances.forEach(a => {
+                res.data.forEach((a: AttendanceResponseDto) => {
                     const key = `${a.serviceDate}_${a.serviceName}`;
                     if (!groups.has(key)) {
                         groups.set(key, []);

@@ -12,8 +12,10 @@ import {
     Integrante,
     IntegranteRequestDto,
     MemberFilterRequestDto,
+    MemberExportDto,
     ReportColumn
 } from '../../core/models/integrante.model';
+import { PagesResponseDto, ExportResponseDto } from '../../core/models/pagination.model';
 import {
     MemberCategoryResponseDto,
     MemberSubCategoryResponseDto,
@@ -68,6 +70,7 @@ export class Integrantes implements OnInit {
     // Pagination
     currentPage = 0;
     totalPages = 0;
+    totalElements = 0;
 
     // Filter States
     selectedTypes: string[] = [];
@@ -320,13 +323,12 @@ onCategoryChange() {
     };
 
     this.integranteService.searchMembers(filterRequest, this.currentPage).subscribe({
-      next: (res: any) => {
-        // Use implicit any for res if MemberPagesResponseDto is not perfectly matching or if laziness is preferred, 
-        // but better to use MemberPagesResponseDto if imported.
-        // The error said 'res' implicitly has 'any' type.
-        this.members = res.members;
-        this.totalPages = res.pages;
+      next: (res: PagesResponseDto<Integrante>) => {
+        this.members = res.data;
+        this.totalPages = res.totalPages;
+        this.totalElements = res.totalElements;
         this.isLoading = false;
+        this.scrollToTop();
       },
       error: (error: any) => {
         console.error('Error loading members:', error);
@@ -378,6 +380,16 @@ onCategoryChange() {
     this.showModal = true;
   }
 
+  openAddModal() {
+    if (!this.can('REGISTER_MEMBER')) return;
+    this.isEditing = false;
+    this.selectedMember = undefined;
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.integranteForm.reset({ active: true });
+    this.showFormModal = true;
+  }
+
   closeModal() {
     this.showModal = false;
     this.selectedMember = undefined;
@@ -387,6 +399,8 @@ onCategoryChange() {
     this.showFormModal = false;
     this.selectedMember = undefined;
     this.isEditing = false;
+    this.selectedFile = null;
+    this.imagePreview = null;
   }
 
   // Filter dropdown management
@@ -536,9 +550,9 @@ onCategoryChange() {
     };
 
     this.integranteService.exportMembers(filterRequest).subscribe({
-      next: (data: any) => {
+      next: (res: ExportResponseDto<MemberExportDto>) => {
         // No additional formatting needed if backend sends names in MemberExportDto
-        const formattedData = data;
+        const formattedData = res.data;
 
         const columns: ReportColumn[] = [
           { id: 'completeName', label: 'Nombre Completo', visible: true, order: 1 },
@@ -1053,5 +1067,14 @@ onCategoryChange() {
     if (category === undefined || category === null) return '';
     if (typeof category === 'string') return category;
     return category?.name || '';
+  }
+
+  private scrollToTop() {
+    const selectors = ['.page-container', '.table-container', '.full-table', '.list-container'];
+    selectors.forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }

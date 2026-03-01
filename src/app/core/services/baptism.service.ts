@@ -6,9 +6,9 @@ import {
   BaptismRequestDto,
   BaptismResponseDto,
   BaptismFilterRequestDto,
-  BaptismPagesResponseDto,
   BaptismInvalidRequestDto
 } from '../models/baptism.model';
+import { PagesResponseDto } from '../models/pagination.model';
 
 @Injectable({
   providedIn: 'root'
@@ -43,9 +43,9 @@ export class BaptismService {
     return this.http.post<BaptismResponseDto>(this.apiUrl, formData);
   }
 
-  search(filterRequest: BaptismFilterRequestDto, page: number): Observable<BaptismPagesResponseDto> {
+  search(filterRequest: BaptismFilterRequestDto, page: number): Observable<PagesResponseDto<BaptismResponseDto>> {
     const params = new HttpParams().set('page', page.toString());
-    return this.http.post<BaptismPagesResponseDto>(`${this.apiUrl}/search`, filterRequest, { params });
+    return this.http.post<PagesResponseDto<BaptismResponseDto>>(`${this.apiUrl}/search`, filterRequest, { params });
   }
 
   invalidate(invalidRequest: BaptismInvalidRequestDto): Observable<BaptismResponseDto> {

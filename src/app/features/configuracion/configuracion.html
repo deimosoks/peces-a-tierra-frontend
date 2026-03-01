@@ -139,6 +139,63 @@
           <div>Cargando tipos...</div>
         </div>
       </div>
+
+      <!-- Category Rules Section -->
+      <div class="config-section" style="grid-column: 1 / -1;">
+        <div class="section-header">
+          <h2>
+            <i class="fa-solid fa-scale-balanced"></i>
+            Reglas de Categoría
+          </h2>
+          <button class="btn btn-primary btn-sm" (click)="openRuleModal()">
+            <i class="fa-solid fa-plus"></i>
+            <span class="btn-text">Nueva Regla</span>
+          </button>
+        </div>
+
+        <div class="items-list rules-list" *ngIf="!isLoadingRules">
+          <div class="item-card" *ngFor="let rule of categoryRules">
+            <div class="item-info" style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="color-badge" [style.background-color]="rule.category.color"></span>
+                <span class="item-name">{{ rule.category.name }} {{ rule.subCategory ? '(' + rule.subCategory.name + ')' : '' }}</span>
+              </div>
+              <small style="color: var(--text-muted); font-size: 0.8rem; display: flex; gap: 0.75rem;">
+                <span *ngIf="rule.minAge !== null && rule.maxAge !== null"><i class="fa-solid fa-user-clock"></i> {{ rule.minAge }} - {{ rule.maxAge }} años</span>
+                <span *ngIf="rule.minAge !== null && rule.maxAge === null"><i class="fa-solid fa-user-clock"></i> Mayor de {{ rule.minAge }} años</span>
+                <span *ngIf="rule.minAge === null && rule.maxAge !== null"><i class="fa-solid fa-user-clock"></i> Hasta {{ rule.maxAge }} años</span>
+                <span *ngIf="rule.minAge === null && rule.maxAge === null"><i class="fa-solid fa-user-clock"></i> Cualquier Edad</span>
+                
+                <span *ngIf="rule.gender"><i class="fa-solid" [ngClass]="rule.gender === 'HOMBRE' ? 'fa-mars' : 'fa-venus'"></i> {{ rule.gender | titlecase }}</span>
+                <span *ngIf="!rule.gender"><i class="fa-solid fa-venus-mars"></i> Ambos</span>
+                <span><i class="fa-solid fa-arrow-up-9-1"></i> Prioridad: {{ rule.priority }}</span>
+              </small>
+            </div>
+            <div class="item-actions">
+              <label class="switch" style="margin-right: 0.5rem;" title="Activar/Desactivar">
+                <input type="checkbox" [checked]="rule.active" (change)="toggleRuleStatus(rule)">
+                <span class="slider round"></span>
+              </label>
+              <button class="action-btn edit" (click)="openRuleModal(rule)" title="Editar">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="action-btn delete" (click)="deleteRule(rule)" title="Eliminar">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="categoryRules.length === 0">
+            <i class="fa-solid fa-inbox"></i>
+            <p>No hay reglas registradas</p>
+          </div>
+        </div>
+
+        <div class="loading-container" *ngIf="isLoadingRules">
+          <div class="loading-spinner"></div>
+          <div>Cargando reglas...</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -337,6 +394,97 @@
               [ngClass]="isSavingSubCategory ? 'fa-spinner fa-spin' : 'fa-save'"
             ></i>
             {{ isSavingSubCategory ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Category Rule Modal -->
+<div class="modal-overlay" *ngIf="showRuleModal" (click)="closeRuleModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditingRule ? 'Editar Regla' : 'Nueva Regla' }}</h2>
+      <button class="close-btn" (click)="closeRuleModal()">&times;</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="modal-loading-overlay" *ngIf="isSavingRule">
+        <div class="spinner-wrapper">
+            <div class="spinner-circle"></div>
+            <p>Procesando...</p>
+        </div>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="ruleForm" (submit)="saveRule()">
+        <div class="soft-input-group">
+          <label class="soft-label">Categoría *</label>
+          <div class="soft-input-wrapper">
+            <i class="fa-solid fa-tag soft-input-icon"></i>
+            <select formControlName="memberCategoryId" class="soft-input" required>
+              <option value="" disabled selected>Seleccione una categoría</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="soft-input-group" *ngIf="subCategoriesForSelectedRuleCategory.length > 0">
+          <label class="soft-label">Sub-categoría (Opcional)</label>
+          <div class="soft-input-wrapper">
+            <i class="fa-solid fa-tags soft-input-icon"></i>
+            <select formControlName="subCategoryId" class="soft-input">
+              <option value="">Cualquiera</option>
+              <option *ngFor="let sub of subCategoriesForSelectedRuleCategory" [value]="sub.id">{{ sub.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="soft-input-group">
+            <label class="soft-label">Edad Mínima (Opcional)</label>
+            <div class="soft-input-wrapper">
+              <i class="fa-solid fa-user-minus soft-input-icon"></i>
+              <input type="number" formControlName="minAge" class="soft-input" min="0" placeholder="Ej: 18" />
+            </div>
+          </div>
+          <div class="soft-input-group">
+            <label class="soft-label">Edad Máxima (Opcional)</label>
+            <div class="soft-input-wrapper">
+              <i class="fa-solid fa-user-plus soft-input-icon"></i>
+              <input type="number" formControlName="maxAge" class="soft-input" min="0" placeholder="Ej: 30" />
+            </div>
+          </div>
+        </div>
+
+        <div class="soft-input-group">
+          <label class="soft-label">Género (Opcional)</label>
+          <div class="soft-input-wrapper">
+            <i class="fa-solid fa-venus-mars soft-input-icon"></i>
+            <select formControlName="gender" class="soft-input">
+              <option value="">Cualquier Género</option>
+              <option value="HOMBRE">Hombre</option>
+              <option value="MUJER">Mujer</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="soft-input-group">
+          <label class="soft-label">Prioridad (Mayor número = menor prioridad) *</label>
+          <div class="soft-input-wrapper">
+            <i class="fa-solid fa-arrow-up-9-1 soft-input-icon"></i>
+            <input type="number" formControlName="priority" class="soft-input" min="0" required />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-muted" (click)="closeRuleModal()" [disabled]="isSavingRule">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="ruleForm.invalid || isSavingRule">
+            <i class="fa-solid" [ngClass]="isSavingRule ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+            {{ isSavingRule ? 'Guardando...' : 'Guardar' }}
           </button>
         </div>
       </form>

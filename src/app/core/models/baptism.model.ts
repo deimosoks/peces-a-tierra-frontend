@@ -48,11 +48,6 @@ export interface BaptismFilterRequestDto {
   branchId?: string;
 }
 
-// Baptism Pages Response DTO
-export interface BaptismPagesResponseDto {
-  baptisms: BaptismResponseDto[];
-  pages: number;
-}
 
 // Baptism Invalid Request DTO
 export interface BaptismInvalidRequestDto {

@@ -735,6 +735,7 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--bg-input);
+  color: var(--text-main);
   width: 100%;
   transition: all 0.2s;
 }
@@ -804,11 +805,11 @@
 .status-switch input:disabled + .slider {
   opacity: 0.6;
   cursor: not-allowed;
-  background-color: #cbd5e1 !important;
+  background-color: var(--border-color) !important;
 }
 
 .status-switch input:disabled + .slider:before {
-  background-color: #f1f5f9;
+  background-color: var(--bg-input);
 }
 
 /* Mini Status Switch for Actions Column */
@@ -994,7 +995,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-main);
+  background: var(--bg-card);
 }
 
 .modal-header h2 {
@@ -1004,7 +1005,7 @@
 }
 
 .close-btn {
-  background: #e2e8f0;
+  background: var(--bg-input);
   border: none;
   width: 32px;
   height: 32px;
@@ -1019,7 +1020,7 @@
 }
 
 .close-btn:hover {
-  background: #cbd5e1;
+  background: var(--border-color);
   color: var(--text-main);
 }
 
@@ -1353,12 +1354,12 @@
 }
 
 .filter-option-card:hover {
-    background: #f1f5f9;
+    background: var(--bg-input);
     border-color: var(--primary-color);
 }
 
 .filter-option-card.selected {
-    background: #eff6ff;
+    background: rgba(var(--primary-rgb), 0.1);
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
@@ -1464,7 +1465,7 @@
 }
 
 .btn-muted:hover {
-    background: #e2e8f0;
+    background: var(--border-color);
     color: var(--text-main);
 }
 

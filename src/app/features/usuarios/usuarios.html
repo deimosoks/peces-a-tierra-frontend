@@ -187,7 +187,7 @@
         <!-- Pagination -->
         <div class="pagination-footer">
             <div class="pagination-mini">
-                <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }}</span>
+                <span>Página {{ currentPage + 1 }} de {{ totalPages || 1 }} (Total: {{ totalElements }})</span>
                 <div class="pagination-buttons">
                     <button class="btn-icon-sm" (click)="prevPage()" [disabled]="currentPage === 0">
                         <i class="fa-solid fa-chevron-left"></i>

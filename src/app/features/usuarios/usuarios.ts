@@ -9,6 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { User, UserRequestDto } from '../../core/models/user.model';
 import { Role } from '../../core/models/role.model';
 import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
+import { PagesResponseDto } from '../../core/models/pagination.model';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { BranchService } from '../../core/services/branch.service';
@@ -40,6 +41,7 @@ export class Usuarios implements OnInit {
     activeUsers = 0;
     currentPage = 0;
     totalPages = 0;
+    totalElements = 0;
     searchQuery = '';
 
     // UI State
@@ -102,10 +104,12 @@ export class Usuarios implements OnInit {
     loadUsers() {
         this.isLoading = true;
         this.userService.getUsers(this.currentPage, this.searchQuery, this.selectedBranchId).subscribe({
-            next: (response) => {
-                this.users = response.users;
-                this.totalPages = response.pages;
+            next: (response: PagesResponseDto<User>) => {
+                this.users = response.data;
+                this.totalPages = response.totalPages;
+                this.totalElements = response.totalElements;
                 this.isLoading = false;
+                this.scrollToTop();
             },
             error: (err) => {
                 console.error('Error loading users:', err);
@@ -123,10 +127,12 @@ export class Usuarios implements OnInit {
         if (this.searchQuery.trim()) {
             this.isLoading = true;
             this.userService.getUsers(this.currentPage, this.searchQuery, this.selectedBranchId).subscribe({
-                next: (response) => {
-                    this.users = response.users;
-                    this.totalPages = response.pages;
+                next: (response: PagesResponseDto<User>) => {
+                    this.users = response.data;
+                    this.totalPages = response.totalPages;
+                    this.totalElements = response.totalElements;
                     this.isLoading = false;
+                    this.scrollToTop();
                 },
                 error: (err) => {
                     console.error('Error searching users:', err);
@@ -207,8 +213,8 @@ export class Usuarios implements OnInit {
             query: this.memberSearchQuery
         };
         this.integranteService.searchMembers(filterRequest, 0).subscribe({
-            next: (res) => {
-                this.availableMembers = res.members;
+            next: (res: PagesResponseDto<Integrante>) => {
+                this.availableMembers = res.data;
                 this.isSearchingMembers = false;
             },
             error: () => this.isSearchingMembers = false
@@ -427,5 +433,14 @@ export class Usuarios implements OnInit {
         if (!subCategory) return '';
         if (typeof subCategory === 'string') return subCategory;
         return subCategory.name || '';
+    }
+
+    private scrollToTop() {
+        const selectors = ['.page-container', '.table-container', '.full-table', '.list-container'];
+        selectors.forEach(selector => {
+            const el = document.querySelector(selector);
+            if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }

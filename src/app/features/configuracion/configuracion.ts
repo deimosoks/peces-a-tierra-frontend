@@ -12,6 +12,9 @@ import {
   MemberTypeResponseDto,
   MemberTypeRequestDto 
 } from '../../core/models/member-config.model';
+import { CategoryRulesService } from '../../core/services/category-rules.service';
+import { CategoryRulesResponseDto, CategoryRulesRequestDto } from '../../core/models/category-rule.model';
+
 
 @Component({
   selector: 'app-configuracion',
@@ -25,39 +28,47 @@ export class Configuracion implements OnInit {
   private configService = inject(MemberConfigService);
   private notificationService = inject(NotificationService);
   private confirmationService = inject(ConfirmationService);
+  private categoryRulesService = inject(CategoryRulesService);
 
   // Data
   categories: MemberCategoryResponseDto[] = [];
   types: MemberTypeResponseDto[] = [];
+  categoryRules: CategoryRulesResponseDto[] = [];
 
   // Loading States
   isLoadingCategories = true;
   isLoadingTypes = true;
+  isLoadingRules = true;
 
   // Modal States
   showCategoryModal = false;
   showTypeModal = false;
   showSubCategoryModal = false;
+  showRuleModal = false;
 
   // Edit States
   isEditingCategory = false;
   isEditingType = false;
   isEditingSubCategory = false;
+  isEditingRule = false;
   
   editingCategoryId?: string;
   editingTypeId?: string;
   editingSubCategoryId?: string;
+  editingRuleId?: string;
   selectedCategoryIdForSub?: string;
 
   // Forms
   categoryForm!: FormGroup;
   typeForm!: FormGroup;
   subCategoryForm!: FormGroup;
+  ruleForm!: FormGroup;
 
   // Saving States
   isSavingCategory = false;
   isSavingType = false;
   isSavingSubCategory = false;
+  isSavingRule = false;
 
   // Block State
   isModifyingBlocked = true; // Bloqueo temporal solicitado por el usuario
@@ -66,6 +77,7 @@ export class Configuracion implements OnInit {
     this.initForms();
     this.loadCategories();
     this.loadTypes();
+    this.loadRules();
   }
 
   initForms() {
@@ -83,6 +95,20 @@ export class Configuracion implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2)]],
       color: ['#3b82f6', Validators.required],
       categoryId: ['', Validators.required]
+    });
+
+    this.ruleForm = this.fb.group({
+      memberCategoryId: ['', Validators.required],
+      subCategoryId: [''],
+      minAge: [null, [Validators.min(0)]],
+      maxAge: [null, [Validators.min(0)]],
+      gender: [''], // null or specific gender
+      priority: [0, [Validators.required, Validators.min(0)]],
+    });
+
+    // Reset subCategory when category changes
+    this.ruleForm.get('memberCategoryId')?.valueChanges.subscribe(() => {
+      this.ruleForm.patchValue({ subCategoryId: '' });
     });
   }
 
@@ -328,6 +354,124 @@ export class Configuracion implements OnInit {
         },
         error: () => {
           this.notificationService.error('Error al eliminar tipo');
+        }
+      });
+    }
+  }
+
+  // Category Rules methods
+  get subCategoriesForSelectedRuleCategory(): MemberSubCategoryResponseDto[] {
+    const categoryId = this.ruleForm.get('memberCategoryId')?.value;
+    if (!categoryId) return [];
+    const category = this.categories.find(c => c.id === categoryId);
+    return category?.subCategories || [];
+  }
+
+  loadRules() {
+    this.isLoadingRules = true;
+    this.categoryRulesService.findAll().subscribe({
+      next: (data) => {
+        this.categoryRules = data;
+        this.isLoadingRules = false;
+      },
+      error: () => {
+        this.isLoadingRules = false;
+        this.notificationService.error('Error al cargar reglas de categoría');
+      }
+    });
+  }
+
+  openRuleModal(rule?: CategoryRulesResponseDto) {
+    if (rule) {
+      this.isEditingRule = true;
+      this.editingRuleId = rule.id;
+      this.ruleForm.patchValue({
+        memberCategoryId: rule.category.id,
+        subCategoryId: rule.subCategory ? rule.subCategory.id : '',
+        minAge: rule.minAge !== undefined ? rule.minAge : null,
+        maxAge: rule.maxAge !== undefined ? rule.maxAge : null,
+        gender: rule.gender || '',
+        priority: rule.priority
+      });
+    } else {
+      this.isEditingRule = false;
+      this.editingRuleId = undefined;
+      this.ruleForm.reset({ minAge: null, maxAge: null, priority: 0, gender: '' });
+    }
+    this.showRuleModal = true;
+  }
+
+  closeRuleModal() {
+    this.showRuleModal = false;
+    this.ruleForm.reset();
+    this.isEditingRule = false;
+    this.editingRuleId = undefined;
+  }
+
+  saveRule() {
+    if (this.ruleForm.invalid) return;
+
+    this.isSavingRule = true;
+    const formVals = this.ruleForm.value;
+    const dto: CategoryRulesRequestDto = {
+      memberCategoryId: formVals.memberCategoryId,
+      subCategoryId: formVals.subCategoryId || undefined,
+      minAge: formVals.minAge !== '' ? formVals.minAge : null,
+      maxAge: formVals.maxAge !== '' ? formVals.maxAge : null,
+      gender: formVals.gender ? formVals.gender : null,
+      priority: formVals.priority
+    };
+
+    const request = this.isEditingRule && this.editingRuleId
+      ? this.categoryRulesService.update(this.editingRuleId, dto)
+      : this.categoryRulesService.create(dto);
+
+    request.subscribe({
+      next: () => {
+        this.notificationService.success(
+          this.isEditingRule ? 'Regla actualizada' : 'Regla creada'
+        );
+        this.loadRules();
+        this.closeRuleModal();
+        this.isSavingRule = false;
+      },
+      error: () => {
+        this.notificationService.error('Error al guardar la regla');
+        this.isSavingRule = false;
+      }
+    });
+  }
+
+  toggleRuleStatus(rule: CategoryRulesResponseDto) {
+      const newState = !rule.active;
+      this.categoryRulesService.updateActive(rule.id, newState).subscribe({
+          next: () => {
+              rule.active = newState;
+              this.notificationService.success(`Regla ${newState ? 'activada' : 'desactivada'} correctamente`);
+          },
+          error: () => {
+              rule.active = !newState; // revert
+              this.notificationService.error('Error al cambiar el estado de la regla');
+          }
+      });
+  }
+
+  async deleteRule(rule: CategoryRulesResponseDto) {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Eliminar Regla',
+      message: `¿Está seguro de eliminar esta regla?`,
+      type: 'danger',
+      confirmText: 'Eliminar'
+    });
+
+    if (confirmed) {
+      this.categoryRulesService.delete(rule.id).subscribe({
+        next: () => {
+          this.notificationService.success('Regla eliminada');
+          this.loadRules();
+        },
+        error: () => {
+          this.notificationService.error('Error al eliminar la regla');
         }
       });
     }

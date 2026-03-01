@@ -34,10 +34,6 @@ export interface AttendanceResponseDto {
     subCategory?: MemberSubCategoryResponseDto;
 }
 
-export interface AttendancePagesResponseDto {
-    attendances: AttendanceResponseDto[];
-    pages: number;
-}
 
 export interface AttendanceFiltersRequestDto {
     serviceId?: string; // Updated from serviceEventId to match backend
@@ -48,6 +44,7 @@ export interface AttendanceFiltersRequestDto {
     memberId?: string;
     category?: string[];
     subCategory?: string[];
+    invalid?: boolean;
 }
 
 export interface AttendanceInvalidateDto {

@@ -2,9 +2,11 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
+import { AuthService } from '../services/auth.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const notificationService = inject(NotificationService);
+    const authService = inject(AuthService);
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
@@ -14,11 +16,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             }
 
             if (error.status === 403) {
-                window.location.reload();
+                // Redirect to login and clear session to break the loop for deactivated users
+                // This replaces the old window.location.reload() that caused the loop
+                authService.logout();
                 return throwError(() => error);
             }
 
             if (error.status === 401) {
+                // Let auth.interceptor.ts handle 401s for refresh token logic
                 return throwError(() => error);
             }
 

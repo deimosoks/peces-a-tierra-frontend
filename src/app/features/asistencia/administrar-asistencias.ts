@@ -12,6 +12,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 import { BranchService } from '../../core/services/branch.service'; // Added import
 import { Branch } from '../../core/models/branch.model'; // Added import
+import { PagesResponseDto, ExportResponseDto } from '../../core/models/pagination.model';
 import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component';
 import { ServiceEvent } from '../../core/models/service-event.model';
 import * as XLSX from 'xlsx';
@@ -62,6 +63,7 @@ export class AdministrarAsistencias implements OnInit {
   // Pagination
   currentPage = 0;
   totalPages = 0;
+  totalElements = 0;
   isLoading = false;
 
   // Invalidation Modal
@@ -103,15 +105,15 @@ export class AdministrarAsistencias implements OnInit {
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(query => {
-        if (query.length < 2) return [{ members: [], pages: 0 }];
+        if (query.length < 2) return [{ data: [], page: 0, size: 0, totalPages: 0, totalElements: 0 } as PagesResponseDto<Integrante>];
         const filterRequest: MemberFilterRequestDto = {
           onlyActive: true,
           query: query
         };
         return this.integranteService.searchMembers(filterRequest, 0);
       })
-    ).subscribe(res => {
-      this.memberSearchResults = res.members;
+    ).subscribe((res: PagesResponseDto<Integrante>) => {
+      this.memberSearchResults = res.data;
       this.showMemberResults = this.memberSearchResults.length > 0;
     });
   }
@@ -162,10 +164,12 @@ export class AdministrarAsistencias implements OnInit {
     console.log('Sending Filters Body:', searchFilters);
 
     this.asistenciaService.getAttendances(searchFilters, this.currentPage).subscribe({
-      next: (res: any) => {
-        this.attendances = res.attendances;
-        this.totalPages = res.pages;
+      next: (res: PagesResponseDto<AttendanceResponseDto>) => {
+        this.attendances = res.data;
+        this.totalPages = res.totalPages;
+        this.totalElements = res.totalElements;
         this.isLoading = false;
+        this.scrollToTop();
       },
       error: (err) => {
         console.error('Error loading attendances:', err);
@@ -321,7 +325,8 @@ export class AdministrarAsistencias implements OnInit {
     };
 
     this.asistenciaService.exportAttendances(searchFilters).subscribe({
-      next: (data) => {
+      next: (res: ExportResponseDto<AttendanceResponseDto>) => {
+        const data = res.data;
         if (format === 'excel') {
           this.downloadExcel(data);
         } else {
@@ -400,5 +405,14 @@ export class AdministrarAsistencias implements OnInit {
     event.stopPropagation();
     this.showExportDropdown = !this.showExportDropdown;
     this.activeDropdownId = null;
+  }
+
+  private scrollToTop() {
+    const selectors = ['.page-container', '.table-container', '.full-table', '.list-container'];
+    selectors.forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }

@@ -6,9 +6,11 @@ import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante
 import { AsistenciaService } from '../../core/services/asistencia';
 import { ReporteService } from '../../core/services/reporte';
 import { ReportFilters, ReportData } from '../../core/models/reporte.model';
-import { IglesiaService } from '../../core/models/asistencia.model';
+import { IglesiaService, AttendanceResponseDto } from '../../core/models/asistencia.model';
 import { BranchService } from '../../core/services/branch.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Branch } from '../../core/models/branch.model';
+import { PagesResponseDto } from '../../core/models/pagination.model';
 import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
 import { ReportService, ReportColumn } from '../../core/services/report.service';
 import { ServiceEvent } from '../../core/models/service-event.model'; // Added
@@ -62,8 +64,26 @@ export class Reportes implements OnInit {
   private memberConfigService = inject(MemberConfigService);
   private themeService = inject(ThemeService);
   private branchService = inject(BranchService);
+  private authService = inject(AuthService);
 
   @ViewChild("chart") chart!: ChartComponent;
+
+  public onGroupByChange(id: string, event: any) {
+    const checked = event.target.checked;
+    if (!this.filters.groupBy) this.filters.groupBy = [];
+    
+    if (checked) {
+      if (!this.filters.groupBy.includes(id)) {
+        this.filters.groupBy.push(id);
+      }
+    } else {
+      const index = this.filters.groupBy.indexOf(id);
+      if (index !== -1) {
+        this.filters.groupBy.splice(index, 1);
+      }
+    }
+  }
+
 
   // States
   showFilterModal = false;
@@ -102,7 +122,7 @@ export class Reportes implements OnInit {
     subCategory: undefined,
     serviceId: undefined,
     branchId: undefined,
-    groupBy: ['BRANCH'], // Default: Por Sede
+    groupBy: [], // Default: Desmarcado "Por Sede"
     startDate: '', // Will be set in ngOnInit
     endDate: '',   // Will be set in ngOnInit
     userId: '',
@@ -110,6 +130,7 @@ export class Reportes implements OnInit {
   };
 
   selectedEventLabel = ''; // Added
+  separateByDate = true; // Default: Marcado "Separar por Fecha de Servicio"
 
   groupByOptions = [
     { id: 'BRANCH', label: 'Por Sede' },
@@ -139,7 +160,6 @@ export class Reportes implements OnInit {
   ];
   groupBy: string = '';
   includeTotals = true; // Added
-  separateByDate = false; // Added
 
   // Enums (Now dynamic)
   tipos: MemberTypeResponseDto[] = [];
@@ -167,12 +187,14 @@ export class Reportes implements OnInit {
     this.adjustPageSize();
     this.chartOptions = this.getPremiumChartOptions([], [], this.themeService.isDarkMode());
     this.loadServices();
-    this.loadBranches();
+    if (this.can('ADMINISTRATOR')) {
+      this.loadBranches();
+    }
     this.loadMemberConfigs();
 
-    // Set Default Date Range (Today)
+    // Set Default Date Range (First of current month to today)
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 
     // Format for datetime-local input (YYYY-MM-DDTHH:mm)
@@ -181,6 +203,10 @@ export class Reportes implements OnInit {
 
     // Default Analytics: Load data immediately
     this.applyFilters();
+  }
+
+  public can(permission: string): boolean {
+    return this.authService.can(permission);
   }
 
   private toLocalISOString(date: Date): string {
@@ -241,7 +267,7 @@ export class Reportes implements OnInit {
         type: "bar",
         stacked: true,
         toolbar: {
-          show: true,
+          show: false,
           tools: {
             download: true,
             selection: false,
@@ -394,8 +420,8 @@ export class Reportes implements OnInit {
       query: this.memberSearchQuery
     };
     this.integranteService.searchMembers(filterRequest, 0).subscribe({
-      next: (res) => {
-        this.memberResults = res.members;
+      next: (res: PagesResponseDto<Integrante>) => {
+        this.memberResults = res.data;
         this.isSearchingMembers = false;
       },
       error: () => {
@@ -485,7 +511,7 @@ export class Reportes implements OnInit {
 
     const xAxisMap = new Map<string, string>();
     
-    this.reportData.forEach(d => {
+    this.reportData.forEach((d: ReportData) => {
       let key = '';
       let display = '';
 
@@ -783,23 +809,9 @@ export class Reportes implements OnInit {
     this.showCalendarModal = false;
   }
 
-  onGroupByChange(id: string, event: any) {
-    const checked = event.target.checked;
-    if (!this.filters.groupBy) this.filters.groupBy = [];
-    
-    if (checked) {
-      if (!this.filters.groupBy.includes(id)) {
-        this.filters.groupBy.push(id);
-      }
-    } else {
-      const index = this.filters.groupBy.indexOf(id);
-      if (index !== -1) {
-        this.filters.groupBy.splice(index, 1);
-      }
-    }
-  }
 
-  clearEventFilter() {
+
+  public clearEventFilter() {
     this.filters.eventId = '';
     this.selectedEventLabel = '';
   }

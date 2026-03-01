@@ -70,10 +70,6 @@ export interface IntegranteRequestDto {
   longitude?: string;
 }
 
-export interface MemberPagesResponseDto {
-    members: Integrante[];
-    pages: number;
-}
 
 export interface MemberFilterRequestDto {
     memberType?: string[];
