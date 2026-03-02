@@ -23,6 +23,8 @@ import {
 } from '../../core/models/member-config.model';
 import { Branch } from '../../core/models/branch.model';
 import { SafeClickDirective } from '../../shared/directives/safe-click.directive';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 declare var google: any;
 
@@ -60,6 +62,8 @@ export class Integrantes implements OnInit {
     // State
     isLoading = true;
     showModal = false;
+
+    private searchSubject = new Subject<string>();
     isEditing = false;
     isSaving = false;
     currentId: string | null = null;
@@ -120,19 +124,20 @@ export class Integrantes implements OnInit {
                 // neighborhood, city etc...
                 birthdate: integrante.birthdate ? new Date(integrante.birthdate).toISOString().substring(0, 10) : '',
                 cc: integrante.cc,
-                gender: integrante.gender,
+                gender: integrante.gender ? integrante.gender.toUpperCase() : '',
                 branchId: integrante.branch?.id || '',
-                active: integrante.active
+                active: integrante.active,
+                categoryLocked: integrante.categoryLocked || false
             });
             
-            if (integrante.category?.id) {
-                this.onCategoryChange();
-            }
+            // Subcategory list is populated automatically by the `subCategoriesForSelectedCategory` getter
+            // calling `onCategoryChange()` here clears out the subCategoryId we just patched.
         } else {
             this.integranteForm.reset({
                 active: true,
                 gender: 'HOMBRE', // Match availableGenders value
-                branchId: this.isAdmin ? '' : this.currentUserBranchId
+                branchId: this.isAdmin ? '' : this.currentUserBranchId,
+                categoryLocked: false
             });
             this.filteredSubCategories = [];
         }
@@ -198,6 +203,7 @@ export class Integrantes implements OnInit {
   ngOnInit() {
     this.checkPermissions();
     this.initForm();
+    this.setupSearchDebounce();
     this.loadCategoriesAndTypes();
     this.loadMembers();
     if (this.isAdmin) {
@@ -268,7 +274,8 @@ export class Integrantes implements OnInit {
       cc: [''],
       gender: ['', [Validators.required]],
       branchId: [''],
-      active: [true]
+      active: [true],
+      categoryLocked: [false]
     });
 
     // noteForm is already initialized in constructor, but sticking to this pattern if needed
@@ -336,6 +343,20 @@ onCategoryChange() {
         this.isLoading = false;
       }
     });
+  }
+
+  setupSearchDebounce() {
+    this.searchSubject.pipe(
+      debounceTime(1000),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.searchQuery = query;
+      this.onSearch();
+    });
+  }
+
+  onSearchInput() {
+    this.searchSubject.next(this.searchQuery);
   }
 
   onSearch() {
@@ -949,6 +970,7 @@ onCategoryChange() {
     this.imagePreview = null;
     this.integranteForm.reset({ 
       active: true, 
+      categoryLocked: false,
       typeId: this.availableTypes.length > 0 ? this.availableTypes[0].id : '', 
       categoryId: this.availableCategories.length > 0 ? this.availableCategories[0].id : '',
       subCategoryId: ''

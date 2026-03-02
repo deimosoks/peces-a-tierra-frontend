@@ -106,7 +106,7 @@
                 <!-- Search -->
                 <div class="search-container">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                    <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput()" (keyup.enter)="onSearch()"
                            placeholder="Buscar por nombre, documento o celular..." 
                            class="search-input-modern"
                            [disabled]="!selectedActiveEvent && !selectedEventId"

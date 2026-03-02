@@ -5,6 +5,8 @@ import { BaptismService } from '../../core/services/baptism.service';
 import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
 import { BaptismResponseDto, BaptismFilterRequestDto, BaptismRequestDto, BaptismInvalidRequestDto } from '../../core/models/baptism.model';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PagesResponseDto } from '../../core/models/pagination.model';
 import { Integrante } from '../../core/models/integrante.model';
 import { ConfirmationService } from '../../core/services/confirmation.service';
@@ -72,9 +74,12 @@ export class Bautismos implements OnInit {
   invalidateForm!: FormGroup;
   isSaving = false;
 
+  private searchSubject = new Subject<string>();
+
   ngOnInit() {
     this.checkPermissions();
     this.initForms();
+    this.setupSearchDebounce();
     this.loadBaptisms();
     this.setupClickOutsideListener();
     if (this.isAdmin) {
@@ -84,6 +89,20 @@ export class Bautismos implements OnInit {
 
   checkPermissions() {
       this.isAdmin = this.authService.can('ADMINISTRATOR');
+  }
+
+  setupSearchDebounce() {
+    this.searchSubject.pipe(
+      debounceTime(1000),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.filterQuery = query;
+      this.onSearch();
+    });
+  }
+
+  onSearchInput() {
+    this.searchSubject.next(this.filterQuery);
   }
 
   loadBranches() {

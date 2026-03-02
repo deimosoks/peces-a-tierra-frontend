@@ -344,6 +344,43 @@
                     </div>
                 </div>
 
+                <!-- Category Selector -->
+                <div class="input-with-label">
+                    <label>Categoría</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-users-rectangle"></i>
+                        <select [(ngModel)]="filters.category" class="premium-input" multiple size="3" style="height: auto; padding-right: 2rem;">
+                            <option *ngFor="let c of categorias" [value]="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.2;">Use Ctrl/Cmd para seleccionar varias. Sin seleccionar equivale a "Todas".</span>
+                </div>
+
+                <!-- Sub-Category Selector -->
+                <div class="input-with-label" *ngIf="availableSubCategories.length > 0">
+                    <label>Sub-Categoría</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-users-viewfinder"></i>
+                        <select [(ngModel)]="filters.subCategory" class="premium-input" multiple size="3" style="height: auto; padding-right: 2rem;">
+                            <option *ngFor="let sc of availableSubCategories" [value]="sc.id">{{ sc.name }}</option>
+                        </select>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.2;">Use Ctrl/Cmd para seleccionar varias.</span>
+                </div>
+
+                <!-- Validity Selector -->
+                <div class="input-with-label">
+                    <label>Estado de Validez</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-check-double"></i>
+                        <select [(ngModel)]="filters.invalid" class="premium-input">
+                            <option [ngValue]="undefined">Todos los estados</option>
+                            <option [ngValue]="false">Solo Válidas</option>
+                            <option [ngValue]="true">Solo Invalidadas</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Date Range -->
                 <div class="date-range-grid">
                     <div class="input-with-label">

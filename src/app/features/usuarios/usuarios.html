@@ -33,9 +33,9 @@
                     <label class="soft-label">Buscar Usuario</label>
                     <div class="soft-input-wrapper">
                         <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                        <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                            placeholder="Buscar por nombre..." class="soft-input">
-                    </div>
+                        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput()" (keyup.enter)="onSearch()"
+                            placeholder="Buscar por nombre o usuario..." class="soft-input">
+                    </div>  
                 </div>
             </div>
 

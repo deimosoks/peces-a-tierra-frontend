@@ -70,8 +70,8 @@ export class Configuracion implements OnInit {
   isSavingSubCategory = false;
   isSavingRule = false;
 
-  // Block State
-  isModifyingBlocked = true; // Bloqueo temporal solicitado por el usuario
+  // Block State removed as requested
+
 
   ngOnInit() {
     this.initForms();

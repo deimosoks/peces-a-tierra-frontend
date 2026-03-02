@@ -12,6 +12,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 import { BranchService } from '../../core/services/branch.service'; // Added import
 import { Branch } from '../../core/models/branch.model'; // Added import
+import { MemberConfigService } from '../../core/services/member-config.service';
 import { PagesResponseDto, ExportResponseDto } from '../../core/models/pagination.model';
 import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component';
 import { ServiceEvent } from '../../core/models/service-event.model';
@@ -33,6 +34,7 @@ export class AdministrarAsistencias implements OnInit {
   private integranteService = inject(IntegranteService);
   private notificationService = inject(NotificationService);
   private branchService = inject(BranchService); // Injected
+  private memberConfigService = inject(MemberConfigService);
 
   // Filters & State
   filters: AttendanceFiltersRequestDto = {
@@ -41,7 +43,10 @@ export class AdministrarAsistencias implements OnInit {
     startDate: '',
     endDate: '',
     memberId: '',
-    branchId: ''
+    branchId: '',
+    category: [],
+    subCategory: [],
+    invalid: undefined
   };
   showFilterModal = false;
   showCalendarModal = false;
@@ -57,6 +62,7 @@ export class AdministrarAsistencias implements OnInit {
   services: IglesiaService[] = [];
   branches: Branch[] = []; // Added branches array
   attendances: AttendanceResponseDto[] = [];
+  categorias: MemberCategoryResponseDto[] = [];
 
   isAdmin = false; // Added isAdmin
 
@@ -84,9 +90,31 @@ export class AdministrarAsistencias implements OnInit {
     this.loadServices();
     this.loadAttendances();
     this.setupMemberSearch();
+    this.loadMemberConfigs();
     if (this.isAdmin) {
         this.loadBranches();
     }
+  }
+
+  loadMemberConfigs() {
+    this.memberConfigService.getCategories().subscribe({
+      next: (res) => this.categorias = res,
+      error: () => this.notificationService.error('Error al cargar configuraciones de integrantes')
+    });
+  }
+
+  get availableSubCategories(): any[] {
+    if (!this.filters.category || this.filters.category.length === 0) return [];
+    
+    // Si permite selection multiple:
+    const subcats: any[] = [];
+    for(const catId of this.filters.category) {
+        const cat = this.categorias.find(c => c.id === catId);
+        if(cat && cat.subCategories) {
+            subcats.push(...cat.subCategories);
+        }
+    }
+    return subcats;
   }
 
   checkPermissions() {
@@ -102,7 +130,7 @@ export class AdministrarAsistencias implements OnInit {
 
   setupMemberSearch() {
     this.memberSearchSubject.pipe(
-      debounceTime(300),
+      debounceTime(1000),
       distinctUntilChanged(),
       switchMap(query => {
         if (query.length < 2) return [{ data: [], page: 0, size: 0, totalPages: 0, totalElements: 0 } as PagesResponseDto<Integrante>];
@@ -158,7 +186,10 @@ export class AdministrarAsistencias implements OnInit {
       startDate: this.filters.startDate ? `${this.filters.startDate}:00` : undefined,
       endDate: this.filters.endDate ? `${this.filters.endDate}:00` : undefined,
       memberId: this.filters.memberId || undefined,
-      branchId: this.filters.branchId || undefined
+      branchId: this.filters.branchId || undefined,
+      category: this.filters.category?.length ? this.filters.category : undefined,
+      subCategory: this.filters.subCategory?.length ? this.filters.subCategory : undefined,
+      invalid: this.filters.invalid !== undefined && this.filters.invalid !== null ? this.filters.invalid : undefined
     };
 
     console.log('Sending Filters Body:', searchFilters);

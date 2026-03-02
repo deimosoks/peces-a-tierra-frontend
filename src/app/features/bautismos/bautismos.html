@@ -26,7 +26,7 @@
                 <div style="display: flex; gap: 0.35rem; width: 100%;">
                     <div class="soft-input-wrapper" style="flex: 1;">
                         <i class="fa-solid fa-magnifying-glass soft-input-icon"></i>
-                        <input type="text" [(ngModel)]="filterQuery" (keyup.enter)="onSearch()"
+                        <input type="text" [(ngModel)]="filterQuery" (ngModelChange)="onSearchInput()" (keyup.enter)="onSearch()"
                             placeholder="Buscar por nombre, cedula..." class="soft-input">
                     </div>
 
@@ -76,39 +76,41 @@
                     <tr *ngIf="!isLoading && baptisms.length === 0">
                         <td colspan="7" class="text-center">No se encontraron bautismos</td>
                     </tr>
-                    <tr *ngFor="let baptism of baptisms" [class.inactive-row]="baptism.invalid">
-                        <td (click)="openDetailsModal(baptism)" style="cursor: pointer;">
-                            <span style="font-weight: 600; color: var(--primary);">{{ baptism.memberName }}</span>
-                        </td>
-                        <td>{{ baptism.branchName || '---' }}</td>
-                        <td class="desktop-only">{{ formatDate(baptism.date) }}</td>
-                        <td class="desktop-only">{{ baptism.address || baptism.city || baptism.neighborhood || '---' }}</td>
-                        <td class="desktop-only">{{ baptism.registeredBy }}</td>
-                        <td class="desktop-only">
-                            <span class="badge" [class.badge-success]="!baptism.invalid" [class.badge-danger]="baptism.invalid">
-                                {{ baptism.invalid ? 'Invalidado' : 'Válido' }}
-                            </span>
-                        </td>
-                        <td class="actions-col">
-                            <div class="action-dropdown">
-                                <button class="action-btn" (click)="toggleDropdown(baptism.id)">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
-                                <div class="action-menu" *ngIf="activeDropdownId === baptism.id">
-                                    <button (click)="openDetailsModal(baptism); toggleDropdown(baptism.id)">
-                                        <i class="fa-solid fa-eye"></i> Ver Detalles
+                    <ng-container *ngIf="!isLoading">
+                        <tr *ngFor="let baptism of baptisms" [class.inactive-row]="baptism.invalid">
+                            <td (click)="openDetailsModal(baptism)" style="cursor: pointer;">
+                                <span style="font-weight: 600; color: var(--primary);">{{ baptism.memberName }}</span>
+                            </td>
+                            <td>{{ baptism.branchName || '---' }}</td>
+                            <td class="desktop-only">{{ formatDate(baptism.date) }}</td>
+                            <td class="desktop-only">{{ baptism.address || baptism.city || baptism.neighborhood || '---' }}</td>
+                            <td class="desktop-only">{{ baptism.registeredBy }}</td>
+                            <td class="desktop-only">
+                                <span class="badge" [class.badge-success]="!baptism.invalid" [class.badge-danger]="baptism.invalid">
+                                    {{ baptism.invalid ? 'Invalidado' : 'Válido' }}
+                                </span>
+                            </td>
+                            <td class="actions-col">
+                                <div class="action-dropdown">
+                                    <button class="action-btn" (click)="toggleDropdown(baptism.id)">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
                                     </button>
-                                    <button *ngIf="!baptism.invalid" (click)="downloadCertificate(baptism); toggleDropdown(baptism.id)">
-                                        <i class="fa-solid fa-file-pdf"></i> Certificado
-                                    </button>
-                                    <button *ngIf="!baptism.invalid && can('BAPTISM_INVALIDATE')" 
-                                            (click)="openInvalidateModal(baptism); toggleDropdown(baptism.id)" safeClick>
-                                        <i class="fa-solid fa-ban"></i> Invalidar
-                                    </button>
+                                    <div class="action-menu" *ngIf="activeDropdownId === baptism.id">
+                                        <button (click)="openDetailsModal(baptism); toggleDropdown(baptism.id)">
+                                            <i class="fa-solid fa-eye"></i> Ver Detalles
+                                        </button>
+                                        <button *ngIf="!baptism.invalid" (click)="downloadCertificate(baptism); toggleDropdown(baptism.id)">
+                                            <i class="fa-solid fa-file-pdf"></i> Certificado
+                                        </button>
+                                        <button *ngIf="!baptism.invalid && can('BAPTISM_INVALIDATE')" 
+                                                (click)="openInvalidateModal(baptism); toggleDropdown(baptism.id)" safeClick>
+                                            <i class="fa-solid fa-ban"></i> Invalidar
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    </ng-container>
                 </tbody>
             </table>
         </div>

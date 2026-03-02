@@ -47,6 +47,7 @@
             <input
               type="text"
               [(ngModel)]="searchQuery"
+              (ngModelChange)="onSearchInput()"
               (keyup.enter)="onSearch()"
               placeholder="Buscar por nombre, documento, celular..."
               class="soft-input"
@@ -544,6 +545,16 @@
                 {{ sc.name }}
               </option>
             </select>
+          </div>
+          
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="checkbox-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" formControlName="categoryLocked" style="width: 18px; height: 18px; cursor: pointer;" />
+              <span style="font-weight: 500; color: var(--text-primary);">Bloquear actualización automática de categorías</span>
+            </label>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">
+               Al marcar esta opción, el sistema no reasignará automáticamente la categoría/sub-categoría de este integrante según las reglas de edad y género.
+            </small>
           </div>
           <div class="form-group">
             <label for="cellphone">Teléfono</label>

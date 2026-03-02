@@ -20,7 +20,8 @@ import { NotificationService } from '../../core/services/notification.service';
 import { MemberConfigService } from '../../core/services/member-config.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { MemberCategoryResponseDto, MemberTypeResponseDto } from '../../core/models/member-config.model';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -145,6 +146,7 @@ export class Reportes implements OnInit {
   memberResults: any[] = [];
   selectedMemberName = '';
   isSearchingMembers = false;
+  private memberSearchSubject = new Subject<string>();
 
   // Report Personalization
   showReportModal = false;
@@ -185,6 +187,7 @@ export class Reportes implements OnInit {
 
   ngOnInit() {
     this.adjustPageSize();
+    this.setupMemberSearchDebounce();
     this.chartOptions = this.getPremiumChartOptions([], [], this.themeService.isDarkMode());
     this.loadServices();
     if (this.can('ADMINISTRATOR')) {
@@ -408,27 +411,36 @@ export class Reportes implements OnInit {
     this.memberSearchQuery = '';
   }
 
-  onMemberSearch() {
-    if (!this.memberSearchQuery || this.memberSearchQuery.length < 2) {
-      this.memberResults = [];
-      return;
-    }
-
-    this.isSearchingMembers = true;
-    const filterRequest: MemberFilterRequestDto = {
-      onlyActive: true,
-      query: this.memberSearchQuery
-    };
-    this.integranteService.searchMembers(filterRequest, 0).subscribe({
-      next: (res: PagesResponseDto<Integrante>) => {
-        this.memberResults = res.data;
-        this.isSearchingMembers = false;
-      },
-      error: () => {
-        this.isSearchingMembers = false;
+  setupMemberSearchDebounce() {
+    this.memberSearchSubject.pipe(
+      debounceTime(1000),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      if (!query || query.length < 2) {
         this.memberResults = [];
+        return;
       }
+
+      this.isSearchingMembers = true;
+      const filterRequest: MemberFilterRequestDto = {
+        onlyActive: true,
+        query: query
+      };
+      this.integranteService.searchMembers(filterRequest, 0).subscribe({
+        next: (res: PagesResponseDto<Integrante>) => {
+          this.memberResults = res.data;
+          this.isSearchingMembers = false;
+        },
+        error: () => {
+          this.isSearchingMembers = false;
+          this.memberResults = [];
+        }
+      });
     });
+  }
+
+  onMemberSearch() {
+    this.memberSearchSubject.next(this.memberSearchQuery);
   }
 
   selectMember(member: any) {

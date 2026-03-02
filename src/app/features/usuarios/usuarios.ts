@@ -14,6 +14,8 @@ import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { BranchService } from '../../core/services/branch.service';
 import { Branch } from '../../core/models/branch.model';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
     selector: 'app-usuarios',
@@ -69,10 +71,21 @@ export class Usuarios implements OnInit {
 
     // Details Modal
     selectedUser: User | null = null;
+    
+    private searchSubject = new Subject<string>();
+    private memberSearchSubject = new Subject<string>();
+
+    get isAdmin(): boolean {
+        return this.can('ADMINISTRATOR');
+    }
 
     ngOnInit() {
         this.loadStats();
-        this.loadBranches();
+        if (this.isAdmin) {
+            this.loadBranches();
+        }
+        this.setupSearchDebounce();
+        this.setupMemberSearchDebounce();
         this.loadUsers();
         this.loadRoles();
     }
@@ -90,12 +103,10 @@ export class Usuarios implements OnInit {
         });
     }
 
-    isAdmin = false;
     branches: Branch[] = [];
     selectedBranchId = '';
 
     loadBranches() {
-        this.isAdmin = this.can('ADMINISTRATOR');
         if (this.isAdmin) {
             this.branchService.findAll().subscribe(branches => this.branches = branches);
         }
@@ -122,6 +133,20 @@ export class Usuarios implements OnInit {
         this.roleService.getRoles().subscribe(roles => this.roles = roles);
     }
 
+    setupSearchDebounce() {
+        this.searchSubject.pipe(
+            debounceTime(1000),
+            distinctUntilChanged()
+        ).subscribe(query => {
+            this.searchQuery = query;
+            this.onSearch();
+        });
+    }
+
+    onSearchInput() {
+        this.searchSubject.next(this.searchQuery);
+    }
+
     onSearch() {
         this.currentPage = 0; // Reset to first page on new search
         if (this.searchQuery.trim()) {
@@ -139,8 +164,6 @@ export class Usuarios implements OnInit {
                     this.isLoading = false;
                 }
             });
-        } else {
-            this.loadUsers();
         }
     }
 
@@ -201,24 +224,33 @@ export class Usuarios implements OnInit {
     }
 
     // Member Search Logic
-    onMemberSearch() {
-        if (!this.memberSearchQuery.trim()) {
-            this.availableMembers = [];
-            return;
-        }
-
-        this.isSearchingMembers = true;
-        const filterRequest: MemberFilterRequestDto = {
-            onlyActive: true,
-            query: this.memberSearchQuery
-        };
-        this.integranteService.searchMembers(filterRequest, 0).subscribe({
-            next: (res: PagesResponseDto<Integrante>) => {
-                this.availableMembers = res.data;
-                this.isSearchingMembers = false;
-            },
-            error: () => this.isSearchingMembers = false
+    setupMemberSearchDebounce() {
+        this.memberSearchSubject.pipe(
+            debounceTime(1000),
+            distinctUntilChanged()
+        ).subscribe(query => {
+            if (!query.trim()) {
+                this.availableMembers = [];
+                return;
+            }
+    
+            this.isSearchingMembers = true;
+            const filterRequest: MemberFilterRequestDto = {
+                onlyActive: true,
+                query: query
+            };
+            this.integranteService.searchMembers(filterRequest, 0).subscribe({
+                next: (res: PagesResponseDto<Integrante>) => {
+                    this.availableMembers = res.data;
+                    this.isSearchingMembers = false;
+                },
+                error: () => this.isSearchingMembers = false
+            });
         });
+    }
+
+    onMemberSearch() {
+        this.memberSearchSubject.next(this.memberSearchQuery);
     }
 
     selectMember(member: Integrante) {

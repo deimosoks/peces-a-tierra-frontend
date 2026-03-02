@@ -14,6 +14,8 @@ import { ServiceEventService } from '../../core/services/service-event.service';
 import { ServiceEventResponseDto } from '../../core/models/service-event.model';
 import { BranchService } from '../../core/services/branch.service';
 import { Branch } from '../../core/models/branch.model';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component';
 
@@ -38,6 +40,7 @@ export class Asistencia implements OnInit {
   isManualAttendanceTime: boolean = false;
   selectedServiceId: string = '';
   searchQuery: string = '';
+  private searchSubject = new Subject<string>();
 
   // Event Logic
   // Event Logic
@@ -117,6 +120,7 @@ export class Asistencia implements OnInit {
 
   ngOnInit() {
     this.checkPermissions();
+    this.setupSearchDebounce();
     this.loadServices();
     this.loadMemberConfigs();
     this.loadMembers();
@@ -444,6 +448,20 @@ export class Asistencia implements OnInit {
     }
     // Otherwise check if ANY category has subcategories
     return this.availableCategories.some(c => c.subCategories && c.subCategories.length > 0);
+  }
+
+  setupSearchDebounce() {
+    this.searchSubject.pipe(
+      debounceTime(1000),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.searchQuery = query;
+      this.onSearch();
+    });
+  }
+
+  onSearchInput() {
+    this.searchSubject.next(this.searchQuery);
   }
 
   onSearch() {

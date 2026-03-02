@@ -30,15 +30,15 @@
             <h3 class="section-title">GESTIÓN DE INTEGRANTES</h3>
             <a routerLink="/integrantes" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_MEMBER_PANEL')" (click)="close()">
                 <i class="fa-solid fa-users"></i>
-                <span>Integrantes</span>
+                <span>Gestión de Integrantes</span>
             </a>
             <a routerLink="/bautismos" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_BAPTISM_PANEL')" (click)="close()">
                 <i class="fa-solid fa-water"></i>
-                <span>Bautismos</span>
+                <span>Gestión de Bautismos</span>
             </a>
             <a routerLink="/asistencia" routerLinkActive="active" class="nav-item" *ngIf="can('REGISTER_ATTENDANCE')" (click)="close()">
                 <i class="fa-solid fa-calendar-check"></i>
-                <span>Pasar Asistencia</span>
+                <span>Gestión de Asistencia</span>
             </a>
         </div>
 
@@ -46,11 +46,11 @@
             <h3 class="section-title">ADMINISTRACIÓN</h3>
             <a routerLink="/usuarios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_USER_PANEL')" (click)="close()">
                 <i class="fa-solid fa-user-gear"></i>
-                <span>Usuarios del Sistema</span>
+                <span>Gestión de Usuarios</span>
             </a>
             <a routerLink="/roles" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_ROLE_PANEL')" (click)="close()">
                 <i class="fa-solid fa-user-shield"></i>
-                <span>Roles y Permisos</span>
+                <span>Gestión de Roles y Permisos</span>
             </a>
             <a routerLink="/servicios" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_SERVICE_PANEL')" (click)="close()">
                 <i class="fa-solid fa-church"></i>
@@ -58,16 +58,16 @@
             </a>
             <a routerLink="/eventos" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_EVENTS_PANEL')" (click)="close()">
                 <i class="fa-solid fa-calendar-days"></i>
-                <span>Eventos</span>
+                <span>Gestión de Eventos</span>
             </a>
             <a routerLink="/asistencias/administrar" routerLinkActive="active" class="nav-item"
                 *ngIf="can('MANAGE_ATTENDANCE')" (click)="close()">
                 <i class="fa-solid fa-clipboard-list"></i>
-                <span>Administrar Asistencias</span>
+                <span>Gestión de Asistencias</span>
             </a>
             <a routerLink="/sedes" routerLinkActive="active" class="nav-item" *ngIf="can('VIEW_BRANCH_PANEL')" (click)="close()">
                 <i class="fa-solid fa-map-location-dot"></i>
-                <span>Sedes</span>
+                <span>Gestión de Sedes</span>
             </a>
             <a routerLink="/configuracion" routerLinkActive="active" class="nav-item" *ngIf="can('ADMINISTRATOR')" (click)="close()">
                 <i class="fa-solid fa-gear"></i>

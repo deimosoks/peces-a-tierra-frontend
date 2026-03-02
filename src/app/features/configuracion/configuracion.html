@@ -13,15 +13,10 @@
             <i class="fa-solid fa-tag"></i>
             Categorías de Miembros
           </h2>
-          <button class="btn btn-primary btn-sm" (click)="openCategoryModal()" *ngIf="!isModifyingBlocked">
+          <button class="btn btn-primary btn-sm" (click)="openCategoryModal()">
             <i class="fa-solid fa-plus"></i>
             <span class="btn-text">Nueva Categoría</span>
           </button>
-        </div>
-
-        <div class="alert alert-info mb-3" *ngIf="isModifyingBlocked" style="margin: 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa;">
-          <i class="fa-solid fa-circle-info"></i>
-          <span>La creación y eliminación de categorías se encuentra bloqueada temporalmente.</span>
         </div>
 
         <div class="items-list" *ngIf="!isLoadingCategories">
@@ -36,7 +31,6 @@
                   class="action-btn add-sub"
                   (click)="openSubCategoryModal(category.id)"
                   title="Agregar Sub-categoría"
-                  *ngIf="!isModifyingBlocked"
                 >
                   <i class="fa-solid fa-plus-circle"></i>
                 </button>
@@ -51,7 +45,6 @@
                   class="action-btn delete"
                   (click)="deleteCategory(category)"
                   title="Eliminar"
-                  *ngIf="!isModifyingBlocked"
                 >
                   <i class="fa-solid fa-trash"></i>
                 </button>
@@ -80,7 +73,6 @@
                     class="action-btn delete"
                     (click)="deleteSubCategory(sub)"
                     title="Eliminar Sub-categoría"
-                    *ngIf="!isModifyingBlocked"
                   >
                     <i class="fa-solid fa-trash"></i>
                   </button>

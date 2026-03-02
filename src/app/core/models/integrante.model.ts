@@ -34,7 +34,10 @@ export interface Integrante {
   branchName?: string; // Added branchName to response
   branch?: BranchResponseDto;
   
+  categoryLocked?: boolean;
+
   notes?: MemberNoteResponseDto[];
+
   
   // Address fields
   address?: string;  // Full formatted address from Google Maps
@@ -59,6 +62,8 @@ export interface IntegranteRequestDto {
   pictureProfile?: File;
   gender?: string;
   branchId?: string;
+  categoryLocked?: boolean;
+
   
   // Address fields
   neighborhood?: string;
