@@ -1,4 +1,5 @@
 import { MemberCategoryResponseDto, MemberTypeResponseDto, MemberSubCategoryResponseDto } from './member-config.model';
+import { OrderBy } from './pagination.model';
 
 export interface IglesiaService {
     id: string;
@@ -32,6 +33,7 @@ export interface AttendanceResponseDto {
     invalidAt?: string;
     invalidatedBy?: string;
     subCategory?: MemberSubCategoryResponseDto;
+    gender?: string;
 }
 
 
@@ -45,6 +47,8 @@ export interface AttendanceFiltersRequestDto {
     category?: string[];
     subCategory?: string[];
     invalid?: boolean;
+    gender?: string;
+    orderBy?: OrderBy;
 }
 
 export interface AttendanceInvalidateDto {

@@ -217,17 +217,47 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>NOMBRE COMPLETO</th>
-            <th class="desktop-only text-center">TELÉFONO</th>
-            <th class="desktop-only">DIRECCIÓN</th>
-            <th class="desktop-only">CATEGORÍA</th>
-            <th class="desktop-only">SEDE</th>
-            <th class="desktop-only text-center">GÉNERO</th>
-            <th class="desktop-only">TIPO</th>
+            <th (click)="setSort('completeName')" class="sortable-header">
+              NOMBRE COMPLETO
+              <i [ngClass]="getSortIcon('completeName')"></i>
+            </th>
+            <th class="desktop-only text-center sortable-header" (click)="setSort('cellphone')">
+              TELÉFONO
+              <i [ngClass]="getSortIcon('cellphone')"></i>
+            </th>
+            <th class="desktop-only sortable-header" (click)="setSort('address')">
+              DIRECCIÓN
+              <i [ngClass]="getSortIcon('address')"></i>
+            </th>
+            <th class="desktop-only sortable-header" (click)="setSort('categoryId')">
+              CATEGORÍA
+              <i [ngClass]="getSortIcon('categoryId')"></i>
+            </th>
+            <th class="desktop-only sortable-header" (click)="setSort('branch')">
+              SEDE
+              <i [ngClass]="getSortIcon('branch')"></i>
+            </th>
+            <th class="desktop-only text-center sortable-header" (click)="setSort('gender')">
+              GÉNERO
+              <i [ngClass]="getSortIcon('gender')"></i>
+            </th>
+            <th class="desktop-only sortable-header" (click)="setSort('typeId')">
+              TIPO
+              <i [ngClass]="getSortIcon('typeId')"></i>
+            </th>
             <th>ACCIONES</th>
           </tr>
         </thead>
         <tbody>
+          <tr *ngIf="isLoading">
+            <td colspan="8" style="padding: 0; border: none;">
+              <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <div>Cargando integrantes...</div>
+              </div>
+            </td>
+          </tr>
+          <ng-container *ngIf="!isLoading">
           <tr *ngFor="let member of members" [class.inactive-row]="!member.active">
             <td>
               <div class="user-cell-mini">
@@ -423,15 +453,11 @@
               </div>
             </td>
           </tr>
+          </ng-container>
           <tr *ngIf="members.length === 0 && !isLoading">
-            <td colspan="5" class="empty-state">No se encontraron integrantes</td>
-          </tr>
-          <tr *ngIf="isLoading">
-            <td colspan="8" style="padding: 0; border: none;">
-              <div class="loading-container">
-                  <div class="loading-spinner"></div>
-                  <div>Cargando integrantes...</div>
-              </div>
+            <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+              <i class="fa-solid fa-users-slash" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+              No se encontraron integrantes
             </td>
           </tr>
         </tbody>
@@ -752,8 +778,12 @@
           <span>{{ selectedMember.address || '---' }}</span>
         </div>
         <div class="detail-item">
-          <label>Registrado:</label>
+          <label>Fecha Registro:</label>
           <span>{{ selectedMember.createdAt | date: 'mediumDate' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedMember.registeredBy">
+          <label>Registrado por:</label>
+          <span class="text-primary font-bold">{{ selectedMember.registeredBy }}</span>
         </div>
         <div class="detail-item">
           <label>Última Actualización:</label>

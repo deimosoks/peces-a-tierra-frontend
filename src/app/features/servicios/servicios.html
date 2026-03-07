@@ -6,10 +6,10 @@
 
 <div class="servicios-container">
     <div class="card premium-card">
-        <!-- Service Form - Desktop Inline (Soft UI) -->
-        <form (submit)="onServiceSubmit()" class="header-section desktop-only" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')" style="align-items: flex-end;">
-            <!-- Left: Inputs -->
-             <div class="search-center desktop-only" style="display: flex; gap: 1rem; flex: 1;">
+        <!-- New Header Section (Soft UI) -->
+        <div class="header-section" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
+            <div class="search-center" style="display: flex; gap: 1rem; flex: 1; align-items: flex-end;">
+                <!-- Service Name -->
                 <div class="soft-input-group" style="flex: 1;">
                     <label class="soft-label">Nombre del Servicio</label>
                     <div class="soft-input-wrapper">
@@ -18,6 +18,7 @@
                             placeholder="Ej: Culto de Adoración" required class="soft-input">
                     </div>
                 </div>
+                <!-- Description -->
                 <div class="soft-input-group" style="flex: 2;">
                     <label class="soft-label">Descripción</label>
                     <div class="soft-input-wrapper">
@@ -28,40 +29,49 @@
                 </div>
             </div>
 
-            <!-- Right: Actions -->
+            <!-- Actions -->
             <div class="actions-right desktop-only">
                 <div class="soft-input-group">
                     <label class="soft-label invisible-label">Acciones</label>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button type="submit" class="btn btn-primary btn-action-soft" [disabled]="isSavingService">
+                        <button type="button" (click)="onServiceSubmit()" class="btn btn-primary btn-action-soft" [disabled]="isSavingService">
                             <i class="fa-solid" [ngClass]="isSavingService ? 'fa-spinner fa-spin' : (isEditingService ? 'fa-save' : 'fa-plus')"></i>
-                            <span class="desktop-only">{{ isSavingService ? (isEditingService ? 'Actualizando...' : 'Agregando...') : (isEditingService ? 'Actualizar' : 'Agregar') }}</span>
+                            <span>{{ isSavingService ? (isEditingService ? 'Actualizando...' : 'Agregando...') : (isEditingService ? 'Actualizar' : 'Agregar') }}</span>
                         </button>
-                        <button type="button" *ngIf="isEditingService" class="btn btn-muted btn-action-soft" (click)="resetServiceForm()">
+                        <button type="button" *ngIf="isEditingService" class="btn btn-secondary btn-action-soft" (click)="resetServiceForm()">
                             Cancelar
                         </button>
                     </div>
                 </div>
             </div>
-        </form>
-
-        <hr class="divider desktop-only" *ngIf="can('CREATE_SERVICE') || can('UPDATE_SERVICE')">
+        </div>
 
         <!-- Services List -->
         <div class="table-container">
             <table class="premium-table">
                 <thead>
                     <tr>
-                        <th>NOMBRE</th>
-                        <th class="desktop-only text-muted">DESCRIPCIÓN</th>
+                        <th style="text-align: left; padding-left: 2rem;">NOMBRE</th>
+                        <th class="desktop-only text-muted" style="text-align: left;">DESCRIPCIÓN</th>
                         <th class="text-center desktop-only">ESTADO</th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr *ngIf="isLoading">
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div>Cargando servicios...</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <ng-container *ngIf="!isLoading">
                     <tr *ngFor="let s of services" [class.inactive-row]="!s.active">
-                        <td><strong>{{ s.name }}</strong></td>
-                        <td class="text-muted desktop-only">{{ s.description }}</td>
+                        <td style="text-align: left; padding-left: 2rem;">
+                            <span class="username" style="font-size: 1rem;">{{ s.name }}</span>
+                        </td>
+                        <td class="text-muted desktop-only" style="text-align: left;">{{ s.description }}</td>
                         <td class="text-center desktop-only">
                             <label class="status-switch" appSafeClick (safeClick)="toggleServiceStatus(s)">
                                 <input type="checkbox" [checked]="s.active" 
@@ -114,15 +124,11 @@
                             </div>
                         </td>
                     </tr>
+                    </ng-container>
                     <tr *ngIf="services.length === 0 && !isLoading">
-                        <td colspan="4" class="empty-state">No hay servicios registrados</td>
-                    </tr>
-                    <tr *ngIf="isLoading">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div class="loading-container">
-                                <div class="loading-spinner"></div>
-                                <div>Cargando servicios...</div>
-                            </div>
+                        <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-church" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+                            No hay servicios registrados
                         </td>
                     </tr>
                 </tbody>

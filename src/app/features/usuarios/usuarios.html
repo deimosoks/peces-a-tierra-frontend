@@ -64,15 +64,36 @@
             <table class="users-table">
                 <thead>
                     <tr>
-                        <th>USUARIO DEL SISTEMA</th>
-                        <th class="desktop-only">PERSONA ENLAZADA</th>
-                        <th class="desktop-only text-center">ROLES</th>
-                        <th class="desktop-only">SEDE</th>
-                        <th class="desktop-only text-center">ESTADO</th>
+                        <th (click)="setSort('username')" class="sortable-header">
+                            USUARIO DEL SISTEMA
+                            <i [ngClass]="getSortIcon('username')"></i>
+                        </th>
+                        <th (click)="setSort('member.completeName')" class="sortable-header desktop-only">
+                            PERSONA ENLAZADA
+                            <i [ngClass]="getSortIcon('member.completeName')"></i>
+                        </th>
+                        <th (click)="setSort('roles.role')" class="sortable-header desktop-only text-center">
+                            ROLES
+                            <i [ngClass]="getSortIcon('roles.role')"></i>
+                        </th>
+                        <th (click)="setSort('member.branch')" class="sortable-header desktop-only">
+                            SEDE
+                            <i [ngClass]="getSortIcon('member.branch')"></i>
+                        </th>
+                        <th class="desktop-only text-center border-left">ESTADO</th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr *ngIf="isLoading">
+                         <td colspan="6" style="padding: 0; border: none;">
+                             <div class="loading-container">
+                                 <div class="loading-spinner"></div>
+                                 <div>Cargando usuarios...</div>
+                             </div>
+                         </td>
+                     </tr>
+                     <ng-container *ngIf="!isLoading">
                     <tr *ngFor="let user of users">
                         <td>
                             <div class="user-identity">
@@ -117,14 +138,14 @@
                             <div class="actions-mini">
                                 <!-- Desktop Actions -->
                                 <div class="desktop-actions desktop-only">
-                                    <button class="action-btn view" (click)="viewDetails(user)" title="Ver Detalles">
+                                    <button class="action-btn-sm view" (click)="viewDetails(user)" title="Ver Detalles">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
-                                    <button class="action-btn edit" (click)="editUser(user)" title="Editar"
+                                    <button class="action-btn-sm edit" (click)="editUser(user)" title="Editar"
                                         *ngIf="can('UPDATE_USER')">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
-                                    <button class="action-btn delete" (click)="deleteUser(user)" title="Eliminar"
+                                    <button class="action-btn-sm delete" (click)="deleteUser(user)" title="Eliminar"
                                         *ngIf="can('DELETE_USER')">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
@@ -169,17 +190,13 @@
                             </div>
                         </td>
                     </tr>
+                     </ng-container>
                     <tr *ngIf="users.length === 0 && !isLoading">
-                        <td colspan="5" class="text-center p-4 text-muted">No se encontraron usuarios.</td>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-users-slash" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+                            No se encontraron usuarios
+                        </td>
                     </tr>
-                    <tr *ngIf="isLoading">
-                         <td colspan="6" style="padding: 0; border: none;">
-                             <div class="loading-container">
-                                 <div class="loading-spinner"></div>
-                                 <div>Cargando usuarios...</div>
-                             </div>
-                         </td>
-                     </tr>
                 </tbody>
             </table>
         </div>

@@ -261,6 +261,20 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+.sortable-header {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sortable-header:hover {
+    background-color: #e2e8f0 !important;
+    color: var(--primary) !important;
+}
+
+.sortable-header:active {
+    background-color: #cbd5e1 !important;
+}
+
 .users-table td {
     padding: 0.6rem 1rem;
     border-bottom: 1px solid var(--border-color);
@@ -442,35 +456,7 @@ input:checked+.slider:before {
     gap: 0.35rem;
 }
 
-.action-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    border: none;
-    background: var(--bg-input);
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.8rem;
-}
-
-.action-btn.view:hover {
-    background: #e0f2fe;
-    color: #0ea5e9;
-}
-
-.action-btn.edit:hover {
-    background: #e0e7ff;
-    color: #4f46e5;
-}
-
-.action-btn.delete:hover {
-    background: #fee2e2;
-    color: #ef4444;
-}
+/* Action Buttons Base (Standardized) */
 
 
 /* Modals (No change needed mostly, just ensure z-index/overlay) */

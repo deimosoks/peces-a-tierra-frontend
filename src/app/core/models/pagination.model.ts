@@ -10,3 +10,8 @@ export interface PagesResponseDto<T> {
     totalPages: number;
     totalElements: number;
 }
+
+export interface OrderBy {
+    orderBy: string;
+    asc: boolean;
+}

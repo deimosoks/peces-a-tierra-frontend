@@ -15,7 +15,7 @@ import {
     MemberExportDto,
     ReportColumn
 } from '../../core/models/integrante.model';
-import { PagesResponseDto, ExportResponseDto } from '../../core/models/pagination.model';
+import { PagesResponseDto, ExportResponseDto, OrderBy } from '../../core/models/pagination.model';
 import {
     MemberCategoryResponseDto,
     MemberSubCategoryResponseDto,
@@ -75,6 +75,9 @@ export class Integrantes implements OnInit {
     currentPage = 0;
     totalPages = 0;
     totalElements = 0;
+
+    currentOrderBy: string = '';
+    currentOrderAsc: boolean = true;
 
     // Filter States
     selectedTypes: string[] = [];
@@ -326,7 +329,8 @@ onCategoryChange() {
       ageFilterRange2: this.ageFilterRange2,
       location: this.filterLocation || undefined,
       gender: this.selectedGender || undefined,
-      branchId: this.selectedBranchId || undefined
+      branchId: this.selectedBranchId || undefined,
+      orderBy: this.currentOrderBy ? { orderBy: this.currentOrderBy, asc: this.currentOrderAsc } : undefined
     };
 
     this.integranteService.searchMembers(filterRequest, this.currentPage).subscribe({
@@ -381,6 +385,24 @@ onCategoryChange() {
       this.currentPage--;
       this.loadMembers();
     }
+  }
+
+  setSort(column: string) {
+    if (this.currentOrderBy === column) {
+      this.currentOrderAsc = !this.currentOrderAsc;
+    } else {
+      this.currentOrderBy = column;
+      this.currentOrderAsc = true;
+    }
+    this.currentPage = 0;
+    this.loadMembers();
+  }
+
+  getSortIcon(column: string): string {
+    if (this.currentOrderBy !== column) {
+      return 'fa-solid fa-sort';
+    }
+    return this.currentOrderAsc ? 'fa-solid fa-sort-up active-sort' : 'fa-solid fa-sort-down active-sort';
   }
 
   toggleMemberStatus(member: Integrante) {

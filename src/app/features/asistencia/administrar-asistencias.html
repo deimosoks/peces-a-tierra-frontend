@@ -47,21 +47,50 @@
             <table class="premium-table">
                 <thead>
                     <tr>
-                        <th>INTEGRANTE</th>
-                        <th>SERVICIO</th>
-                        <th>SEDE</th>
-                        <th class="desktop-only">INICIO DE SERVICIO</th>
-                        <th class="desktop-only">HORA DE LLEGADA</th>
+                        <th (click)="setSort('member.completeName')" class="sortable-header">
+                            INTEGRANTE
+                            <i [ngClass]="getSortIcon('member.completeName')"></i>
+                        </th>
+                        <th class="desktop-only sortable-header" (click)="setSort('memberCategory')" style="text-align: left !important;">
+                            CATEGORÍA
+                            <i [ngClass]="getSortIcon('memberCategory')"></i>
+                        </th>
+                        <th class="desktop-only sortable-header" (click)="setSort('memberType')" style="text-align: left !important;">
+                            TIPO
+                            <i [ngClass]="getSortIcon('memberType')"></i>
+                        </th>
+                        <th (click)="setSort('serviceEvent.services')" class="sortable-header">
+                            SERVICIO
+                            <i [ngClass]="getSortIcon('serviceEvent.services')"></i>
+                        </th>
+                        <th (click)="setSort('member.branch')" class="sortable-header">
+                            SEDE
+                            <i [ngClass]="getSortIcon('member.branch')"></i>
+                        </th>
+                        <th class="desktop-only text-center sortable-header" (click)="setSort('attendanceDate')">
+                            HORA DE LLEGADA
+                            <i [ngClass]="getSortIcon('attendanceDate')"></i>
+                        </th>
                         <th class="text-center desktop-only">ESTADO</th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr *ngIf="isLoading">
+                        <td colspan="7" style="padding: 0; border: none;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div>Cargando asistencias...</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <ng-container *ngIf="!isLoading">
                     <tr *ngFor="let att of attendances" [class.invalid-row]="att.invalid">
                         <td>
                             <div class="user-info-cell">
                                 <span class="user-fullname">{{ att.memberCompleteName }}</span>
-                                <div class="member-types-badges" *ngIf="att.memberCategory" style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                                <!-- Mobile Categories (Hidden on Desktop) -->
+                                <div class="member-types-badges mobile-only" *ngIf="att.memberCategory" style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
                                     <span class="badge badge-category" [style.backgroundColor]="att.memberCategory.color">
                                         {{ att.memberCategory.name }}
                                     </span>
@@ -69,13 +98,31 @@
                                           [style.color]="att.memberCategory.color" *ngIf="att.subCategory">
                                         {{ att.subCategory.name }}
                                     </span>
+                                    <span class="badge badge-outline" [style.borderColor]="att.memberType.color" 
+                                          [style.color]="att.memberType.color">
+                                        {{ att.memberType.name }}
+                                    </span>
                                 </div>
                             </div>
                         </td>
+                        <td class="desktop-only">
+                            <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
+                                <span class="badge badge-sm badge-solid" *ngIf="att.memberCategory" [style.background-color]="att.memberCategory.color" style="color: white !important;">
+                                    {{ att.memberCategory.name }}
+                                </span>
+                                <span class="badge badge-sm badge-outline" *ngIf="att.subCategory" [style.border-color]="att.memberCategory.color" [style.color]="att.memberCategory.color" style="font-size: 0.65rem;">
+                                    {{ att.subCategory.name }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="desktop-only">
+                            <span class="badge badge-sm badge-outline" [style.border-color]="att.memberType.color" [style.color]="att.memberType.color">
+                                {{ att.memberType.name }}
+                            </span>
+                        </td>
                         <td>{{ att.serviceName }}</td>
                         <td>{{ att.branchName }}</td>
-                        <td class="desktop-only">{{ att.serviceDate | date:'short' }}</td>
-                        <td class="desktop-only">{{ att.attendanceDate | date:'shortTime' }}</td>
+                        <td class="desktop-only text-center">{{ att.attendanceDate | date:'shortTime' }}</td>
                         <td class="text-center desktop-only">
                             <span class="status-indicator" [class.invalid]="att.invalid">
                                 {{ att.invalid ? 'Invalida' : 'Válida' }}
@@ -132,15 +179,11 @@
                             </div>
                         </td>
                     </tr>
+                    </ng-container>
                     <tr *ngIf="attendances.length === 0 && !isLoading">
-                        <td colspan="6" class="empty-state">No se encontraron asistencias</td>
-                    </tr>
-                    <tr *ngIf="isLoading">
-                        <td colspan="7" style="padding: 0; border: none;">
-                            <div class="loading-container">
-                                <div class="loading-spinner"></div>
-                                <div>Cargando asistencias...</div>
-                            </div>
+                        <td colspan="7" class="empty-state" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+                            No se encontraron asistencias
                         </td>
                     </tr>
                 </tbody>
@@ -344,30 +387,6 @@
                     </div>
                 </div>
 
-                <!-- Category Selector -->
-                <div class="input-with-label">
-                    <label>Categoría</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-users-rectangle"></i>
-                        <select [(ngModel)]="filters.category" class="premium-input" multiple size="3" style="height: auto; padding-right: 2rem;">
-                            <option *ngFor="let c of categorias" [value]="c.id">{{ c.name }}</option>
-                        </select>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.2;">Use Ctrl/Cmd para seleccionar varias. Sin seleccionar equivale a "Todas".</span>
-                </div>
-
-                <!-- Sub-Category Selector -->
-                <div class="input-with-label" *ngIf="availableSubCategories.length > 0">
-                    <label>Sub-Categoría</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-users-viewfinder"></i>
-                        <select [(ngModel)]="filters.subCategory" class="premium-input" multiple size="3" style="height: auto; padding-right: 2rem;">
-                            <option *ngFor="let sc of availableSubCategories" [value]="sc.id">{{ sc.name }}</option>
-                        </select>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; line-height: 1.2;">Use Ctrl/Cmd para seleccionar varias.</span>
-                </div>
-
                 <!-- Validity Selector -->
                 <div class="input-with-label">
                     <label>Estado de Validez</label>
@@ -400,7 +419,49 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Checkbox-based Filters (Category, Subcategory, Gender) -->
+            <div class="filters-grid" style="margin-top: 1rem;">
+                <!-- Category Selector -->
+                <div class="filter-section">
+                    <h3><i class="fa-solid fa-users-rectangle"></i> Categoría</h3>
+                    <div class="checkbox-group">
+                        <label *ngFor="let c of categorias" class="checkbox-label">
+                            <input type="checkbox" [checked]="isTempCategorySelected(c.id)" (change)="toggleTempCategory(c.id)">
+                            <span>{{ c.name }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Sub-Category Selector -->
+                <div class="filter-section" *ngIf="hasVisibleSubCategories">
+                    <h3><i class="fa-solid fa-users-viewfinder"></i> Sub-Categoría</h3>
+                    <div class="filters-grid-nested">
+                        <ng-container *ngFor="let category of categorias">
+                            <ng-container *ngIf="category.subCategories && category.subCategories.length > 0 && (tempSelectedCategories.length === 0 || isTempCategorySelected(category.id))">
+                                <h4 class="nested-category-title">{{ category.name }}</h4>
+                                <div class="checkbox-group">
+                                    <label *ngFor="let sub of category.subCategories" class="checkbox-label">
+                                        <input type="checkbox" [checked]="isTempSubCategorySelected(sub.id)" (change)="toggleTempSubCategory(sub.id)">
+                                        <span>{{ sub.name }}</span>
+                                    </label>
+                                </div>
+                            </ng-container>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <!-- Gender Filter -->
+                <div class="filter-section">
+                    <h3><i class="fa-solid fa-venus-mars"></i> Género</h3>
+                    <div class="trip-switch">
+                        <button type="button" [class.active]="tempSelectedGender === ''" (click)="tempSelectedGender = ''">Todos</button>
+                        <button type="button" *ngFor="let g of availableGenders" [class.active]="tempSelectedGender === g.value" (click)="tempSelectedGender = g.value">{{ g.label }}</button>
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div class="modal-footer">
             <button class="btn btn-muted" (click)="closeFilterModal()">Cancelar</button>
             <button class="btn btn-primary" (click)="onSearch()" [disabled]="isLoading">

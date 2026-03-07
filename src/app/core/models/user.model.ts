@@ -24,3 +24,11 @@ export interface UserStats {
     totalUsersActives: number;
 }
 
+import { OrderBy } from './pagination.model';
+
+export interface UserFilterRequestDto {
+    query?: string;
+    branchId?: string;
+    orderBy?: OrderBy;
+}
+

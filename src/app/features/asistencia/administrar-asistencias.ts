@@ -13,7 +13,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { BranchService } from '../../core/services/branch.service'; // Added import
 import { Branch } from '../../core/models/branch.model'; // Added import
 import { MemberConfigService } from '../../core/services/member-config.service';
-import { PagesResponseDto, ExportResponseDto } from '../../core/models/pagination.model';
+import { PagesResponseDto, ExportResponseDto, OrderBy } from '../../core/models/pagination.model';
 import { ServiceCalendarComponent } from '../../shared/components/service-calendar/service-calendar.component';
 import { ServiceEvent } from '../../core/models/service-event.model';
 import * as XLSX from 'xlsx';
@@ -38,7 +38,7 @@ export class AdministrarAsistencias implements OnInit {
 
   // Filters & State
   filters: AttendanceFiltersRequestDto = {
-    serviceId: '', // Renamed from serviceEventId
+    serviceId: '',
     eventId: '',
     startDate: '',
     endDate: '',
@@ -46,8 +46,23 @@ export class AdministrarAsistencias implements OnInit {
     branchId: '',
     category: [],
     subCategory: [],
-    invalid: undefined
+    invalid: undefined,
+    gender: '',
+    orderBy: undefined
   };
+
+  currentOrderBy: string = '';
+  currentOrderAsc: boolean = true;
+
+  // Temp state for filter modal (category/subcategory/gender checkboxes)
+  tempSelectedCategories: string[] = [];
+  tempSelectedSubCategories: string[] = [];
+  tempSelectedGender: string = '';
+
+  availableGenders = [
+    { value: 'HOMBRE', label: 'Hombre' },
+    { value: 'MUJER', label: 'Mujer' }
+  ];
   showFilterModal = false;
   showCalendarModal = false;
   selectedEventLabel = '';
@@ -104,17 +119,58 @@ export class AdministrarAsistencias implements OnInit {
   }
 
   get availableSubCategories(): any[] {
-    if (!this.filters.category || this.filters.category.length === 0) return [];
-    
-    // Si permite selection multiple:
+    if (!this.tempSelectedCategories || this.tempSelectedCategories.length === 0) {
+      // If no categories selected, show all subcategories
+      const subcats: any[] = [];
+      for (const cat of this.categorias) {
+        if (cat.subCategories) subcats.push(...cat.subCategories);
+      }
+      return subcats;
+    }
     const subcats: any[] = [];
-    for(const catId of this.filters.category) {
-        const cat = this.categorias.find(c => c.id === catId);
-        if(cat && cat.subCategories) {
-            subcats.push(...cat.subCategories);
-        }
+    for (const catId of this.tempSelectedCategories) {
+      const cat = this.categorias.find(c => c.id === catId);
+      if (cat && cat.subCategories) subcats.push(...cat.subCategories);
     }
     return subcats;
+  }
+
+  get hasVisibleSubCategories(): boolean {
+    if (this.tempSelectedCategories.length > 0) {
+      return this.categorias
+        .filter(c => this.tempSelectedCategories.includes(c.id))
+        .some(c => c.subCategories && c.subCategories.length > 0);
+    }
+    return this.categorias.some(c => c.subCategories && c.subCategories.length > 0);
+  }
+
+  isTempCategorySelected(id: string): boolean {
+    return this.tempSelectedCategories.includes(id);
+  }
+
+  toggleTempCategory(id: string) {
+    const index = this.tempSelectedCategories.indexOf(id);
+    if (index > -1) {
+      this.tempSelectedCategories.splice(index, 1);
+      // Remove subcategories of this category
+      const cat = this.categorias.find(c => c.id === id);
+      if (cat && cat.subCategories) {
+        const subIds = cat.subCategories.map(s => s.id);
+        this.tempSelectedSubCategories = this.tempSelectedSubCategories.filter(s => !subIds.includes(s));
+      }
+    } else {
+      this.tempSelectedCategories.push(id);
+    }
+  }
+
+  isTempSubCategorySelected(id: string): boolean {
+    return this.tempSelectedSubCategories.includes(id);
+  }
+
+  toggleTempSubCategory(id: string) {
+    const index = this.tempSelectedSubCategories.indexOf(id);
+    if (index > -1) this.tempSelectedSubCategories.splice(index, 1);
+    else this.tempSelectedSubCategories.push(id);
   }
 
   checkPermissions() {
@@ -189,7 +245,9 @@ export class AdministrarAsistencias implements OnInit {
       branchId: this.filters.branchId || undefined,
       category: this.filters.category?.length ? this.filters.category : undefined,
       subCategory: this.filters.subCategory?.length ? this.filters.subCategory : undefined,
-      invalid: this.filters.invalid !== undefined && this.filters.invalid !== null ? this.filters.invalid : undefined
+      invalid: this.filters.invalid !== undefined && this.filters.invalid !== null ? this.filters.invalid : undefined,
+      gender: this.filters.gender || undefined,
+      orderBy: this.currentOrderBy ? { orderBy: this.currentOrderBy, asc: this.currentOrderAsc } : undefined
     };
 
     console.log('Sending Filters Body:', searchFilters);
@@ -210,12 +268,38 @@ export class AdministrarAsistencias implements OnInit {
   }
 
   onSearch() {
+    // Apply temp selections to real filters before searching
+    this.filters.category = [...this.tempSelectedCategories];
+    this.filters.subCategory = [...this.tempSelectedSubCategories];
+    this.filters.gender = this.tempSelectedGender;
     this.currentPage = 0;
     this.loadAttendances();
     this.closeFilterModal();
   }
 
+  setSort(column: string) {
+    if (this.currentOrderBy === column) {
+      this.currentOrderAsc = !this.currentOrderAsc;
+    } else {
+      this.currentOrderBy = column;
+      this.currentOrderAsc = true;
+    }
+    this.currentPage = 0;
+    this.loadAttendances();
+  }
+
+  getSortIcon(column: string): string {
+    if (this.currentOrderBy !== column) {
+      return 'fa-solid fa-sort';
+    }
+    return this.currentOrderAsc ? 'fa-solid fa-sort-up active-sort' : 'fa-solid fa-sort-down active-sort';
+  }
+
   openFilterModal() {
+    // Sync temp state from current filters when opening
+    this.tempSelectedCategories = [...(this.filters.category || [])];
+    this.tempSelectedSubCategories = [...(this.filters.subCategory || [])];
+    this.tempSelectedGender = this.filters.gender || '';
     this.showFilterModal = true;
   }
 
@@ -352,7 +436,11 @@ export class AdministrarAsistencias implements OnInit {
       startDate: this.filters.startDate ? `${this.filters.startDate}:00` : undefined,
       endDate: this.filters.endDate ? `${this.filters.endDate}:00` : undefined,
       memberId: this.filters.memberId || undefined,
-      branchId: this.filters.branchId || undefined
+      branchId: this.filters.branchId || undefined,
+      category: this.filters.category?.length ? this.filters.category : undefined,
+      subCategory: this.filters.subCategory?.length ? this.filters.subCategory : undefined,
+      invalid: this.filters.invalid !== undefined && this.filters.invalid !== null ? this.filters.invalid : undefined,
+      gender: this.filters.gender || undefined
     };
 
     this.asistenciaService.exportAttendances(searchFilters).subscribe({

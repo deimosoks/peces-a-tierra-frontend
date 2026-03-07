@@ -1,4 +1,6 @@
 // Baptism Request DTO
+import { OrderBy } from './pagination.model';
+
 export interface BaptismRequestDto {
   memberId: string;
   imageUrl?: File;
@@ -46,6 +48,7 @@ export interface BaptismFilterRequestDto {
   query?: string;
   active: boolean;
   branchId?: string;
+  orderBy?: OrderBy;
 }
 
 

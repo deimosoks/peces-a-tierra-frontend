@@ -247,6 +247,28 @@
     border-spacing: 0;
 }
 
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.sortable-header:hover {
+    background-color: var(--border-color);
+}
+
+.sortable-header i {
+    margin-left: 0.25rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.sortable-header i.active-sort {
+    opacity: 1;
+    color: var(--primary);
+}
+
 .premium-table th {
     position: sticky;
     top: 0;
@@ -377,24 +399,6 @@
     border-radius: 10px;
 }
 
-.action-btn-sm:hover {
-    background: var(--bg-input);
-    color: var(--primary);
-}
-
-.action-btn-sm.view:hover {
-    color: var(--primary);
-}
-
-.action-btn-sm.edit:hover {
-    color: var(--primary);
-    background: var(--primary-bg);
-}
-
-.action-btn-sm.delete:hover {
-    color: var(--danger);
-    background: var(--danger-bg);
-}
 
 .text-center {
     text-align: center;
@@ -432,7 +436,7 @@
     left: 0;
     height: 20px;
     width: 20px;
-    background-color: var(--bg-input);
+    background-color: var(--white);
     border: 2px solid var(--border-color);
     border-radius: 6px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -980,7 +984,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
-    padding: 1.5rem;
+    /* padding: 1.5rem; */
 }
 
 .filter-section {
@@ -1182,7 +1186,7 @@
 
     .filters-grid {
         grid-template-columns: 1fr;
-        padding: 1rem;
+        /* padding: 1rem; */
         gap: 1rem;
     }
     
@@ -2156,7 +2160,7 @@ input:checked + .slider-modern:before {
 /* New Event Selection UI in Filters */
 .event-selection-display {
     width: 100%;
-    padding: 0.5rem 2.5rem 0.5rem 0.85rem;
+    padding: 0.5rem 2.5rem 0.5rem 2.5rem;
     border: 1.5px solid var(--border-color);
     border-radius: 10px;
     background: var(--bg-input);
@@ -2256,4 +2260,34 @@ input:checked + .slider-modern:before {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+.sortable-header {
+    cursor: pointer !important;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.sortable-header:hover {
+    background-color: #e2e8f0 !important;
+    color: var(--primary) !important;
+}
+
+/* Gender Badges */
+.badge-blue {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.badge-pink {
+    background-color: rgba(236, 72, 153, 0.1);
+    color: #db2777;
+    border: 1px solid rgba(219, 39, 119, 0.2);
+}
+
+.sortable-header i {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
 }

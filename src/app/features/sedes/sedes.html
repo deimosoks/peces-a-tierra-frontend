@@ -39,10 +39,10 @@
                     <h3 class="branch-name">{{ branch.name }}</h3>
                 </div>
                 <div class="branch-actions">
-                    <button class="icon-btn" (click)="openModal(branch)" title="Editar" *ngIf="canUpdate">
+                    <button class="action-btn-sm edit" (click)="openModal(branch)" title="Editar" *ngIf="canUpdate">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button class="icon-btn danger" (click)="deleteBranch(branch)" title="Eliminar" *ngIf="canDelete">
+                    <button class="action-btn-sm delete" (click)="deleteBranch(branch)" title="Eliminar" *ngIf="canDelete">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>

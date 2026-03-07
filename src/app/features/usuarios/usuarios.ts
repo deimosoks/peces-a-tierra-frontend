@@ -6,7 +6,7 @@ import { UserService } from '../../core/services/user';
 import { RoleService } from '../../core/services/role';
 import { IntegranteService } from '../../core/services/integrante';
 import { AuthService } from '../../core/services/auth.service';
-import { User, UserRequestDto } from '../../core/models/user.model';
+import { User, UserFilterRequestDto, UserRequestDto } from '../../core/models/user.model';
 import { Role } from '../../core/models/role.model';
 import { Integrante, MemberFilterRequestDto } from '../../core/models/integrante.model';
 import { PagesResponseDto } from '../../core/models/pagination.model';
@@ -45,6 +45,8 @@ export class Usuarios implements OnInit {
     totalPages = 0;
     totalElements = 0;
     searchQuery = '';
+    currentOrderBy = 'username';
+    currentOrderAsc = true;
 
     // UI State
     isLoading = true;
@@ -114,7 +116,16 @@ export class Usuarios implements OnInit {
 
     loadUsers() {
         this.isLoading = true;
-        this.userService.getUsers(this.currentPage, this.searchQuery, this.selectedBranchId).subscribe({
+        const filter: UserFilterRequestDto = {
+            query: this.searchQuery,
+            branchId: this.selectedBranchId,
+            orderBy: {
+                orderBy: this.currentOrderBy,
+                asc: this.currentOrderAsc
+            }
+        };
+
+        this.userService.getUsers(this.currentPage, filter).subscribe({
             next: (response: PagesResponseDto<User>) => {
                 this.users = response.data;
                 this.totalPages = response.totalPages;
@@ -149,22 +160,7 @@ export class Usuarios implements OnInit {
 
     onSearch() {
         this.currentPage = 0; // Reset to first page on new search
-        if (this.searchQuery.trim()) {
-            this.isLoading = true;
-            this.userService.getUsers(this.currentPage, this.searchQuery, this.selectedBranchId).subscribe({
-                next: (response: PagesResponseDto<User>) => {
-                    this.users = response.data;
-                    this.totalPages = response.totalPages;
-                    this.totalElements = response.totalElements;
-                    this.isLoading = false;
-                    this.scrollToTop();
-                },
-                error: (err) => {
-                    console.error('Error searching users:', err);
-                    this.isLoading = false;
-                }
-            });
-        }
+        this.loadUsers();
     }
 
     nextPage() {
@@ -410,6 +406,22 @@ export class Usuarios implements OnInit {
                 this.notificationService.success('Usuario eliminado correctamente');
             });
         }
+    }
+
+    setSort(field: string) {
+        if (this.currentOrderBy === field) {
+            this.currentOrderAsc = !this.currentOrderAsc;
+        } else {
+            this.currentOrderBy = field;
+            this.currentOrderAsc = true;
+        }
+        this.currentPage = 0;
+        this.loadUsers();
+    }
+
+    getSortIcon(field: string): string {
+        if (this.currentOrderBy !== field) return 'fa-solid fa-sort text-muted ms-1';
+        return this.currentOrderAsc ? 'fa-solid fa-sort-up text-primary ms-1' : 'fa-solid fa-sort-down text-primary ms-1';
     }
 
     viewDetails(user: User) {

@@ -139,15 +139,47 @@
             <table class="premium-table">
                 <thead>
                     <tr>
-                        <th>NOMBRE COMPLETO</th>
-                        <th class="mobile-hide">TELÉFONO</th>
-                        <th class="mobile-hide">DIRECCIÓN</th>
-                        <th class="mobile-hide">CATEGORÍA</th>
-                        <th class="mobile-hide">TIPO</th>
+                        <th (click)="setSort('completeName')" class="sortable-header">
+                            NOMBRE COMPLETO
+                            <i [ngClass]="getSortIcon('completeName')"></i>
+                        </th>
+                        <th class="mobile-hide sortable-header" (click)="setSort('cellphone')">
+                            TELÉFONO
+                            <i [ngClass]="getSortIcon('cellphone')"></i>
+                        </th>
+                        <th class="mobile-hide sortable-header" (click)="setSort('address')">
+                            DIRECCIÓN
+                            <i [ngClass]="getSortIcon('address')"></i>
+                        </th>
+                        <th class="mobile-hide sortable-header" (click)="setSort('categoryId')">
+                            CATEGORÍA
+                            <i [ngClass]="getSortIcon('categoryId')"></i>
+                        </th>
+                        <th class="mobile-hide sortable-header" (click)="setSort('typeId')">
+                            TIPO
+                            <i [ngClass]="getSortIcon('typeId')"></i>
+                        </th>
+                        <th class="mobile-hide sortable-header" (click)="setSort('gender')">
+                            GÉNERO
+                            <i [ngClass]="getSortIcon('gender')"></i>
+                        </th>
+                        <th class="mobile-hide sortable-header" (click)="setSort('branch')">
+                            SEDE
+                            <i [ngClass]="getSortIcon('branch')"></i>
+                        </th>
                         <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr *ngIf="isLoading">
+                        <td colspan="6" style="padding: 0; border: none;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <div>Cargando integrantes...</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <ng-container *ngIf="!isLoading">
                     <tr *ngFor="let member of members">
                         <td>
                             <div class="user-info-cell">
@@ -160,7 +192,7 @@
                                     <span class="user-age-small" *ngIf="getMemberAge(member) !== '---'">{{ getMemberAge(member) }} años</span>
                                     <!-- Mobile Category Info -->
                                     <div class="mobile-category-info mobile-only">
-                                        <span class="badge-mini" [style.background-color]="member.category.color">{{ formatCategory(member.category) }}</span>
+                                        <span class="badge-mini" *ngIf="member.category" [style.background-color]="member.category.color">{{ member.category.name }}</span>
                                         <span class="badge-mini-outline" *ngIf="member.subCategory" [style.border-color]="member.category.color" [style.color]="member.category.color">{{ member.subCategory.name }}</span>
                                     </div>
                                 </div>
@@ -169,13 +201,14 @@
                         <td class="mobile-hide">{{ member.cellphone || '---' }}</td>
                         <td class="mobile-hide text-sm text-muted" style="max-width: 200px; white-space: normal;">{{ formatAddress(member) }}</td>
                         <td class="mobile-hide">
-                            <div class="category-cell" style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                                <span class="badge" [style.background-color]="member.category.color" [ngClass]="getBadgeClass(member.category)">
-                                    {{ formatCategory(member.category) }}
+                            <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
+                                <span class="badge badge-sm badge-solid" *ngIf="member.category" [style.background-color]="member.category.color" style="color: white !important;">
+                                    {{ member.category.name }}
                                 </span>
-                                <span class="badge badge-outline" *ngIf="member.subCategory" 
-                                      [style.border-color]="member.category.color" 
-                                      [style.color]="member.category.color">
+                                <span class="badge badge-sm badge-outline" *ngIf="member.subCategory" 
+                                      [style.border-color]="member.subCategory.color || '#ccc'" 
+                                      [style.color]="member.subCategory.color || '#ccc'"
+                                      style="font-size: 0.65rem;">
                                     {{ member.subCategory.name }}
                                 </span>
                             </div>
@@ -186,6 +219,20 @@
                                     {{ member.type.name }}
                                 </span>
                             </div>
+                        </td>
+                        <td class="mobile-hide text-center">
+                            <span
+                                class="badge badge-sm"
+                                [class.badge-blue]="member.gender === 'HOMBRE'"
+                                [class.badge-pink]="member.gender === 'MUJER'"
+                                *ngIf="member.gender"
+                            >
+                                {{ member.gender === 'HOMBRE' ? 'M' : member.gender === 'MUJER' ? 'F' : member.gender }}
+                            </span>
+                            <span class="text-muted" *ngIf="!member.gender">---</span>
+                        </td>
+                        <td class="mobile-hide">
+                            <span class="text-sm">{{ member.branch?.name || '---' }}</span>
                         </td>
                         <td class="text-center">
                             <div class="actions-mini justify-center">
@@ -206,15 +253,11 @@
                             </div>
                         </td>
                     </tr>
+                    </ng-container>
                     <tr *ngIf="members.length === 0 && !isLoading">
-                        <td colspan="7" class="empty-state">No se encontraron integrantes activos</td>
-                    </tr>
-                    <tr *ngIf="isLoading">
-                        <td colspan="6" style="padding: 0; border: none;">
-                            <div class="loading-container">
-                                <div class="loading-spinner"></div>
-                                <div>Cargando integrantes...</div>
-                            </div>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-users-slash" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+                            No se encontraron integrantes activos
                         </td>
                     </tr>
                 </tbody>
@@ -257,15 +300,16 @@
                 <div class="profile-title">
                     <h3>{{ selectedMember.completeName }}</h3>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
-                        <span class="badge badge-sm" [style.background-color]="selectedMember.category.color" [ngClass]="getBadgeClass(selectedMember.category)">
-                            {{ formatCategory(selectedMember.category) }}
+                        <span class="badge badge-sm badge-solid" *ngIf="selectedMember.category" [style.background-color]="selectedMember.category.color" style="color: white !important;">
+                            {{ selectedMember.category.name }}
                         </span>
                         <span class="badge badge-sm badge-outline" [style.border-color]="selectedMember.type.color" [style.color]="selectedMember.type.color">
                             {{ formatType(selectedMember.type) }}
                         </span>
                         <span class="badge badge-sm badge-outline" *ngIf="selectedMember.subCategory" 
-                              [style.border-color]="selectedMember.category.color" 
-                              [style.color]="selectedMember.category.color">
+                              [style.border-color]="selectedMember.subCategory.color || selectedMember.category.color" 
+                              [style.color]="selectedMember.subCategory.color || selectedMember.category.color"
+                              style="font-size: 0.65rem;">
                             {{ selectedMember.subCategory.name }}
                         </span>
                     </div>
@@ -304,6 +348,13 @@
                 <div class="detail-item">
                     <label>Última Actualización:</label>
                     <span>{{ selectedMember.updatedAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Género:</label>
+                    <span *ngIf="selectedMember.gender" style="font-weight: 700; text-transform: uppercase;">
+                        {{ selectedMember.gender }}
+                    </span>
+                    <span class="text-muted" *ngIf="!selectedMember.gender">---</span>
                 </div>
                 <div class="detail-item">
                     <label>Estado:</label>

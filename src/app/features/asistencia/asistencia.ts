@@ -69,6 +69,9 @@ export class Asistencia implements OnInit {
   selectedBranchId: string = '';
   tempSelectedBranchId: string = '';
 
+  currentOrderBy: string = '';
+  currentOrderAsc: boolean = true;
+
   // Pagination
   currentPage = 0;
   totalPages = 0;
@@ -303,7 +306,8 @@ export class Asistencia implements OnInit {
       ageFilterRange2: this.ageFilterRange2,
       location: this.filterLocation || undefined,
       gender: this.selectedGender || undefined,
-      branchId: this.selectedBranchId || undefined
+      branchId: this.selectedBranchId || undefined,
+      orderBy: this.currentOrderBy ? { orderBy: this.currentOrderBy, asc: this.currentOrderAsc } : undefined
     };
 
     if (this.showAdvancedFiltersModal) {
@@ -469,6 +473,24 @@ export class Asistencia implements OnInit {
     this.loadMembers();
   }
 
+  setSort(column: string) {
+    if (this.currentOrderBy === column) {
+      this.currentOrderAsc = !this.currentOrderAsc;
+    } else {
+      this.currentOrderBy = column;
+      this.currentOrderAsc = true;
+    }
+    this.currentPage = 0;
+    this.loadMembers();
+  }
+
+  getSortIcon(column: string): string {
+    if (this.currentOrderBy !== column) {
+      return 'fa-solid fa-sort';
+    }
+    return this.currentOrderAsc ? 'fa-solid fa-sort-up active-sort' : 'fa-solid fa-sort-down active-sort';
+  }
+
   toggleSelection(memberId: string) {
     if (this.selectedMemberIds.has(memberId)) {
       this.selectedMemberIds.delete(memberId);
@@ -547,27 +569,10 @@ export class Asistencia implements OnInit {
     });
   }
 
-  getBadgeClass(categoria: any): string {
-    const name = typeof categoria === 'string' ? categoria : categoria?.name;
-    switch (name) {
-      case 'DAMAS': return 'badge-damas';
-      case 'CABALLEROS': return 'badge-caballeros';
-      case 'JOVENES': return 'badge-jovenes';
-      case 'NIÑOS': return 'badge-ninos';
-      default: return '';
-    }
-  }
-
   formatType(type: any): string {
     if (!type) return '';
     if (typeof type === 'string') return type.replace(/_/g, ' ');
     return type.name || '';
-  }
-
-  formatCategory(category: any): string {
-    if (!category) return '';
-    if (typeof category === 'string') return category;
-    return category.name || '';
   }
 
   nextPage() {

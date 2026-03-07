@@ -55,11 +55,26 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Miembro</th>
-                        <th>Sede</th>
-                        <th class="desktop-only">Fecha</th>
-                        <th class="desktop-only">Ubicación</th>
-                        <th class="desktop-only">Registrado Por</th>
+                        <th (click)="setSort('baptizedMember.completeName')" class="sortable-header">
+                            Miembro
+                            <i [ngClass]="getSortIcon('baptizedMember.completeName')"></i>
+                        </th>
+                        <th (click)="setSort('baptizedMember.branch')" class="sortable-header">
+                            Sede
+                            <i [ngClass]="getSortIcon('baptizedMember.branch')"></i>
+                        </th>
+                        <th class="desktop-only sortable-header" (click)="setSort('date')">
+                            Fecha
+                            <i [ngClass]="getSortIcon('date')"></i>
+                        </th>
+                        <th class="desktop-only sortable-header" (click)="setSort('address')">
+                            Ubicación
+                            <i [ngClass]="getSortIcon('address')"></i>
+                        </th>
+                        <th class="desktop-only sortable-header" (click)="setSort('registeredBy')">
+                            Registrado Por
+                            <i [ngClass]="getSortIcon('registeredBy')"></i>
+                        </th>
                         <th class="desktop-only">Estado</th>
                         <th class="actions-col">Acciones</th>
                     </tr>
@@ -91,22 +106,20 @@
                                 </span>
                             </td>
                             <td class="actions-col">
-                                <div class="action-dropdown">
-                                    <button class="action-btn" (click)="toggleDropdown(baptism.id)">
-                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                <div class="actions-mini justify-center">
+                                    <button class="action-btn-sm view" (click)="openDetailsModal(baptism)" title="Ver Detalles">
+                                        <i class="fa-solid fa-eye"></i>
                                     </button>
-                                    <div class="action-menu" *ngIf="activeDropdownId === baptism.id">
-                                        <button (click)="openDetailsModal(baptism); toggleDropdown(baptism.id)">
-                                            <i class="fa-solid fa-eye"></i> Ver Detalles
-                                        </button>
-                                        <button *ngIf="!baptism.invalid" (click)="downloadCertificate(baptism); toggleDropdown(baptism.id)">
-                                            <i class="fa-solid fa-file-pdf"></i> Certificado
-                                        </button>
-                                        <button *ngIf="!baptism.invalid && can('BAPTISM_INVALIDATE')" 
-                                                (click)="openInvalidateModal(baptism); toggleDropdown(baptism.id)" safeClick>
-                                            <i class="fa-solid fa-ban"></i> Invalidar
-                                        </button>
-                                    </div>
+                                    <button *ngIf="!baptism.invalid" class="action-btn-sm pdf" (click)="downloadCertificate(baptism)" title="Descargar Certificado">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                    </button>
+                                    <button *ngIf="!baptism.invalid && can('BAPTISM_INVALIDATE')" 
+                                            class="action-btn-sm delete"
+                                            (click)="openInvalidateModal(baptism)" 
+                                            title="Invalidar"
+                                            safeClick>
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>

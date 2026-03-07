@@ -1,5 +1,6 @@
 import { MemberCategoryResponseDto, MemberTypeResponseDto, MemberSubCategoryResponseDto } from './member-config.model';
 import { BranchResponseDto } from './branch.model';
+import { OrderBy } from './pagination.model';
 
 export interface MemberNoteResponseDto {
     id: string;
@@ -35,6 +36,8 @@ export interface Integrante {
   branch?: BranchResponseDto;
   
   categoryLocked?: boolean;
+  registeredBy?: string;
+
 
   notes?: MemberNoteResponseDto[];
 
@@ -91,6 +94,7 @@ export interface MemberFilterRequestDto {
     location?: string;
     gender?: string;
     branchId?: string; // Added branchId to filter
+    orderBy?: OrderBy;
 }
 
 export interface MemberExportDto {
@@ -104,6 +108,7 @@ export interface MemberExportDto {
     cc: string;
     age: number;
     gender?: string;
+    registeredBy?: string;
 }
 
 export interface ReportColumn {

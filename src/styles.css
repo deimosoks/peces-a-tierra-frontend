@@ -712,3 +712,58 @@ button {
     color: var(--primary);
     margin: 0;
 }
+
+/* =========================================
+   GLOBAL ACTION BUTTONS (Standardized)
+   ========================================= */
+.action-btn-sm {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all var(--transition-speed, 0.2s);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.action-btn-sm i {
+    font-size: 0.9rem;
+}
+
+.action-btn-sm:hover {
+    background-color: var(--bg-input);
+}
+
+[data-theme='dark'] .action-btn-sm:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-btn-sm.view { color: var(--text-muted); }
+.action-btn-sm.edit { color: var(--primary); }
+.action-btn-sm.delete { color: var(--danger-text); }
+.action-btn-sm.pdf { color: var(--primary); }
+.action-btn-sm.add-sub { color: var(--success-text); }
+.action-btn-sm.menu-trigger { background: var(--bg-input); color: var(--text-muted); }
+
+.action-btn-sm:hover.view { color: var(--primary); }
+.action-btn-sm:hover.edit { color: var(--primary-dark); }
+.action-btn-sm:hover.delete { color: var(--danger-text) !important; }
+.action-btn-sm:hover.pdf { color: var(--primary-dark); }
+.action-btn-sm:hover.add-sub { color: var(--success-text); }
+.action-btn-sm:hover.menu-trigger { background: var(--border-color); color: var(--text-main); }
+
+.actions-mini {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+

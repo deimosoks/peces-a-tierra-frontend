@@ -14,6 +14,8 @@ import { ThemeService } from '../../core/services/theme.service';
 import { effect } from '@angular/core';
 import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MemberConfigService } from '../../core/services/member-config.service';
+import { MemberCategoryResponseDto } from '../../core/models/member-config.model';
 
 @Component({
     selector: 'app-dashboard',
@@ -27,7 +29,10 @@ export class Dashboard implements OnInit, OnDestroy {
     private themeService = inject(ThemeService);
     private cdr = inject(ChangeDetectorRef);
     private asistenciaService = inject(AsistenciaService);
+    private memberConfigService = inject(MemberConfigService);
     private destroy$ = new Subject<void>();
+
+    private availableCategories: MemberCategoryResponseDto[] = [];
 
     data: DashboardData | null = null;
     isLoading = true;
@@ -60,9 +65,20 @@ export class Dashboard implements OnInit, OnDestroy {
 
     ngOnInit() {
         console.log('DASHBOARD COMPONENT LOADED - VERSION: ' + new Date().toISOString());
+        this.loadCategories();
         this.loadDashboardData();
         this.loadTodayAttendance();
         this.startPolling();
+    }
+
+    loadCategories() {
+        this.memberConfigService.getCategories().subscribe({
+            next: (cats) => {
+                this.availableCategories = cats;
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error loading categories mapping:', err)
+        });
     }
 
     startPolling() {
@@ -381,15 +397,34 @@ export class Dashboard implements OnInit, OnDestroy {
             const branch = branchMap.get(branchName);
             branch.total += (d.total || 0);
 
-            const catName = this.formatCategory(d.category) || 'Sin Categoría';
+            // Handle Category: Find full object if we only have a string or partial data
+            const catResponse = d.category;
+            const catName = this.formatCategory(catResponse) || 'Sin Categoría';
+            
+            // Map to our canonical category from MemberConfig
+            const canonicalCat = this.availableCategories.find(c => c.name.toUpperCase() === catName.toUpperCase());
+
             if (!branch.categories.has(catName)) {
-                branch.categories.set(catName, { name: catName, total: 0, subCategories: [] });
+                branch.categories.set(catName, { 
+                    name: catName, 
+                    id: canonicalCat?.id, // Use ID from canonical list
+                    total: 0, 
+                    subCategories: [] 
+                });
             }
             const category = branch.categories.get(catName);
             category.total += (d.total || 0);
 
             if (d.subCategory) {
-                category.subCategories.push({ name: d.subCategory, total: d.total });
+                const subName = d.subCategory;
+                // Find subcategory ID from canonical category
+                const canonicalSub = canonicalCat?.subCategories?.find(s => s.name.toUpperCase() === subName.toUpperCase());
+                
+                category.subCategories.push({ 
+                    name: subName, 
+                    id: canonicalSub?.id, // Use ID from canonical list
+                    total: d.total 
+                });
             }
         });
 
@@ -424,8 +459,8 @@ export class Dashboard implements OnInit, OnDestroy {
         const filters: any = {
             startDate: this.toLocalISOString(start),
             endDate: this.toLocalISOString(end),
-            category: [category.name || category],
-            subCategory: subCategory ? [subCategory.name || subCategory] : [],
+            category: category.id ? [category.id] : (typeof category === 'string' ? [category] : []),
+            subCategory: subCategory?.id ? [subCategory.id] : (subCategory ? [subCategory.name || subCategory] : []),
             invalid: false
         };
         

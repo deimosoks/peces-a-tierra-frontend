@@ -12,10 +12,10 @@
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
                 <div class="role-actions">
-                    <button class="action-btn" (click)="editRole(role)" title="Editar" *ngIf="can('UPDATE_ROLE')">
+                    <button class="action-btn-sm edit" (click)="editRole(role)" title="Editar" *ngIf="can('UPDATE_ROLE')">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <button class="action-btn delete" (click)="deleteRole(role)" title="Eliminar"
+                    <button class="action-btn-sm delete" (click)="deleteRole(role)" title="Eliminar"
                         *ngIf="can('DELETE_ROLE')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>

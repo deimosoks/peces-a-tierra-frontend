@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
-import { User, UserRequestDto, UserStats } from '../models/user.model';
+import { User, UserFilterRequestDto, UserRequestDto, UserStats } from '../models/user.model';
 import { PagesResponseDto } from '../models/pagination.model';
 
 @Injectable({
@@ -16,18 +16,13 @@ export class UserService {
         return this.http.post<UserStats>(`${this.baseUrl}/report`, {});
     }
 
-    getUsers(page: number = 0, query: string = '', branchId?: string): Observable<PagesResponseDto<User>> {
-        let params = new HttpParams()
-            .set('page', page.toString());
-        
-        if (query) params = params.set('query', query);
-        if (branchId) params = params.set('branchId', branchId);
-
-        return this.http.get<PagesResponseDto<User>>(this.baseUrl, { params });
+    getUsers(page: number = 0, filter: UserFilterRequestDto): Observable<PagesResponseDto<User>> {
+        const params = new HttpParams().set('page', page.toString());
+        return this.http.post<PagesResponseDto<User>>(`${this.baseUrl}/search`, filter, { params });
     }
 
     searchUsers(query: string, page: number = 0, branchId?: string): Observable<PagesResponseDto<User>> {
-        return this.getUsers(page, query, branchId);
+        return this.getUsers(page, { query, branchId });
     }
 
     createUser(user: UserRequestDto): Observable<User> {

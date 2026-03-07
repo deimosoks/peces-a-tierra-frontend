@@ -239,6 +239,33 @@
   background: var(--bg-input);
 }
 
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.sortable-header:hover {
+  background-color: #e2e8f0 !important;
+  color: var(--primary) !important;
+}
+
+.sortable-header:active {
+  background-color: #cbd5e1 !important;
+}
+
+.sortable-header i {
+  margin-left: 0.25rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.sortable-header i.active-sort {
+  opacity: 1;
+  color: var(--primary);
+}
+
 .data-table td {
   padding: 0.45rem 0.5rem;
   font-size: 0.8rem;
@@ -271,56 +298,15 @@
 
 /* Actions */
 .actions-col {
-  width: 80px;
+  width: 120px;
   text-align: center;
 }
 
-.action-dropdown {
-  position: relative;
-}
 
-.action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  color: var(--text-secondary);
-  transition: color 0.2s;
-}
-
-.action-btn:hover {
-  color: var(--primary);
-}
-
-.action-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: var(--shadow-md);
-  z-index: 1000;
-  min-width: 150px;
-  margin-top: 0.25rem;
-}
-
-.action-menu button {
+.actions-mini {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  text-align: left;
-  font-size: 0.85rem;
-  transition: background 0.15s;
-}
-
-.action-menu button:hover {
-  background-color: var(--bg-input);
+  gap: 0.35rem;
+  justify-content: center;
 }
 
 /* Badges */

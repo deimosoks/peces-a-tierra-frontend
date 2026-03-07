@@ -180,6 +180,10 @@
                     <label>Teléfono:</label>
                     <span>{{ selectedMember.cellphone }}</span>
                 </div>
+                <div class="detail-item" *ngIf="selectedMember.registeredBy">
+                    <label>Registrado por:</label>
+                    <span style="color: var(--primary-color); font-weight: 600;">{{ selectedMember.registeredBy }}</span>
+                </div>
                 <div class="detail-item full">
                     <label>Dirección:</label>
                     <span>{{ selectedMember.address || '---' }}</span>

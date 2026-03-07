@@ -7,7 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { BaptismResponseDto, BaptismFilterRequestDto, BaptismRequestDto, BaptismInvalidRequestDto } from '../../core/models/baptism.model';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { PagesResponseDto } from '../../core/models/pagination.model';
+import { PagesResponseDto, OrderBy } from '../../core/models/pagination.model';
 import { Integrante } from '../../core/models/integrante.model';
 import { ConfirmationService } from '../../core/services/confirmation.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -46,6 +46,9 @@ export class Bautismos implements OnInit {
   currentPage = 0;
   isLoading = false;
   activeDropdownId: string | null = null;
+
+  currentOrderBy: string = '';
+  currentOrderAsc: boolean = true;
 
   // Filter state
   filterMemberId = '';
@@ -143,7 +146,8 @@ export class Bautismos implements OnInit {
       endDate: this.filterEndDate || undefined,
       query: this.filterQuery || undefined,
       active: this.filterActive,
-      branchId: this.filterBranchId || undefined
+      branchId: this.filterBranchId || undefined,
+      orderBy: this.currentOrderBy ? { orderBy: this.currentOrderBy, asc: this.currentOrderAsc } : undefined
     };
 
     this.baptismService.search(filterRequest, this.currentPage).subscribe({
@@ -184,6 +188,24 @@ export class Bautismos implements OnInit {
 
   closeFilterModal() {
       this.showFilterModal = false;
+  }
+
+  setSort(column: string) {
+    if (this.currentOrderBy === column) {
+      this.currentOrderAsc = !this.currentOrderAsc;
+    } else {
+      this.currentOrderBy = column;
+      this.currentOrderAsc = true;
+    }
+    this.currentPage = 0;
+    this.loadBaptisms();
+  }
+
+  getSortIcon(column: string): string {
+    if (this.currentOrderBy !== column) {
+      return 'fa-solid fa-sort';
+    }
+    return this.currentOrderAsc ? 'fa-solid fa-sort-up active-sort' : 'fa-solid fa-sort-down active-sort';
   }
 
   // Pagination
