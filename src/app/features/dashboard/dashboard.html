@@ -44,7 +44,7 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <div class="today-and-quick-row" *ngIf="!isLoading">
         <!-- LEFT: Today's Donuts -->
-        <div class="today-panel" *ngIf="todayCategoryCharts.length > 0">
+        <div class="today-panel" *ngIf="todayBranches.length > 0">
             <div class="section-header">
                 <div class="section-title-wrapper">
                     <i class="fa-solid fa-clock" style="color: var(--primary);"></i>
@@ -54,54 +54,64 @@
                     </div>
                 </div>
             </div>
-            <div class="category-donuts-grid">
-                <div class="donut-card" *ngFor="let cat of todayCategoryCharts">
-                    <!-- Clickable header: opens category-level attendance list -->
-                    <div class="donut-card-header clickable-header" (click)="openCategoryDetail(cat.branch, cat)">
-                        <div class="donut-cat-badge" [style.background-color]="cat.color + '22'" [style.color]="cat.color">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <div class="donut-cat-info">
-                            <span class="donut-cat-name">{{ cat.name }}</span>
-                            <span class="donut-cat-total" style="display: flex; flex-direction: column; gap: 2px;">
-                                <span>{{ cat.total }} personas</span>
-                                <span style="font-size: 0.72rem; color: var(--text-muted);">
-                                    <i class="fa-solid fa-location-dot" style="font-size: 0.65rem; opacity: 0.7; margin-right: 2px;"></i> {{ cat.branch.name }}
+            <ng-container *ngFor="let branchGroup of todayBranches">
+                <div class="branch-group-header">
+                    <div class="branch-group-title">
+                        <i class="fa-solid fa-building" style="color: var(--primary);"></i>
+                        <h3>{{ branchGroup.branch.name }}</h3>
+                        <span class="branch-group-total">({{ branchGroup.total }} personas)</span>
+                    </div>
+                </div>
+                
+                <div class="category-donuts-grid">
+                    <div class="donut-card" *ngFor="let cat of branchGroup.charts">
+                        <!-- Clickable header: opens category-level attendance list -->
+                        <div class="donut-card-header clickable-header" (click)="openCategoryDetail(branchGroup.branch, cat)">
+                            <div class="donut-cat-badge" [style.background-color]="cat.color + '22'" [style.color]="cat.color">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div class="donut-cat-info">
+                                <span class="donut-cat-name">{{ cat.name }}</span>
+                                <span class="donut-cat-total" style="display: flex; flex-direction: column; gap: 2px;">
+                                    <span>{{ cat.total }} personas</span>
+                                    <span style="font-size: 0.72rem; color: var(--text-muted);">
+                                        <i class="fa-solid fa-hand-pointer" style="font-size: 0.65rem; opacity: 0.7; margin-right: 2px;"></i> tap para ver lista
+                                    </span>
                                 </span>
-                            </span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right donut-arrow"></i>
                         </div>
-                        <i class="fa-solid fa-chevron-right donut-arrow"></i>
-                    </div>
-                    <div class="donut-chart-wrapper">
-                        <apx-chart
-                            [series]="cat.donutOptions.series"
-                            [chart]="cat.donutOptions.chart"
-                            [labels]="cat.donutOptions.labels"
-                            [colors]="cat.donutOptions.colors"
-                            [legend]="cat.donutOptions.legend"
-                            [dataLabels]="cat.donutOptions.dataLabels"
-                            [stroke]="cat.donutOptions.stroke"
-                            [plotOptions]="cat.donutOptions.plotOptions"
-                            [tooltip]="cat.donutOptions.tooltip">
-                        </apx-chart>
-                    </div>
-                    <!-- Subcategory list — each row is clickable -->
-                    <div class="donut-subs-list" *ngIf="cat.subs.length > 0">
-                        <div class="donut-sub-row clickable-row"
-                             *ngFor="let sub of cat.subs"
-                             (click)="openCategoryDetail(cat.branch, cat, sub)">
-                            <span class="donut-sub-dot" [style.background-color]="sub.color"></span>
-                            <span class="donut-sub-name">{{ sub.name }}</span>
-                            <span class="donut-sub-total">{{ sub.total }}</span>
-                            <i class="fa-solid fa-chevron-right donut-sub-arrow"></i>
+                        <div class="donut-chart-wrapper">
+                            <apx-chart
+                                [series]="cat.donutOptions.series"
+                                [chart]="cat.donutOptions.chart"
+                                [labels]="cat.donutOptions.labels"
+                                [colors]="cat.donutOptions.colors"
+                                [legend]="cat.donutOptions.legend"
+                                [dataLabels]="cat.donutOptions.dataLabels"
+                                [stroke]="cat.donutOptions.stroke"
+                                [plotOptions]="cat.donutOptions.plotOptions"
+                                [tooltip]="cat.donutOptions.tooltip">
+                            </apx-chart>
+                        </div>
+                        <!-- Subcategory list — each row is clickable -->
+                        <div class="donut-subs-list" *ngIf="cat.subs.length > 0">
+                            <div class="donut-sub-row clickable-row"
+                                 *ngFor="let sub of cat.subs"
+                                 (click)="openCategoryDetail(branchGroup.branch, cat, sub)">
+                                <span class="donut-sub-dot" [style.background-color]="sub.color"></span>
+                                <span class="donut-sub-name">{{ sub.name }}</span>
+                                <span class="donut-sub-total">{{ sub.total }}</span>
+                                <i class="fa-solid fa-chevron-right donut-sub-arrow"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </ng-container>
         </div>
 
         <!-- Empty state when no today attendance -->
-        <div class="today-panel empty" *ngIf="todayCategoryCharts.length === 0">
+        <div class="today-panel empty" *ngIf="todayBranches.length === 0">
             <div class="empty-section">
                 <div class="empty-section-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
                 <p>No hay asistencia registrada hoy.</p>

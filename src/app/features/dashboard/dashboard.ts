@@ -58,15 +58,18 @@ export class Dashboard implements OnInit, OnDestroy {
     // NEW: Per-category weekly trend charts
     categoryWeeklyCharts: { category: string, color: string, chartOptions: any }[] = [];
 
-    // NEW: Today's donut charts per category (includes sub list for template display)
-    todayCategoryCharts: {
+    // NEW: Today's donut charts grouped logically by branch
+    todayBranches: {
         branch: { id: any, name: string },
-        name: string,
-        categoryId: any,
-        color: string,
         total: number,
-        donutOptions: any,
-        subs: { name: string, id: any, total: number, color: string }[]
+        charts: {
+            name: string,
+            categoryId: any,
+            color: string,
+            total: number,
+            donutOptions: any,
+            subs: { name: string, id: any, total: number, color: string }[]
+        }[]
     }[] = [];
 
     // Track last today data hash for change detection
@@ -331,12 +334,14 @@ export class Dashboard implements OnInit, OnDestroy {
         this.lastTodayHash = newHash;
 
         const isDark = this.themeService.isDarkMode();
-        this.todayCategoryCharts = [];
+        this.todayBranches = [];
         let colorIdx = 0;
 
         // Iterate through each branch to create distinct charts per branch
         this.todayAttendance.forEach((branchData: any) => {
             const branchObj = { id: branchData.id, name: branchData.name || 'Sin Sede' };
+            const branchTotal = branchData.total || 0;
+            const branchCharts: any[] = [];
 
             branchData.categories.forEach((catData: any) => {
                 const mainColor = CHART_PALETTE[colorIdx % CHART_PALETTE.length];
@@ -364,8 +369,7 @@ export class Dashboard implements OnInit, OnDestroy {
                     colors = [mainColor];
                 }
 
-                this.todayCategoryCharts.push({
-                    branch: branchObj,
+                branchCharts.push({
                     name: catData.name,
                     categoryId: catData.id,
                     color: mainColor,
@@ -374,6 +378,14 @@ export class Dashboard implements OnInit, OnDestroy {
                     donutOptions: this.buildDonutOptions(labels, values, colors, isDark)
                 });
             });
+
+            if (branchCharts.length > 0) {
+                this.todayBranches.push({
+                    branch: branchObj,
+                    total: branchTotal,
+                    charts: branchCharts
+                });
+            }
         });
 
 
