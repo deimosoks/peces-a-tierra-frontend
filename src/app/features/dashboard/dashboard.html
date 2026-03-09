@@ -1,7 +1,8 @@
 <div class="dashboard-container">
-  
 
-    <!-- Metrics Grid -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 1: KPI Cards                                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
     <div class="metrics-grid" *ngIf="!isLoading && data">
         <div class="metric-card">
             <div class="metric-icon blue">
@@ -38,82 +39,213 @@
         </div>
     </div>
 
-    <!-- Today's Attendance Section -->
-    <div class="today-attendance-section" *ngIf="!isLoading && todayAttendance && todayAttendance.length > 0">
-        <div class="section-title-wrapper">
-            <i class="fa-solid fa-clock"></i>
-            <div>
-                <h2>Asistencia de Hoy</h2>
-                <span class="subtitle">Desglose por Sede y Categoría</span>
-            </div>
-        </div>
-
-        <div class="attendance-cards-grid">
-            <div class="attendance-card" *ngFor="let branch of todayAttendance">
-                <div class="attendance-header">
-                    <h3>{{ branch.name }}</h3>
-                    <span class="total-badge">{{ branch.total }}</span>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 2: Today's Attendance — Donut Charts + Quick Access -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="today-and-quick-row" *ngIf="!isLoading">
+        <!-- LEFT: Today's Donuts -->
+        <div class="today-panel" *ngIf="todayCategoryCharts.length > 0">
+            <div class="section-header">
+                <div class="section-title-wrapper">
+                    <i class="fa-solid fa-clock" style="color: var(--primary);"></i>
+                    <div>
+                        <h2>Asistencia de Hoy</h2>
+                        <span class="section-subtitle">{{ totalTodayAttendance }} personas registradas</span>
+                    </div>
                 </div>
-                <div class="attendance-body">
-                    <div class="category-item" *ngFor="let cat of branch.categories">
-                        <div class="cat-header clickable" (click)="openAttendanceDetails(branch, cat)">
-                            <span class="cat-name">{{ cat.name }}</span>
-                            <span class="cat-total">{{ cat.total }}</span>
+            </div>
+            <div class="category-donuts-grid">
+                <div class="donut-card" *ngFor="let cat of todayCategoryCharts">
+                    <!-- Clickable header: opens category-level attendance list -->
+                    <div class="donut-card-header clickable-header" (click)="openCategoryDetail(cat.branch, cat)">
+                        <div class="donut-cat-badge" [style.background-color]="cat.color + '22'" [style.color]="cat.color">
+                            <i class="fa-solid fa-users"></i>
                         </div>
-                        <div class="sub-list" *ngIf="cat.subCategories && cat.subCategories.length > 0">
-                            <div class="sub-item clickable" *ngFor="let sub of cat.subCategories" (click)="openAttendanceDetails(branch, cat, sub); $event.stopPropagation()">
-                                <span>{{ sub.name }}</span>
-                                <span>{{ sub.total }}</span>
-                            </div>
+                        <div class="donut-cat-info">
+                            <span class="donut-cat-name">{{ cat.name }}</span>
+                            <span class="donut-cat-total" style="display: flex; flex-direction: column; gap: 2px;">
+                                <span>{{ cat.total }} personas</span>
+                                <span style="font-size: 0.72rem; color: var(--text-muted);">
+                                    <i class="fa-solid fa-location-dot" style="font-size: 0.65rem; opacity: 0.7; margin-right: 2px;"></i> {{ cat.branch.name }}
+                                </span>
+                            </span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right donut-arrow"></i>
+                    </div>
+                    <div class="donut-chart-wrapper">
+                        <apx-chart
+                            [series]="cat.donutOptions.series"
+                            [chart]="cat.donutOptions.chart"
+                            [labels]="cat.donutOptions.labels"
+                            [colors]="cat.donutOptions.colors"
+                            [legend]="cat.donutOptions.legend"
+                            [dataLabels]="cat.donutOptions.dataLabels"
+                            [stroke]="cat.donutOptions.stroke"
+                            [plotOptions]="cat.donutOptions.plotOptions"
+                            [tooltip]="cat.donutOptions.tooltip">
+                        </apx-chart>
+                    </div>
+                    <!-- Subcategory list — each row is clickable -->
+                    <div class="donut-subs-list" *ngIf="cat.subs.length > 0">
+                        <div class="donut-sub-row clickable-row"
+                             *ngFor="let sub of cat.subs"
+                             (click)="openCategoryDetail(cat.branch, cat, sub)">
+                            <span class="donut-sub-dot" [style.background-color]="sub.color"></span>
+                            <span class="donut-sub-name">{{ sub.name }}</span>
+                            <span class="donut-sub-total">{{ sub.total }}</span>
+                            <i class="fa-solid fa-chevron-right donut-sub-arrow"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Quick Access (Optional reference from user image) -->
-    <div class="section-title-wrapper" *ngIf="!isLoading">
-        <i class="fa-solid fa-bolt"></i>
-        <h2>Accesos Rápidos</h2>
-    </div>
+        <!-- Empty state when no today attendance -->
+        <div class="today-panel empty" *ngIf="todayCategoryCharts.length === 0">
+            <div class="empty-section">
+                <div class="empty-section-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+                <p>No hay asistencia registrada hoy.</p>
+            </div>
+        </div>
 
-    <div class="quick-access-grid" *ngIf="!isLoading">
-        <a routerLink="/integrantes" class="quick-card">
-            <div class="quick-icon purple">
-                <i class="fa-solid fa-user-plus"></i>
+        <!-- RIGHT: Quick Access -->
+        <div class="quick-panel">
+            <div class="section-header">
+                <div class="section-title-wrapper">
+                    <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i>
+                    <h2>Accesos Rápidos</h2>
+                </div>
             </div>
-            <div class="quick-info">
-                <h3>Gestionar Integrantes</h3>
-                <p>Ver o registrar nuevos asistentes.</p>
-            </div>
-        </a>
-        <a routerLink="/asistencia" class="quick-card">
-            <div class="quick-icon teal">
-                <i class="fa-solid fa-clipboard-check"></i>
-            </div>
-            <div class="quick-info">
-                <h3>Tomar Asistencia</h3>
-                <p>Registrar presencia en el culto.</p>
-            </div>
-        </a>
-    </div>
-
-    <!-- Chart Section -->
-    <div class="chart-section-wrapper" *ngIf="!isLoading && renderChart">
-        <div class="chart-card">
-            <div class="chart-header">
-                <h3><i class="fa-solid fa-chart-simple"></i> Asistencia Semanal</h3>
-                <span class="chart-subtitle">Resumen de los últimos cultos</span>
-            </div>
-            <div id="chart">
-                <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
-                    [yaxis]="chartOptions.yaxis" [plotOptions]="chartOptions.plotOptions" [legend]="chartOptions.legend"
-                    [fill]="chartOptions.fill" [tooltip]="chartOptions.tooltip"
-                    [colors]="chartOptions.colors"></apx-chart>
+            <div class="quick-access-stack">
+                <a routerLink="/integrantes" class="quick-card">
+                    <div class="quick-icon purple">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <div class="quick-info">
+                        <h3>Gestionar Integrantes</h3>
+                        <p>Ver o registrar nuevos asistentes.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right quick-arrow"></i>
+                </a>
+                <a routerLink="/asistencia" class="quick-card">
+                    <div class="quick-icon teal">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <div class="quick-info">
+                        <h3>Tomar Asistencia</h3>
+                        <p>Registrar presencia en el culto.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right quick-arrow"></i>
+                </a>
+                <a routerLink="/reportes" class="quick-card">
+                    <div class="quick-icon orange">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="quick-info">
+                        <h3>Ver Reportes</h3>
+                        <p>Analizar estadísticas históricas.</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right quick-arrow"></i>
+                </a>
+                <!-- Live attendance total widget -->
+                <div class="quick-card live-card" *ngIf="totalTodayAttendance > 0">
+                    <div class="quick-icon green">
+                        <i class="fa-solid fa-signal"></i>
+                    </div>
+                    <div class="quick-info">
+                        <h3>Asistencia en vivo</h3>
+                        <p>Actualiza cada 60 segundos</p>
+                    </div>
+                    <span class="live-badge">{{ totalTodayAttendance }}</span>
+                </div>
             </div>
         </div>
     </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 3: Weekly Summary Totals & Services                 -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="summary-section" *ngIf="!isLoading && renderChart">
+        <!-- Top Row: Big Numbers -->
+        <div class="summary-totals-row">
+            <div class="summary-total-card">
+                <span class="summary-label"><i class="fa-solid fa-sigma"></i> Total Semana</span>
+                <span class="summary-value">{{ weeklyTotal | number }}</span>
+            </div>
+            <div class="summary-total-card accent-green">
+                <span class="summary-label"><i class="fa-solid fa-arrow-trend-up"></i> Pico Máximo</span>
+                <span class="summary-value">{{ weeklyPeak | number }}</span>
+            </div>
+            <div class="summary-total-card accent-purple">
+                <span class="summary-label"><i class="fa-solid fa-chart-bar"></i> Promedio</span>
+                <span class="summary-value">{{ weeklyAverage | number }}</span>
+            </div>
+        </div>
+
+        <!-- Detail Row: Services Breakdown Chart -->
+        <div class="services-breakdown-card" *ngIf="weeklyServicesChartOptions">
+            <div class="services-breakdown-header">
+                <h3>Detalle de Servicios</h3>
+                <span class="services-count">{{ weeklyServices.length }} servicios registrados</span>
+            </div>
+            <div class="services-chart-wrapper">
+                <apx-chart
+                    [series]="weeklyServicesChartOptions.series"
+                    [chart]="weeklyServicesChartOptions.chart"
+                    [plotOptions]="weeklyServicesChartOptions.plotOptions"
+                    [xaxis]="weeklyServicesChartOptions.xaxis"
+                    [yaxis]="weeklyServicesChartOptions.yaxis"
+                    [legend]="weeklyServicesChartOptions.legend"
+                    [grid]="weeklyServicesChartOptions.grid"
+                    [fill]="weeklyServicesChartOptions.fill"
+                    [dataLabels]="weeklyServicesChartOptions.dataLabels"
+                    [tooltip]="weeklyServicesChartOptions.tooltip"
+                    [colors]="weeklyServicesChartOptions.colors"
+                    [stroke]="weeklyServicesChartOptions.stroke">
+                </apx-chart>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 4: Per-Category Weekly Trend Charts                 -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="dashboard-section" *ngIf="!isLoading && renderChart">
+        <div class="section-header">
+            <div class="section-title-wrapper">
+                <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i>
+                <div>
+                    <h2>Tendencia Semanal por Categoría</h2>
+                    <span class="section-subtitle">Últimos servicios registrados</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="weekly-charts-grid">
+            <div class="weekly-chart-card" *ngFor="let chart of categoryWeeklyCharts">
+                <div class="weekly-chart-header">
+                    <div class="weekly-cat-dot" [style.background-color]="chart.color"></div>
+                    <h3 class="weekly-cat-name">{{ chart.category }}</h3>
+                </div>
+                <apx-chart
+                    [series]="chart.chartOptions.series"
+                    [chart]="chart.chartOptions.chart"
+                    [plotOptions]="chart.chartOptions.plotOptions"
+                    [xaxis]="chart.chartOptions.xaxis"
+                    [yaxis]="chart.chartOptions.yaxis"
+                    [legend]="chart.chartOptions.legend"
+                    [grid]="chart.chartOptions.grid"
+                    [fill]="chart.chartOptions.fill"
+                    [tooltip]="chart.chartOptions.tooltip"
+                    [theme]="chart.chartOptions.theme">
+                </apx-chart>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Loading State -->
     <div class="dashboard-loading" *ngIf="isLoading">
@@ -121,6 +253,9 @@
         <p>Preparando tu dashboard...</p>
     </div>
 </div>
+
+
+<!-- ═══════════════════ MODALS ════════════════════════════════════════ -->
 
 <!-- Birthdays Modal -->
 <div class="modal-overlay" *ngIf="showBirthdayModal" (click)="closeBirthdayModal()">
@@ -150,7 +285,7 @@
     </div>
 </div>
 
-<!-- Member Details Modal (Shared logic from Integrantes/Reportes) -->
+<!-- Member Details Modal -->
 <div class="modal-overlay" *ngIf="showMemberDetailsModal" (click)="closeMemberModal()">
     <div class="modal-content details-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
@@ -191,7 +326,7 @@
             </div>
         </div>
     </div>
-    </div>
+</div>
 
 <!-- Attendance Details Modal -->
 <div class="modal-overlay" *ngIf="showAttendanceDetailsModal" (click)="closeAttendanceDetailsModal()">
@@ -201,32 +336,9 @@
             <button class="close-btn" (click)="closeAttendanceDetailsModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <div *ngIf="isLoadingDetails" class="loading-spinner" style="
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-                width: 100% !important;
-                min-height: 200px !important;
-                background: transparent !important;
-                transform: none !important;
-                animation: none !important;
-            ">
-                <div class="spinner" style="
-                    width: 40px !important;
-                    height: 40px !important;
-                    border: 4px solid rgba(255, 255, 255, 0.1) !important;
-                    border-left-color: #3b82f6 !important;
-                    border-radius: 50% !important;
-                    animation: dashboard-spin 1s linear infinite !important;
-                    margin-bottom: 10px !important;
-                "></div>
-                <span style="
-                    font-size: 0.9rem !important;
-                    color: #94a3b8 !important;
-                    animation: none !important;
-                    transform: none !important;
-                ">Cargando lista...</span>
+            <div *ngIf="isLoadingDetails" class="loading-spinner" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;">
+                <div class="spinner" style="width:40px;height:40px;border:4px solid rgba(255,255,255,0.1);border-left-color:#3b82f6;border-radius:50%;animation:dashboard-spin 1s linear infinite;margin-bottom:10px;"></div>
+                <span style="font-size:0.9rem;color:#94a3b8;">Cargando lista...</span>
             </div>
 
             <div *ngIf="!isLoadingDetails && attendanceDetails.length === 0" class="empty-state">
@@ -239,7 +351,6 @@
                         <span><i class="fa-solid fa-church"></i> {{ group.serviceName }}</span>
                         <span class="service-time">{{ group.serviceDate | date:'shortTime' }}</span>
                     </h3>
-                    
                     <div class="attendees-list">
                         <div class="attendee-item" *ngFor="let person of group.attendees">
                             <div class="attendee-info">
