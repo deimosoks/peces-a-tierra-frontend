@@ -27,6 +27,9 @@ export class Sidebar {
   isSavingPassword = false;
   changePasswordForm: FormGroup;
 
+  // More Menu Modal (Bottom Sheet)
+  showMoreMenu = false;
+
   constructor() {
     this.changePasswordForm = this.fb.group({
       oldPassword: ['', [Validators.required]],
@@ -44,6 +47,14 @@ export class Sidebar {
     this.closeSidebar.emit();
   }
 
+  toggleMoreMenu() {
+    this.showMoreMenu = !this.showMoreMenu;
+  }
+
+  closeMoreMenu() {
+    this.showMoreMenu = false;
+  }
+
   logout() {
     this.authService.logout();
   }
@@ -59,6 +70,7 @@ export class Sidebar {
   openChangePasswordModal() {
     this.changePasswordForm.reset();
     this.showChangePasswordModal = true;
+    this.closeMoreMenu(); // Close the bottom sheet if open
     if (window.innerWidth < 1024) {
       this.close();
     }

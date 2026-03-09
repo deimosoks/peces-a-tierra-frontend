@@ -24,6 +24,33 @@
 .topbar-left {
     display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+.mobile-logo {
+    display: none;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.logo-icon {
+    width: 2.125rem;
+    height: 2.125rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.brand-text {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--primary);
+    letter-spacing: -0.5px;
 }
 
 .hamburger-btn {
@@ -44,12 +71,16 @@
 }
 
 @media (max-width: 767px) {
+    /* Hamburger menu is no longer needed on mobile due to Bottom Nav */
     .hamburger-btn {
+        display: none;
+    }
+
+    .mobile-logo {
         display: flex;
-        align-items: center;
-        justify-content: center;
     }
 }
+
 
 .page-title {
     font-size: 1.5rem;

@@ -42,13 +42,13 @@
 .metric-card {
     background: var(--bg-card);
     padding: 1.25rem;
-    border-radius: 16px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     gap: 1.25rem;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
@@ -57,8 +57,10 @@
 }
 
 .metric-card.clickable:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary);
+    background-color: var(--bg-input);
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
 }
 
 .metric-icon {
@@ -550,7 +552,7 @@
 
 .bday-item:hover {
     border-color: var(--primary);
-    background: #eff6ff;
+    background-color: var(--bg-input);
 }
 
 .bday-item img {

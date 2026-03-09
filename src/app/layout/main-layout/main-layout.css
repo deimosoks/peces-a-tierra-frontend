@@ -48,6 +48,12 @@
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
+@media (max-width: 767px) {
+  .page-container {
+    padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px)); /* Space for bottom nav */
+  }
+}
+
 /* Custom Scrollbar for the main content */
 .page-container::-webkit-scrollbar {
   width: 8px;
