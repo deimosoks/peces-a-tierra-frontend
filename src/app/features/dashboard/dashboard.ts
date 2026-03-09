@@ -557,6 +557,13 @@ export class Dashboard implements OnInit, OnDestroy {
 
     // ─── Totals for display ──────────────────────────────────────────────────
 
+    get branchTotals(): { name: string, total: number }[] {
+        return this.todayAttendance.map(b => ({
+            name: b.name || 'Sede Secundaria',
+            total: b.total
+        }));
+    }
+
     get totalTodayAttendance(): number {
         return this.todayAttendance.reduce((sum, b) => sum + b.total, 0);
     }

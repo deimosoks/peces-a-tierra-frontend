@@ -147,6 +147,23 @@
                     </div>
                     <i class="fa-solid fa-chevron-right quick-arrow"></i>
                 </a>
+
+                <!-- Branch totals widget -->
+                <div class="quick-card branch-card" *ngIf="branchTotals.length > 0">
+                    <div class="quick-icon blue">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="quick-info" style="width: 100%;">
+                        <h3>Por Sede (Hoy)</h3>
+                        <div class="branch-totals-list">
+                            <div class="branch-total-item" *ngFor="let bt of branchTotals">
+                                <span class="branch-name">{{ bt.name }}</span>
+                                <span class="branch-count">{{ bt.total }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Live attendance total widget -->
                 <div class="quick-card live-card" *ngIf="totalTodayAttendance > 0">
                     <div class="quick-icon green">
